@@ -1856,3 +1856,5 @@
 {"context":"HTTP","duration":"158 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 158ms","method":"GET","timestamp":"2026-05-21T08:04:13.140Z","url":"/api/product"}
 {"context":"HTTP","duration":"81 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 81ms","method":"GET","timestamp":"2026-05-21T08:04:13.234Z","url":"/api/order"}
 {"context":"HTTP","duration":"202 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 202ms","method":"GET","timestamp":"2026-05-21T08:04:13.381Z","url":"/api/product"}
+{"context":"HTTP","duration":"16 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 16ms","method":"GET","timestamp":"2026-05-21T08:35:11.536Z","url":"/api/order"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-21T08:35:11.545Z","url":"/api/order"}
