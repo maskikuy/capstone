@@ -34,9 +34,15 @@ const Login = () => {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div className="card shadow p-4" style={{ width: '100%', maxWidth: '400px' }}>
-        <h3 className="text-center mb-4">W.O.W Login</h3>
+    <div className="d-flex justify-content-center align-items-center vh-100">
+      <div className="card p-5" style={{ width: '100%', maxWidth: '420px', borderRadius: '1.5rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)' }}>
+        <div className="text-center mb-4">
+          <div className="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{width: '60px', height: '60px'}}>
+            <h3 className="m-0 fw-bold">B</h3>
+          </div>
+          <h3 className="fw-bold">Billion Cafe</h3>
+          <p className="text-muted small">Masuk ke sistem manajemen</p>
+        </div>
         {error && <div className="alert alert-danger">{error}</div>}
         <form onSubmit={handleLogin}>
           <div className="mb-3">
@@ -59,7 +65,7 @@ const Login = () => {
               required 
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100">Masuk</button>
+          <button type="submit" className="btn btn-warning w-100 py-2 fw-bold mt-3">Masuk</button>
         </form>
       </div>
     </div>

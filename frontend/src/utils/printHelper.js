@@ -32,7 +32,7 @@ export const printReceipt = (order, type = 'customer') => {
       <body>
         
         <div class="header">
-          <div class="title">W.O.W</div>
+          <div class="title">Billion Cafe</div>
           <div>Warmindo Order Wae</div>
           <small>${isKitchen ? '--- TIKET DAPUR ---' : '--- NOTA PESANAN ---'}</small>
         </div>

@@ -153,3 +153,17 @@
 {"context":"HTTP","duration":"52 ms","ip":"::ffff:10.88.21.97","level":"error","message":"POST /api/order 500 - 52ms","method":"POST","timestamp":"2026-05-08T10:01:15.621Z","url":"/api/order"}
 {"context":"OrderController","level":"error","message":"Error creating order: Format QRIS tidak valid (Tag 58 tidak ditemukan)","timestamp":"2026-05-08T10:01:33.362Z"}
 {"context":"HTTP","duration":"52 ms","ip":"::ffff:10.88.21.97","level":"error","message":"POST /api/order 500 - 52ms","method":"POST","timestamp":"2026-05-08T10:01:33.365Z","url":"/api/order"}
+{"level":"error","message":"Login Error: Converting circular structure to JSON\n    --> starting at object with constructor 'Socket'\n    |     property 'parser' -> object with constructor 'HTTPParser'\n    --- property 'socket' closes the circle","module":"AuthRoute","timestamp":"2026-05-08T10:06:01.079Z"}
+{"level":"error","message":"Login Error: ","module":"AuthRoute","timestamp":"2026-05-09T03:58:40.416Z"}
+{"level":"error","message":"Login Error: ","module":"AuthRoute","timestamp":"2026-05-09T03:58:44.358Z"}
+{"level":"error","message":"Login Error: ","module":"AuthRoute","timestamp":"2026-05-09T03:58:51.083Z"}
+{"level":"error","message":"Login Error: ","module":"AuthRoute","timestamp":"2026-05-09T04:03:51.481Z"}
+{"level":"error","message":"Login Error: ","module":"AuthRoute","timestamp":"2026-05-09T04:03:52.329Z"}
+{"level":"error","message":"Login Error: ","module":"AuthRoute","timestamp":"2026-05-09T04:03:52.527Z"}
+{"level":"error","message":"Login Error: ","module":"AuthRoute","timestamp":"2026-05-09T04:03:52.725Z"}
+{"level":"error","message":"Login Error: ","module":"AuthRoute","timestamp":"2026-05-09T04:09:40.539Z"}
+{"level":"error","message":"Login Error: ","module":"AuthRoute","timestamp":"2026-05-09T04:09:54.000Z"}
+{"level":"error","message":"Login error for user: Super Admin - read ECONNRESET","module":"authController","timestamp":"2026-05-09T04:10:36.738Z"}
+{"level":"error","message":"Login error for user: Super Admin - read ECONNRESET","module":"authController","timestamp":"2026-05-09T04:10:36.741Z"}
+{"level":"error","message":"Login error for user: Super Admin - read ECONNRESET","module":"authController","timestamp":"2026-05-09T04:10:36.750Z"}
+{"level":"error","message":"Login error for user: Super Admin - read ECONNRESET","module":"authController","timestamp":"2026-05-09T04:10:36.771Z"}

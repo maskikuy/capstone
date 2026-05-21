@@ -20,9 +20,9 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-4 px-3">
+    <nav className="navbar navbar-expand-lg navbar-dark glass-navbar sticky-top mb-4 px-3">
       <div className="container-fluid">
-        <Link className="navbar-brand fw-bold text-warning" to="#">W.O.W System</Link>
+        <Link className="navbar-brand fw-bold text-warning" to="#">Billion Cafe System</Link>
         
         <div className="collapse navbar-collapse">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">

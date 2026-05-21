@@ -81,7 +81,7 @@ const QRCodeGenerator = () => {
             <div key={num} className="col-auto text-center page-break">
               <div className="card border-dark mb-3" style={{width: '220px'}}>
                 <div className="card-header bg-warning text-dark fw-bold text-uppercase text-center">
-                  W.O.W - MEJA {num}
+                  Billion Cafe - MEJA {num}
                 </div>
                 <div className="card-body p-3 d-flex justify-content-center bg-white">
                   <QRCode

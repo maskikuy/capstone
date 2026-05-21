@@ -34,7 +34,7 @@ export const CustomerReceipt = ({ order, receiptRef }) => {
     >
       {/* HEADER */}
       <div className="text-center mb-3 pb-2" style={{ borderBottom: '2px dashed #000' }}>
-        <h4 className="fw-bold mb-0">W.O.W</h4>
+        <h4 className="fw-bold mb-0">Billion Cafe</h4>
         <small>Warmindo Order Wae</small>
         <div className="mt-2" style={{ fontSize: '12px' }}>
           {dateDisplay}
@@ -146,7 +146,7 @@ export const CustomerReceipt = ({ order, receiptRef }) => {
         <p className="mb-1">Terima Kasih sudah mampir!</p>
         <p className="mb-0">Password Wifi: <strong>miegoreng123</strong></p>
         <p className="mt-2 fst-italic">Simpan gambar ini sebagai bukti transaksi.</p>
-        <div className="mt-2 text-muted" style={{fontSize:'10px'}}>Powered by W.O.W App</div>
+        <div className="mt-2 text-muted" style={{fontSize:'10px'}}>Powered by Billion Cafe App</div>
       </div>
     </div>
   );

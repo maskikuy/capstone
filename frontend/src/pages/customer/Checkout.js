@@ -105,9 +105,9 @@ const Checkout = () => {
       <h4 className="mb-4">Konfirmasi Pesanan</h4>
 
       {/* Ringkasan Item */}
-      <div className="card shadow-sm mb-4">
-        <div className="card-header bg-light">
-          <h6 className="mb-0">Daftar Menu (Meja {tableNumber})</h6>
+      <div className="card border-0 shadow-sm mb-4" style={{borderRadius: '1rem', overflow: 'hidden'}}>
+        <div className="card-header bg-white border-bottom pt-4 pb-3">
+          <h6 className="mb-0 fw-bold fs-5">Ringkasan Pesanan (Meja {tableNumber})</h6>
         </div>
         <ul className="list-group list-group-flush">
           {cart.map((item) => (
@@ -139,8 +139,8 @@ const Checkout = () => {
       </div>
 
       {/* Form Data Diri */}
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
+      <div className="card border-0 shadow-sm mb-4" style={{borderRadius: '1rem'}}>
+        <div className="card-body p-4">
           <div className="mb-3">
             <label className="form-label fw-bold">Nama Pemesan</label>
             <input 
@@ -165,15 +165,16 @@ const Checkout = () => {
       </div>
 
       {/* Tombol Aksi */}
-      <div className="d-grid gap-2">
+      <div className="d-grid gap-3 mt-5">
         <button 
-          className="btn btn-success btn-lg fw-bold" 
+          className="btn btn-warning btn-lg fw-bold text-white shadow-sm py-3" 
+          style={{borderRadius: '1rem'}}
           onClick={handleSubmitOrder}
           disabled={isSubmitting || cart.length === 0}
         >
           {isSubmitting ? 'Memproses...' : 'Pesan Sekarang 🚀'}
         </button>
-        <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>Kembali ke Menu</button>
+        <button className="btn btn-light fw-bold py-3" style={{borderRadius: '1rem', color: '#6c757d'}} onClick={() => navigate(-1)}>Kembali ke Menu</button>
       </div>
     </div>
   );

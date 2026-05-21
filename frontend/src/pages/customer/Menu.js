@@ -102,15 +102,15 @@ const Menu = () => {
   return (
     <div className="container-fluid p-0 mb-5 pb-5">
       {/* Header */}
-      <div className="bg-warning p-3 sticky-top shadow-sm d-flex justify-content-between align-items-center">
+      <div className="bg-warning text-white p-3 sticky-top shadow-sm d-flex justify-content-between align-items-center" style={{zIndex: 1020}}>
         <div>
-          <h5 className="mb-0 fw-bold">W.O.W Menu</h5>
-          <small>Meja No: {tableNumber}</small>
+          <h5 className="mb-0 fw-bold">Billion Cafe Menu</h5>
+          <small className="opacity-75">Meja No: {tableNumber}</small>
         </div>
       </div>
 
       {/* Kategori Filter */}
-      <div className="d-flex overflow-auto p-2 bg-white border-bottom gap-2" style={{whiteSpace: 'nowrap'}}>
+      <div className="d-flex overflow-auto p-3 bg-white border-bottom gap-2 hide-scrollbar shadow-sm sticky-top" style={{whiteSpace: 'nowrap', top: '70px', zIndex: 1010}}>
         <button 
           className={`btn btn-sm rounded-pill px-3 ${activeCategory === 'all' ? 'btn-dark' : 'btn-outline-dark'}`}
           onClick={() => setActiveCategory('all')}
@@ -120,7 +120,7 @@ const Menu = () => {
         {categories.map(cat => (
           <button 
             key={cat.id} 
-            className={`btn btn-sm rounded-pill px-3 ${activeCategory === cat.id ? 'btn-dark' : 'btn-outline-dark'}`}
+            className={`btn btn-sm rounded-pill px-4 py-2 fw-bold transition-all ${activeCategory === cat.id ? 'btn-warning text-white shadow-sm' : 'btn-outline-secondary border-0 bg-light'}`}
             onClick={() => setActiveCategory(cat.id)}
           >
             {cat.name}
@@ -142,7 +142,7 @@ const Menu = () => {
               onClick={() => isAvailable && openProductModal(product)}
               style={{ cursor: isAvailable ? 'pointer' : 'default' }}
             >
-              <div className={`card h-100 border-0 shadow-sm ${!isAvailable ? 'opacity-75 bg-light' : ''}`}>
+              <div className={`card h-100 border-0 ${isAvailable ? 'card-hover-lift' : 'opacity-75 bg-light'}`}>
                 
                 {/* Image Container */}
                 <div style={{height: '120px', overflow: 'hidden', position: 'relative'}} className="bg-secondary rounded-top">
@@ -167,7 +167,7 @@ const Menu = () => {
                 </div>
 
                 <div className="card-body p-2">
-                  <h6 className={`card-title mb-1 ${!isAvailable ? 'text-muted text-decoration-line-through' : ''}`} style={{fontSize: '0.9rem'}}>
+                  <h6 className={`card-title mb-1 fw-bold ${!isAvailable ? 'text-muted text-decoration-line-through' : 'text-dark'}`} style={{fontSize: '0.95rem'}}>
                     {product.name}
                   </h6>
                   <p className={`card-text fw-bold mb-0 ${!isAvailable ? 'text-muted' : 'text-warning'}`}>
@@ -193,22 +193,22 @@ const Menu = () => {
       {cart.length > 0 && (
         <div className="fixed-bottom p-3" style={{zIndex: 1040}}>
           <button 
-            className="btn btn-success w-100 py-3 d-flex justify-content-between align-items-center shadow fw-bold"
+            className="btn btn-cart-pulse text-white w-100 py-3 rounded-pill d-flex justify-content-between align-items-center shadow-lg px-4"
             onClick={() => navigate('/customer/checkout')}
           >
-            <span>🛒 {cartCount} Item</span>
-            <span>Rp {cartTotal.toLocaleString('id-ID')}</span>
+            <span className="fw-bold fs-6">🛒 {cartCount} Item</span>
+            <span className="fw-bold fs-5">Rp {cartTotal.toLocaleString('id-ID')}</span>
           </button>
         </div>
       )}
 
       {/* --- Modal Detail Produk --- */}
       {selectedProduct && (
-        <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1050}}>
+        <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1050, backdropFilter: 'blur(5px)'}}>
           <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div className="modal-content">
-              <div className="modal-header border-0">
-                <h5 className="modal-title fw-bold">{selectedProduct.name}</h5>
+            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '1.5rem'}}>
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title fw-bold fs-4">{selectedProduct.name}</h5>
                 <button className="btn-close" onClick={() => setSelectedProduct(null)}></button>
               </div>
               <div className="modal-body">
