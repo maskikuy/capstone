@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'; // 1. Import useCallback
-import api from '../../utils/api';
+import api, { API_IMAGE_URL } from '../../utils/api';
 import { Link } from 'react-router-dom';
 import {
   Chart as ChartJS,
@@ -185,7 +185,7 @@ const Dashboard = () => {
                 <li key={product.id} className="list-group-item d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center">
                     {product.image_url ? (
-                      <img src={`${process.env.REACT_APP_API_IMAGE_URL}/${product.image_url}`} alt="icon" 
+                      <img src={`${API_IMAGE_URL}/${product.image_url}`} alt="icon" 
                         style={{width: 30, height: 30, objectFit: 'cover', borderRadius: '4px'}} className="me-2"/>
                     ) : (
                       <div className="bg-secondary rounded me-2" style={{width: 30, height: 30}}></div>

@@ -7,7 +7,7 @@ const KitchenDashboard = () => {
   // Setup Polling
   useEffect(() => {
     fetchOrders(); // Load pertama
-    const interval = setInterval(fetchOrders, 30000); // Ulangi tiap 5 detik
+    const interval = setInterval(fetchOrders, 5000); // Ulangi tiap 5 detik
     return () => clearInterval(interval); // Bersihkan saat unmount
   }, []);
 

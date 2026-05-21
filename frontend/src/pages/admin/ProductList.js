@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../utils/api';
+import api, { API_IMAGE_URL } from '../../utils/api';
 import { Link } from 'react-router-dom';
 import { notifyError, notifySuccess, confirmAction } from '../../utils/notify';
 
@@ -150,7 +150,7 @@ const ProductList = () => {
                   <td>
                     {product.image_url ? (
                       <img 
-                        src={`${process.env.REACT_APP_API_IMAGE_URL}/${product.image_url}`} 
+                        src={`${API_IMAGE_URL}/${product.image_url}`} 
                         alt={product.name} 
                         style={{ width: '50px', height: '50px', objectFit: 'cover' }} 
                       />

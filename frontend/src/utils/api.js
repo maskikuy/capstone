@@ -1,9 +1,12 @@
 import axios from 'axios';
 
 
-// Ganti URL sesuai port backend Anda
+// Gunakan IP Address komputer saat ini secara dinamis berdasarkan URL browser
+const hostname = window.location.hostname;
+export const API_IMAGE_URL = `http://${hostname}:5000/uploads`;
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: `http://${hostname}:5000/api`,
 });
 
 // Interceptor: Otomatis pasang token JWT jika ada

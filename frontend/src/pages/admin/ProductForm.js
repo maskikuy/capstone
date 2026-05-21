@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'; // 1. Tambah useCallback
-import api from '../../utils/api';
+import api, { API_IMAGE_URL } from '../../utils/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { notifySuccess, notifyError } from '../../utils/notify';
 
@@ -187,7 +187,7 @@ const ProductForm = () => {
                 {currentImage && !image && (
                   <div className="mt-2">
                     <small className="text-muted">Gambar saat ini: </small>
-                    <img src={`${process.env.REACT_APP_API_IMAGE_URL}/${currentImage}`} alt="Preview" height="50" className="rounded" />
+                    <img src={`${API_IMAGE_URL}/${currentImage}`} alt="Preview" height="50" className="rounded" />
                   </div>
                 )}
               </div>
