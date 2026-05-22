@@ -17,8 +17,8 @@ const ProductForm = () => {
   const [image, setImage] = useState(null);
   const [currentImage, setCurrentImage] = useState('');
   const [priceType, setPriceType] = useState('retail');
-  const [grosirPricePerUnit, setGrosirPricePerUnit] = useState(0);
-  const [grosirMinQty, setGrosirMinQty] = useState(0);
+  const [grosirPricePerUnit, setGrosirPricePerUnit] = useState('');
+  const [grosirMinQty, setGrosirMinQty] = useState('');
 
   // State Data Varian
   const [variants, setVariants] = useState([{ name: '', extra_price: 0 }]);
@@ -46,8 +46,8 @@ const ProductForm = () => {
       setDescription(product.description || '');
       setCurrentImage(product.image_url);
       setPriceType(product.price_type || 'retail');
-      setGrosirPricePerUnit(product.grosir_price_per_unit || 0);
-      setGrosirMinQty(product.grosir_min_qty || 0);
+      setGrosirPricePerUnit(product.grosir_price_per_unit !== undefined && product.grosir_price_per_unit !== null ? product.grosir_price_per_unit : '');
+      setGrosirMinQty(product.grosir_min_qty !== undefined && product.grosir_min_qty !== null ? product.grosir_min_qty : '');
 
       // Ambil varian
       const { data: allVariants } = await api.get('/product-variant');
@@ -105,8 +105,8 @@ const ProductForm = () => {
     formData.append('description', description);
     formData.append('is_available', 1);
     formData.append('price_type', priceType);
-    formData.append('grosir_price_per_unit', priceType === 'grosir' ? grosirPricePerUnit : 0);
-    formData.append('grosir_min_qty', priceType === 'grosir' ? grosirMinQty : 0);
+    formData.append('grosir_price_per_unit', priceType === 'grosir' ? (Number(grosirPricePerUnit) || 0) : 0);
+    formData.append('grosir_min_qty', priceType === 'grosir' ? (Number(grosirMinQty) || 0) : 0);
     
     if (image) {
       formData.append('image', image);
@@ -230,7 +230,7 @@ const ProductForm = () => {
                             type="number" 
                             className="form-control" 
                             value={grosirMinQty} 
-                            onChange={e => setGrosirMinQty(Math.max(1, parseInt(e.target.value) || 0))} 
+                            onChange={e => setGrosirMinQty(e.target.value)} 
                             min="1"
                             required
                           />
@@ -241,7 +241,7 @@ const ProductForm = () => {
                             type="number" 
                             className="form-control" 
                             value={grosirPricePerUnit} 
-                            onChange={e => setGrosirPricePerUnit(Math.max(0, parseInt(e.target.value) || 0))} 
+                            onChange={e => setGrosirPricePerUnit(e.target.value)} 
                             min="0"
                             required
                           />
