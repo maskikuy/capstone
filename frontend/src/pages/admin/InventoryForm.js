@@ -16,7 +16,6 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
     stock_unit: 'pcs',
     low_stock_threshold: 0,
     warehouse_stock: 0,
-    real_stock: 0,
     is_available: true
   });
   const [categories, setCategories] = useState([]);
@@ -24,7 +23,18 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
 
   useEffect(() => {
     if (item) {
-      setForm({ ...form, ...item });
+      setForm(prev => ({
+        ...prev,
+        ...item,
+        selling_price: Number(item.selling_price) || 0,
+        initial_cost: Number(item.initial_cost) || 0,
+        retail_price_per_unit: Number(item.retail_price_per_unit) || 0,
+        grosir_price_per_unit: Number(item.grosir_price_per_unit) || 0,
+        grosir_min_qty: Number(item.grosir_min_qty) || 0,
+        stock_available: Number(item.stock_available) || 0,
+        low_stock_threshold: Number(item.low_stock_threshold) || 0,
+        warehouse_stock: Number(item.warehouse_stock) || 0,
+      }));
     }
     // eslint-disable-next-line
   }, [item]);
@@ -75,7 +85,6 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
       stock_available: Number(form.stock_available) || 0,
       low_stock_threshold: Number(form.low_stock_threshold) || 0,
       warehouse_stock: Number(form.warehouse_stock) || 0,
-      real_stock: Number(form.real_stock) || 0,
       category_id: form.category_id ? (Number(form.category_id) || null) : null,
       is_available: !!form.is_available
     };
@@ -166,14 +175,6 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
               <label className="form-label">Stok Gudang</label>
               <div className="input-group">
                 <input name="warehouse_stock" type="number" value={form.warehouse_stock} onChange={handleChange} className="form-control" min="0" step={form.stock_unit === 'gram' ? '1' : '1'} />
-                <span className="input-group-text">{form.stock_unit === 'gram' ? 'gram' : 'pcs'}</span>
-              </div>
-            </div>
-
-            <div className="col-md-4 mb-2">
-              <label className="form-label">Stok Real</label>
-              <div className="input-group">
-                <input name="real_stock" type="number" value={form.real_stock} onChange={handleChange} className="form-control" min="0" step={form.stock_unit === 'gram' ? '1' : '1'} />
                 <span className="input-group-text">{form.stock_unit === 'gram' ? 'gram' : 'pcs'}</span>
               </div>
             </div>

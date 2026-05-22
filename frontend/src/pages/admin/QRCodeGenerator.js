@@ -5,9 +5,8 @@ const QRCodeGenerator = () => {
   const [startNum, setStartNum] = useState(1);
   const [endNum, setEndNum] = useState(10);
   
-  // Deteksi URL saat ini, tapi biarkan bisa diedit admin (penting untuk IP Address)
-  // Default: http://192.168.18.250:3000
-  const [baseUrl, setBaseUrl] = useState('http://192.168.18.250:3000');
+  // Default base URL disesuaikan dengan IP config lokal mesin ini
+  const [baseUrl, setBaseUrl] = useState('http://192.168.10.97:3000');
 
   const componentRef = useRef();
 
