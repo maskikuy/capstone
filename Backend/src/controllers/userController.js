@@ -44,6 +44,10 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req, res) => {
     const userData = req.body;
+    if (userData.role === 'admin') {
+        logger.warn('Attempted to create user with admin role, which is forbidden');
+        return res.status(400).json({ error: 'Role admin tidak boleh lebih dari satu. Hanya role kasir yang diperbolehkan.' });
+    }
     const conn = await db.getConnection();
     logger.debug('Database connection established');
     try {
@@ -76,6 +80,25 @@ export const updateUser = async (req, res) => {
             logger.warn(`Invalid user data for update: ${JSON.stringify(userData)}`);
             await conn.rollback();
             return res.status(400).json({ error: 'Username dan Role wajib diisi' });
+        }
+
+        const existingUser = await userModel.getUserById(conn, userId);
+        if (!existingUser) {
+            logger.warn(`User not found to update with ID: ${userId}`);
+            await conn.rollback();
+            return res.status(404).json({ error: 'User Not Found' });
+        }
+
+        // Validasi Role: admin tidak boleh lebih dari satu, dan role admin yang ada tidak boleh diubah
+        if (existingUser.role === 'admin' && userData.role !== 'admin') {
+            logger.warn(`Attempted to change admin user's role: ${existingUser.username}`);
+            await conn.rollback();
+            return res.status(400).json({ error: 'Role Super Admin tidak boleh diubah.' });
+        }
+        if (existingUser.role !== 'admin' && userData.role === 'admin') {
+            logger.warn(`Attempted to promote user ${existingUser.username} to admin role`);
+            await conn.rollback();
+            return res.status(400).json({ error: 'Role admin tidak boleh lebih dari satu. Hanya role kasir yang diperbolehkan.' });
         }
         
         // Siapkan data untuk update

@@ -153,12 +153,17 @@ const Users = () => {
                   className="form-select" 
                   value={role} 
                   onChange={e => setRole(e.target.value)}
-                  // Disable ganti role jika targetnya Super Admin (harus tetap admin)
-                  disabled={isEditing && username === 'Super Admin'}
+                  // Disable ganti role karena admin tidak boleh lebih dari satu (hanya kasir)
+                  disabled={true}
                 >
                   <option value="kitchen">Kasir</option>
                   <option value="admin">Admin</option>
                 </select>
+                <small className="form-text text-muted">
+                  {isEditing && username === 'Super Admin' 
+                    ? 'Role Super Admin tidak dapat diubah.' 
+                    : 'Hanya bisa menambahkan/mengelola pengguna dengan role Kasir.'}
+                </small>
               </div>
             </div>
             
