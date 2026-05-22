@@ -13499,3 +13499,15 @@
 {"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:23.800Z"}
 {"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:23.801Z"}
 {"context":"HTTP","duration":"4 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 4ms","method":"GET","timestamp":"2026-05-22T09:21:23.802Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:21:28.808Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:21:28.808Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:21:28.812Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:28.812Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:28.813Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 6ms","method":"GET","timestamp":"2026-05-22T09:21:28.814Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:21:45.980Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:21:45.981Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:21:45.984Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:45.985Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:45.986Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T09:21:45.987Z","url":"/api/order"}
