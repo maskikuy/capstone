@@ -103,21 +103,61 @@ const Menu = () => {
   const addToCart = () => {
     if (!selectedProduct) return;
 
-    const activeUnitPrice = getProductUnitPrice(selectedProduct, orderQty);
-    const variantsPrice = selectedVariants.reduce((total, v) => total + parseFloat(v.extra_price), 0);
-    const finalPrice = (activeUnitPrice + variantsPrice) * orderQty;
-
-    const newItem = {
-      tempId: Date.now(),
-      product: selectedProduct,
-      quantity: orderQty,
-      variants: selectedVariants,
-      notes: orderNotes,
-      totalPrice: finalPrice,
-      priceAtOrder: activeUnitPrice
+    // Helper functions to check identical items
+    const areVariantsEqual = (varList1, varList2) => {
+      const v1 = varList1 || [];
+      const v2 = varList2 || [];
+      if (v1.length !== v2.length) return false;
+      const ids1 = v1.map(v => v.id).sort();
+      const ids2 = v2.map(v => v.id).sort();
+      return ids1.every((id, idx) => id === ids2[idx]);
     };
 
-    const updatedCart = [...cart, newItem];
+    const areNotesEqual = (note1, note2) => {
+      return (note1 || '').trim().toLowerCase() === (note2 || '').trim().toLowerCase();
+    };
+
+    const existingIndex = cart.findIndex(item => 
+      item.product.id === selectedProduct.id &&
+      areVariantsEqual(item.variants, selectedVariants) &&
+      areNotesEqual(item.notes, orderNotes)
+    );
+
+    let updatedCart;
+    if (existingIndex > -1) {
+      // Item matching exists! Update quantity and recalculate price
+      updatedCart = [...cart];
+      const existingItem = updatedCart[existingIndex];
+      const newQty = existingItem.quantity + orderQty;
+      
+      const activeUnitPrice = getProductUnitPrice(selectedProduct, newQty);
+      const variantsPrice = selectedVariants.reduce((total, v) => total + parseFloat(v.extra_price), 0);
+      const finalPrice = (activeUnitPrice + variantsPrice) * newQty;
+
+      updatedCart[existingIndex] = {
+        ...existingItem,
+        quantity: newQty,
+        totalPrice: finalPrice,
+        priceAtOrder: activeUnitPrice
+      };
+    } else {
+      // New item
+      const activeUnitPrice = getProductUnitPrice(selectedProduct, orderQty);
+      const variantsPrice = selectedVariants.reduce((total, v) => total + parseFloat(v.extra_price), 0);
+      const finalPrice = (activeUnitPrice + variantsPrice) * orderQty;
+
+      const newItem = {
+        tempId: Date.now(),
+        product: selectedProduct,
+        quantity: orderQty,
+        variants: selectedVariants,
+        notes: orderNotes,
+        totalPrice: finalPrice,
+        priceAtOrder: activeUnitPrice
+      };
+      updatedCart = [...cart, newItem];
+    }
+
     setCart(updatedCart);
     localStorage.setItem('wow_cart', JSON.stringify(updatedCart));
     localStorage.setItem('wow_table', tableNumber);
