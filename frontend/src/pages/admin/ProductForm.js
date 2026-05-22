@@ -188,7 +188,15 @@ const ProductForm = () => {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Harga Dasar (Rp)</label>
-                <input type="number" className="form-control" value={basePrice} onChange={e => setBasePrice(e.target.value)} required />
+                <input 
+                  type="text" 
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className="form-control" 
+                  value={basePrice} 
+                  onChange={e => setBasePrice(e.target.value.replace(/[^0-9]/g, ''))} 
+                  required 
+                />
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Foto Menu</label>
@@ -227,22 +235,24 @@ const ProductForm = () => {
                         <div className="col-md-4 mb-3">
                           <label className="form-label small fw-bold text-secondary">Minimal Pembelian Grosir (pcs)</label>
                           <input 
-                            type="number" 
+                            type="text" 
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             className="form-control" 
                             value={grosirMinQty} 
-                            onChange={e => setGrosirMinQty(e.target.value)} 
-                            min="1"
+                            onChange={e => setGrosirMinQty(e.target.value.replace(/[^0-9]/g, ''))} 
                             required
                           />
                         </div>
                         <div className="col-md-4 mb-3">
                           <label className="form-label small fw-bold text-secondary">Harga Grosir per Unit (Rp)</label>
                           <input 
-                            type="number" 
+                            type="text" 
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             className="form-control" 
                             value={grosirPricePerUnit} 
-                            onChange={e => setGrosirPricePerUnit(e.target.value)} 
-                            min="0"
+                            onChange={e => setGrosirPricePerUnit(e.target.value.replace(/[^0-9]/g, ''))} 
                             required
                           />
                         </div>
