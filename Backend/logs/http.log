@@ -2399,3 +2399,5 @@
 {"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/inventory 304 - 6ms","method":"GET","timestamp":"2026-05-22T10:10:29.143Z","url":"/api/inventory"}
 {"context":"HTTP","duration":"12 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 12ms","method":"GET","timestamp":"2026-05-22T10:10:33.997Z","url":"/api/categories"}
 {"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 7ms","method":"GET","timestamp":"2026-05-22T10:10:34.008Z","url":"/api/categories"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 13ms","method":"GET","timestamp":"2026-05-22T10:13:22.415Z","url":"/api/categories"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 8ms","method":"GET","timestamp":"2026-05-22T10:13:22.425Z","url":"/api/categories"}

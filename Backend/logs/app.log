@@ -14033,3 +14033,15 @@
 {"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:10:34.005Z"}
 {"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:10:34.007Z"}
 {"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 7ms","method":"GET","timestamp":"2026-05-22T10:10:34.008Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:13:22.407Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:13:22.408Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:13:22.411Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:13:22.411Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:13:22.413Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 13ms","method":"GET","timestamp":"2026-05-22T10:13:22.415Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:13:22.417Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:13:22.418Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:13:22.420Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:13:22.421Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:13:22.423Z"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 8ms","method":"GET","timestamp":"2026-05-22T10:13:22.425Z","url":"/api/categories"}
