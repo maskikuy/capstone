@@ -2229,3 +2229,9 @@
 {"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 9ms","method":"GET","timestamp":"2026-05-22T08:40:16.194Z","url":"/api/product"}
 {"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 8ms","method":"GET","timestamp":"2026-05-22T08:40:16.203Z","url":"/api/order"}
 {"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 13ms","method":"GET","timestamp":"2026-05-22T08:40:16.210Z","url":"/api/product"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/inventory 304 - 7ms","method":"GET","timestamp":"2026-05-22T08:48:46.945Z","url":"/api/inventory"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 7ms","method":"GET","timestamp":"2026-05-22T08:48:46.954Z","url":"/api/categories"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/inventory 304 - 5ms","method":"GET","timestamp":"2026-05-22T08:48:46.962Z","url":"/api/inventory"}
+{"context":"HTTP","duration":"14 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 14ms","method":"GET","timestamp":"2026-05-22T08:48:46.979Z","url":"/api/categories"}
+{"context":"HTTP","duration":"4 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 4ms","method":"GET","timestamp":"2026-05-22T08:48:48.517Z","url":"/api/categories"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 8ms","method":"GET","timestamp":"2026-05-22T08:48:48.555Z","url":"/api/categories"}
