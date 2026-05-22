@@ -21,6 +21,7 @@ const Login = () => {
       const normalizedRole = user.role === 'kitchen' ? 'kasir' : user.role;
       localStorage.setItem('role', normalizedRole);
       localStorage.setItem('username', user.username);
+      localStorage.setItem('userId', user.id);
       notifySuccess('Login Berhasil! Selamat datang.');
 
       // Redirect sesuai role

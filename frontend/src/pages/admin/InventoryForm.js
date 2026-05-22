@@ -65,12 +65,15 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const grosirUnit = form.stock_unit === 'gram' ? 'gram' : 'pcs';
+    const minGrosirQty = form.stock_unit === 'gram' ? 5 : 5;
+
     // Basic validation
     if (!form.name || form.name.trim() === '') return notifyError('Nama wajib diisi');
     if (Number(form.selling_price) < 0) return notifyError('Harga jual tidak valid');
     if (Number(form.stock_available) < 0) return notifyError('Stok tidak boleh negatif');
     if (form.price_type === 'grosir') {
-      if (Number(form.grosir_min_qty) < 5) return notifyError('Minimal pembelian grosir harus minimal 5 pcs');
+      if (Number(form.grosir_min_qty) < minGrosirQty) return notifyError(`Minimal pembelian grosir harus minimal ${minGrosirQty} ${grosirUnit}`);
       if (Number(form.grosir_price_per_unit) <= 0) return notifyError('Harga grosir per unit tidak valid');
     }
 
@@ -155,8 +158,11 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
           {form.price_type === 'grosir' && (
             <div className="row">
               <div className="col-md-4 mb-2">
-                <label className="form-label">Minimal Grosir (pcs)</label>
-                <input name="grosir_min_qty" type="number" value={form.grosir_min_qty} onChange={handleChange} className="form-control" min="5" step="1" />
+                <label className="form-label">Minimal Grosir ({form.stock_unit === 'gram' ? 'gram' : 'pcs'})</label>
+                <div className="input-group">
+                  <input name="grosir_min_qty" type="number" value={form.grosir_min_qty} onChange={handleChange} className="form-control" min={form.stock_unit === 'gram' ? 5 : 5} step="1" />
+                  <span className="input-group-text">{form.stock_unit === 'gram' ? 'gram' : 'pcs'}</span>
+                </div>
               </div>
               <div className="col-md-4 mb-2">
                 <label className="form-label">Harga Grosir per Unit</label>
@@ -164,7 +170,7 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
               </div>
               <div className="col-md-4 mb-2 d-flex align-items-end">
                 <div className="alert alert-info mb-0 py-2">
-                  Grosir aktif mulai {form.grosir_min_qty || 5} pcs. Setiap pembelian grosir dapat diskon Rp 2.000 per unit di atas 5 pcs.
+                  Grosir aktif mulai {form.grosir_min_qty || 5} {form.stock_unit === 'gram' ? 'gram' : 'pcs'}. Setiap pembelian grosir dapat diskon Rp 2.000 per unit di atas 5 {form.stock_unit === 'gram' ? 'gram' : 'pcs'}.
                 </div>
               </div>
             </div>

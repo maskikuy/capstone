@@ -14045,3 +14045,97 @@
 {"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:13:22.421Z"}
 {"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:13:22.423Z"}
 {"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 8ms","method":"GET","timestamp":"2026-05-22T10:13:22.425Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:15:44.345Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:15:44.346Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:15:44.348Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:15:44.349Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:15:44.351Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 6ms","method":"GET","timestamp":"2026-05-22T10:15:44.352Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:15:44.355Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:15:44.356Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:15:44.360Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:15:44.362Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:15:44.364Z"}
+{"context":"HTTP","duration":"10 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 10ms","method":"GET","timestamp":"2026-05-22T10:15:44.365Z","url":"/api/categories"}
+{"context":"InventoryModel","level":"debug","message":"Fetching all inventories","timestamp":"2026-05-22T10:16:28.256Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:16:28.259Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:16:28.260Z"}
+{"context":"InventoryModel","level":"info","message":"Fetched 8 inventory items","timestamp":"2026-05-22T10:16:28.263Z"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/inventory 304 - 9ms","method":"GET","timestamp":"2026-05-22T10:16:28.266Z","url":"/api/inventory"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:16:28.268Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:16:28.269Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:16:28.270Z"}
+{"context":"HTTP","duration":"14 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 14ms","method":"GET","timestamp":"2026-05-22T10:16:28.274Z","url":"/api/categories"}
+{"context":"InventoryModel","level":"debug","message":"Fetching all inventories","timestamp":"2026-05-22T10:16:28.276Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:16:28.278Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:16:28.279Z"}
+{"context":"InventoryModel","level":"info","message":"Fetched 8 inventory items","timestamp":"2026-05-22T10:16:28.281Z"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/inventory 304 - 8ms","method":"GET","timestamp":"2026-05-22T10:16:28.284Z","url":"/api/inventory"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:16:28.286Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:16:28.288Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:16:28.290Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 13ms","method":"GET","timestamp":"2026-05-22T10:16:28.291Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:16:34.686Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:16:34.687Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:16:34.690Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:16:34.691Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:16:34.692Z"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 8ms","method":"GET","timestamp":"2026-05-22T10:16:34.694Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:16:34.701Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:16:34.702Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:16:34.706Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:16:34.709Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:16:34.711Z"}
+{"context":"HTTP","duration":"12 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 12ms","method":"GET","timestamp":"2026-05-22T10:16:34.713Z","url":"/api/categories"}
+{"level":"info","message":"Token verified for user ID: 1","module":"authMiddleware","timestamp":"2026-05-22T10:16:56.713Z"}
+{"context":"InventoryModel","level":"debug","message":"Updating inventory 1: {\"name\":\"Beras Premium 5kg\",\"category_id\":1,\"selling_price\":50000,\"initial_cost\":35000,\"price_type\":\"grosir\",\"retail_price_per_unit\":50000,\"grosir_price_per_unit\":45000,\"grosir_min_qty\":10,\"stock_available\":20,\"stock_unit\":\"gram\",\"low_stock_threshold\":2,\"warehouse_stock\":30,\"is_available\":true,\"id\":1,\"real_stock\":\"20.000\",\"created_at\":\"2026-05-22T08:31:25.000Z\",\"updated_at\":\"2026-05-22T08:33:41.000Z\"}","timestamp":"2026-05-22T10:16:56.716Z"}
+{"context":"InventoryModel","level":"info","message":"Inventory 1 updated","timestamp":"2026-05-22T10:16:56.720Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"PUT /api/inventory/1 200 - 13ms","method":"PUT","timestamp":"2026-05-22T10:16:56.723Z","url":"/api/inventory/1"}
+{"context":"InventoryModel","level":"debug","message":"Fetching all inventories","timestamp":"2026-05-22T10:16:56.735Z"}
+{"context":"InventoryModel","level":"info","message":"Fetched 8 inventory items","timestamp":"2026-05-22T10:16:56.738Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/inventory 200 - 6ms","method":"GET","timestamp":"2026-05-22T10:16:56.741Z","url":"/api/inventory"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:16:59.654Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:16:59.655Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:16:59.658Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:16:59.659Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:16:59.661Z"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 9ms","method":"GET","timestamp":"2026-05-22T10:16:59.663Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:16:59.666Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:16:59.667Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:16:59.671Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:16:59.672Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:16:59.676Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 13ms","method":"GET","timestamp":"2026-05-22T10:16:59.678Z","url":"/api/categories"}
+{"level":"info","message":"Token verified for user ID: 1","module":"authMiddleware","timestamp":"2026-05-22T10:17:06.375Z"}
+{"context":"InventoryModel","level":"debug","message":"Updating inventory 1: {\"name\":\"Beras Premium 5kg\",\"category_id\":1,\"selling_price\":50000,\"initial_cost\":35000,\"price_type\":\"retail\",\"retail_price_per_unit\":50000,\"grosir_price_per_unit\":45000,\"grosir_min_qty\":10,\"stock_available\":20,\"stock_unit\":\"gram\",\"low_stock_threshold\":2,\"warehouse_stock\":30,\"is_available\":true,\"id\":1,\"real_stock\":\"20.000\",\"created_at\":\"2026-05-22T08:31:25.000Z\",\"updated_at\":\"2026-05-22T10:16:56.000Z\"}","timestamp":"2026-05-22T10:17:06.377Z"}
+{"context":"InventoryModel","level":"info","message":"Inventory 1 updated","timestamp":"2026-05-22T10:17:06.380Z"}
+{"context":"HTTP","duration":"10 ms","ip":"::1","level":"http","message":"PUT /api/inventory/1 200 - 10ms","method":"PUT","timestamp":"2026-05-22T10:17:06.382Z","url":"/api/inventory/1"}
+{"context":"InventoryModel","level":"debug","message":"Fetching all inventories","timestamp":"2026-05-22T10:17:06.400Z"}
+{"context":"InventoryModel","level":"info","message":"Fetched 8 inventory items","timestamp":"2026-05-22T10:17:06.403Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/inventory 200 - 6ms","method":"GET","timestamp":"2026-05-22T10:17:06.405Z","url":"/api/inventory"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:18:28.552Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:18:28.553Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:18:28.557Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:18:28.558Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:18:28.560Z"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 9ms","method":"GET","timestamp":"2026-05-22T10:18:28.563Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:18:28.565Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T10:18:28.568Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T10:18:28.572Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T10:18:28.574Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:18:28.578Z"}
+{"context":"HTTP","duration":"15 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 15ms","method":"GET","timestamp":"2026-05-22T10:18:28.579Z","url":"/api/categories"}
+{"level":"info","message":"Token verified for user ID: 1","module":"authMiddleware","timestamp":"2026-05-22T10:21:32.137Z"}
+{"context":"UserController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:21:32.147Z"}
+{"context":"UserModel","level":"debug","message":"Fetching all users from the database","timestamp":"2026-05-22T10:21:32.150Z"}
+{"context":"UserModel","level":"info","message":"Fetched 2 users","timestamp":"2026-05-22T10:21:32.157Z"}
+{"context":"UserController","level":"debug","message":"Fetching all users","timestamp":"2026-05-22T10:21:32.162Z"}
+{"context":"UserController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:21:32.164Z"}
+{"context":"HTTP","duration":"55 ms","ip":"::1","level":"http","message":"GET /api/user 200 - 55ms","method":"GET","timestamp":"2026-05-22T10:21:32.165Z","url":"/api/user"}
+{"level":"info","message":"Token verified for user ID: 1","module":"authMiddleware","timestamp":"2026-05-22T10:21:32.176Z"}
+{"context":"UserController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:21:32.178Z"}
+{"context":"UserModel","level":"debug","message":"Fetching all users from the database","timestamp":"2026-05-22T10:21:32.178Z"}
+{"context":"UserModel","level":"info","message":"Fetched 2 users","timestamp":"2026-05-22T10:21:32.184Z"}
+{"context":"UserController","level":"debug","message":"Fetching all users","timestamp":"2026-05-22T10:21:32.185Z"}
+{"context":"UserController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:21:32.190Z"}
+{"context":"HTTP","duration":"22 ms","ip":"::1","level":"http","message":"GET /api/user 304 - 22ms","method":"GET","timestamp":"2026-05-22T10:21:32.195Z","url":"/api/user"}

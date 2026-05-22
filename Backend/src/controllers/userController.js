@@ -95,7 +95,12 @@ export const updateUser = async (req, res) => {
 };
 
 export const deleteUser = async (req, res) => {
-    const userId = req.params.id;
+    const userId = Number(req.params.id);
+    const currentUserId = Number(req.user.id);
+    if (userId === currentUserId) {
+        logger.warn(`User ${currentUserId} attempted to delete own account`);
+        return res.status(403).json({ error: 'Tidak boleh menghapus akun sendiri.' });
+    }
     const conn = await db.getConnection();
     logger.debug('Database connection established');
     try {

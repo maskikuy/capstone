@@ -68,7 +68,9 @@ const Inventory = () => {
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2>Kelola Inventori</h2>
-        <button className="btn btn-primary" onClick={handleCreate}>+ Tambah Inventori</button>
+        {!showForm && (
+          <button className="btn btn-primary" onClick={handleCreate}>+ Tambah Inventori</button>
+        )}
       </div>
 
       {showForm && <InventoryForm item={editing} onSaved={onSaved} onCancel={() => {setShowForm(false); setEditing(null);}} />}

@@ -12,8 +12,9 @@ const Users = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
 
-  // Ambil username yang sedang login sekarang
+  // Ambil user yang sedang login sekarang
   const currentLoggedInUser = localStorage.getItem('username');
+  const currentLoggedInUserId = Number(localStorage.getItem('userId'));
 
   useEffect(() => {
     fetchUsers();
@@ -76,6 +77,9 @@ const Users = () => {
     // Jika target user adalah "Super Admin", tolak mutlak (siapapun yang login).
     if (user.username === 'Super Admin') {
       return showAlert('Akun Super Admin TIDAK BOLEH dihapus demi keamanan sistem!', '', 'error');
+    }
+    if (user.id === currentLoggedInUserId) {
+      return showAlert('Anda tidak bisa menghapus akun Anda sendiri.', '', 'error');
     }
 
     const isConfirmed = await confirmAction(
@@ -193,7 +197,7 @@ const Users = () => {
                     <button 
                       onClick={() => handleDelete(user)} 
                       className="btn btn-sm btn-outline-danger"
-                      disabled={user.username === 'Super Admin'}
+                      disabled={user.username === 'Super Admin' || user.id === currentLoggedInUserId}
                     >
                       <i className="bi bi-trash"></i> Hapus
                     </button>
