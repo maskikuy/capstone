@@ -25,12 +25,17 @@ const Login = () => {
       notifySuccess('Login Berhasil! Selamat datang.');
 
       // Redirect sesuai role
-      if (normalizedRole === 'admin') {
-        navigate('/admin/dashboard');
-      } else if (normalizedRole === 'kasir') {
-        navigate('/kasir/dashboard');
-      } else {
-        navigate('/');
+      try {
+        if (normalizedRole === 'admin') {
+          navigate('/admin/dashboard');
+        } else if (normalizedRole === 'kasir') {
+          navigate('/kasir/dashboard');
+        } else {
+          navigate('/');
+        }
+      } catch (navErr) {
+        console.error('Navigation error:', navErr);
+        notifyError('Gagal navigasi ke halaman. Silakan refresh browser.');
       }
     } catch (err) {
       notifyError(err.response?.data?.error || 'Login gagal');

@@ -8,7 +8,7 @@ const Users = () => {
   // State untuk Form
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('kasir'); 
+  const [role, setRole] = useState('kitchen'); 
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
 
@@ -35,6 +35,14 @@ const Users = () => {
       // Validasi Tambahan: Jangan biarkan username diubah menjadi 'Super Admin' oleh user lain
       if (username === 'Super Admin' && currentLoggedInUser !== 'Super Admin') {
         return showAlert('Akses Ditolak', 'Anda tidak bisa mengubah user menjadi Super Admin', 'error');
+      }
+
+      // Validasi: Username dan Role wajib diisi
+      if (!username.trim()) {
+        return notifyError('Username wajib diisi');
+      }
+      if (!role || role.trim() === '') {
+        return notifyError('Role wajib dipilih');
       }
 
       if (isEditing) {
@@ -66,7 +74,9 @@ const Users = () => {
     }
 
     setUsername(user.username);
-    setRole(user.role === 'kitchen' ? 'kasir' : user.role);
+    // Role default ke 'kitchen', jika 'admin' set 'admin'
+    const userRole = user.role === 'admin' ? 'admin' : 'kitchen';
+    setRole(userRole);
     setPassword(''); 
     setIsEditing(true);
     setEditId(user.id);
@@ -101,7 +111,7 @@ const Users = () => {
   const resetForm = () => {
     setUsername('');
     setPassword('');
-    setRole('kasir');
+    setRole('kitchen');
     setIsEditing(false);
     setEditId(null);
   };
@@ -146,7 +156,7 @@ const Users = () => {
                   // Disable ganti role jika targetnya Super Admin (harus tetap admin)
                   disabled={isEditing && username === 'Super Admin'}
                 >
-                  <option value="kasir">Kasir</option>
+                  <option value="kitchen">Kasir</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
@@ -185,9 +195,13 @@ const Users = () => {
                     {user.username === 'Super Admin' && <span className="ms-2 badge bg-dark">UTAMA</span>}
                   </td>
                   <td>
-                    <span className={`badge ${user.role === 'admin' ? 'bg-danger' : 'bg-info text-dark'}`}>
-                      {(user.role === 'kitchen' ? 'kasir' : user.role).toUpperCase()}
-                    </span>
+                    {user.role ? (
+                      <span className={`badge ${user.role === 'admin' ? 'bg-danger' : 'bg-info text-dark'}`}>
+                        {(user.role === 'kitchen' ? 'kasir' : user.role).toUpperCase()}
+                      </span>
+                    ) : (
+                      <span className="badge bg-secondary">NO ROLE</span>
+                    )}
                   </td>
                   <td>
                     <button onClick={() => handleEdit(user)} className="btn btn-sm btn-outline-primary me-2">

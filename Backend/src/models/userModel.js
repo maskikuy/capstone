@@ -32,14 +32,31 @@ export const createUser = async (conn, userData) => {
 
 export const updateUser = async (conn, userId, userData) => {
     logger.debug(`Updating user with ID: ${userId} with data: ${JSON.stringify(userData)}`);
-    const sql = 'UPDATE users SET username = ?, password = ?, role = ? WHERE id = ?';
-    const [result] = await conn.execute(sql, [userData.username, userData.password, userData.role, userId]);
-    if (result.affectedRows === 0) {
-        logger.warn(`No user found to update with ID: ${userId}`);
-        return false;
+    
+    // Check apakah password ada di userData
+    const hasPassword = userData.hasOwnProperty('password') && userData.password;
+    
+    if (hasPassword) {
+        // Update dengan password baru
+        const sql = 'UPDATE users SET username = ?, password = ?, role = ? WHERE id = ?';
+        const [result] = await conn.execute(sql, [userData.username, userData.password, userData.role, userId]);
+        if (result.affectedRows === 0) {
+            logger.warn(`No user found to update with ID: ${userId}`);
+            return false;
+        }
+        logger.info(`User with ID: ${userId} updated successfully (with password)`);
+        return true;
+    } else {
+        // Update tanpa password
+        const sql = 'UPDATE users SET username = ?, role = ? WHERE id = ?';
+        const [result] = await conn.execute(sql, [userData.username, userData.role, userId]);
+        if (result.affectedRows === 0) {
+            logger.warn(`No user found to update with ID: ${userId}`);
+            return false;
+        }
+        logger.info(`User with ID: ${userId} updated successfully (without password)`);
+        return true;
     }
-    logger.info(`User with ID: ${userId} updated successfully`);
-    return true;
 }
 
 export const deleteUser = async (conn, userId) => {

@@ -71,11 +71,27 @@ export const updateUser = async (req, res) => {
     logger.debug('Database connection established');
     await conn.beginTransaction();
     try {
-        if (userData.password) {
-            userData.password = await bcrypt.hash(userData.password, 10);
+        // Validasi required fields
+        if (!userData.username || !userData.role) {
+            logger.warn(`Invalid user data for update: ${JSON.stringify(userData)}`);
+            await conn.rollback();
+            return res.status(400).json({ error: 'Username dan Role wajib diisi' });
+        }
+        
+        // Siapkan data untuk update
+        const updateData = {
+            username: userData.username.trim(),
+            role: userData.role.trim()
+        };
+        
+        // Jika password diberikan dan tidak kosong, hash dan include di update
+        if (userData.password && userData.password.trim()) {
+            updateData.password = await bcrypt.hash(userData.password, 10);
             logger.debug('User password hashed for update');
         }
-        const success = await userModel.updateUser(conn, userId, userData);
+        // Jika password kosong, jangan include di object (tidak akan di-update)
+        
+        const success = await userModel.updateUser(conn, userId, updateData);
         if (!success) {
             logger.warn(`User not found to update with ID: ${userId}`);
             await conn.rollback();
