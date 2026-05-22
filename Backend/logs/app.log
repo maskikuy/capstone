@@ -12768,3 +12768,6 @@
 {"context":"InventoryModel","level":"debug","message":"Fetching all inventories","timestamp":"2026-05-22T08:26:30.544Z"}
 {"context":"InventoryController","level":"error","message":"Error fetching inventories: Table 'wow_db.inventories' doesn't exist","timestamp":"2026-05-22T08:26:30.546Z"}
 {"context":"HTTP","duration":"3 ms","ip":"::1","level":"error","message":"GET /api/inventory 500 - 3ms","method":"GET","timestamp":"2026-05-22T08:26:30.547Z","url":"/api/inventory"}
+{"context":"InventoryModel","level":"debug","message":"Fetching all inventories","timestamp":"2026-05-22T08:30:36.925Z"}
+{"context":"InventoryController","level":"error","message":"Error fetching inventories: Table 'wow_db.inventories' doesn't exist","timestamp":"2026-05-22T08:30:36.927Z"}
+{"context":"HTTP","duration":"3 ms","ip":"::1","level":"error","message":"GET /api/inventory 500 - 3ms","method":"GET","timestamp":"2026-05-22T08:30:36.928Z","url":"/api/inventory"}
