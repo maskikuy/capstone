@@ -83,6 +83,8 @@ const Inventory = () => {
                   <th>Nama</th>
                   <th>Kategori</th>
                   <th>Harga Jual</th>
+                  <th>Tipe Harga</th>
+                  <th>Harga Grosir</th>
                   <th>Stok</th>
                   <th>Status</th>
                   <th>Aksi</th>
@@ -95,6 +97,12 @@ const Inventory = () => {
                     <td>{it.name}</td>
                       <td>{(categories.find(c => c.id === it.category_id)?.name) || (it.category_id ? it.category_id : '-')}</td>
                     <td>Rp {parseFloat(it.selling_price || 0).toLocaleString('id-ID')}</td>
+                    <td>{it.price_type === 'grosir' ? 'Grosir' : 'Retail'}</td>
+                    <td>
+                      {it.price_type === 'grosir'
+                        ? `Rp ${parseFloat(it.grosir_price_per_unit || 0).toLocaleString('id-ID')} (min ${it.grosir_min_qty || 5} pcs)`
+                        : '-'}
+                    </td>
                     <td>
                       {it.stock_unit === 'gram'
                         ? `${Math.round(Number(it.stock_available || 0))} gram`

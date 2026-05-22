@@ -34,6 +34,12 @@ export const getInventoryById = async (req, res) => {
 
 export const createInventory = async (req, res) => {
     const data = req.body;
+    if (data.price_type === 'grosir') {
+        data.grosir_min_qty = Math.max(5, Number(data.grosir_min_qty) || 5);
+        if (!data.grosir_price_per_unit || Number(data.grosir_price_per_unit) <= 0) {
+            data.grosir_price_per_unit = Math.max(0, Number(data.selling_price || 0) - 2000);
+        }
+    }
     const conn = await db.getConnection();
     try {
         await conn.beginTransaction();
@@ -52,6 +58,12 @@ export const createInventory = async (req, res) => {
 export const updateInventory = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
+    if (data.price_type === 'grosir') {
+        data.grosir_min_qty = Math.max(5, Number(data.grosir_min_qty) || 5);
+        if (!data.grosir_price_per_unit || Number(data.grosir_price_per_unit) <= 0) {
+            data.grosir_price_per_unit = Math.max(0, Number(data.selling_price || 0) - 2000);
+        }
+    }
     const conn = await db.getConnection();
     try {
         await conn.beginTransaction();

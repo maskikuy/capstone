@@ -59,7 +59,10 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
     if (!form.name || form.name.trim() === '') return notifyError('Nama wajib diisi');
     if (Number(form.selling_price) < 0) return notifyError('Harga jual tidak valid');
     if (Number(form.stock_available) < 0) return notifyError('Stok tidak boleh negatif');
-    if (form.price_type === 'grosir' && Number(form.grosir_min_qty) <= 0) return notifyError('Minimal pembelian grosir wajib diisi');
+    if (form.price_type === 'grosir') {
+      if (Number(form.grosir_min_qty) < 5) return notifyError('Minimal pembelian grosir harus minimal 5 pcs');
+      if (Number(form.grosir_price_per_unit) <= 0) return notifyError('Harga grosir per unit tidak valid');
+    }
 
     // Prepare payload: ensure numeric types
     const payload = {
@@ -113,6 +116,13 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
               ))}
             </select>
           </div>
+          <div className="mb-2">
+            <label className="form-label">Tipe Harga</label>
+            <select name="price_type" value={form.price_type} onChange={handleChange} className="form-select">
+              <option value="retail">Retail</option>
+              <option value="grosir">Grosir</option>
+            </select>
+          </div>
           <div className="row">
             <div className="col-md-4 mb-2">
               <label className="form-label">Harga Jual</label>
@@ -133,6 +143,23 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
               </select>
             </div>
           </div>
+          {form.price_type === 'grosir' && (
+            <div className="row">
+              <div className="col-md-4 mb-2">
+                <label className="form-label">Minimal Grosir (pcs)</label>
+                <input name="grosir_min_qty" type="number" value={form.grosir_min_qty} onChange={handleChange} className="form-control" min="5" step="1" />
+              </div>
+              <div className="col-md-4 mb-2">
+                <label className="form-label">Harga Grosir per Unit</label>
+                <input name="grosir_price_per_unit" type="number" value={form.grosir_price_per_unit} onChange={handleChange} className="form-control" min="0" step="0.01" />
+              </div>
+              <div className="col-md-4 mb-2 d-flex align-items-end">
+                <div className="alert alert-info mb-0 py-2">
+                  Grosir aktif mulai {form.grosir_min_qty || 5} pcs. Setiap pembelian grosir dapat diskon Rp 2.000 per unit di atas 5 pcs.
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="row">
             <div className="col-md-4 mb-2">

@@ -2219,3 +2219,13 @@
 {"context":"HTTP","duration":"18 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 18ms","method":"GET","timestamp":"2026-05-22T08:39:17.606Z","url":"/api/categories"}
 {"context":"HTTP","duration":"23 ms","ip":"::1","level":"http","message":"GET /api/inventory 304 - 23ms","method":"GET","timestamp":"2026-05-22T08:39:17.629Z","url":"/api/inventory"}
 {"context":"HTTP","duration":"32 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 32ms","method":"GET","timestamp":"2026-05-22T08:39:17.641Z","url":"/api/categories"}
+{"context":"HTTP","duration":"12 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 12ms","method":"GET","timestamp":"2026-05-22T08:39:58.075Z","url":"/api/categories"}
+{"context":"HTTP","duration":"14 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 14ms","method":"GET","timestamp":"2026-05-22T08:39:58.092Z","url":"/api/categories"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 9ms","method":"GET","timestamp":"2026-05-22T08:40:02.859Z","url":"/api/order"}
+{"context":"HTTP","duration":"11 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 11ms","method":"GET","timestamp":"2026-05-22T08:40:02.863Z","url":"/api/product"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 8ms","method":"GET","timestamp":"2026-05-22T08:40:02.872Z","url":"/api/order"}
+{"context":"HTTP","duration":"10 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 10ms","method":"GET","timestamp":"2026-05-22T08:40:02.876Z","url":"/api/product"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T08:40:16.190Z","url":"/api/order"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 9ms","method":"GET","timestamp":"2026-05-22T08:40:16.194Z","url":"/api/product"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 8ms","method":"GET","timestamp":"2026-05-22T08:40:16.203Z","url":"/api/order"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 13ms","method":"GET","timestamp":"2026-05-22T08:40:16.210Z","url":"/api/product"}
