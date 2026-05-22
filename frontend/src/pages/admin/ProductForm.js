@@ -24,7 +24,7 @@ const ProductForm = () => {
   // 2. Gunakan useCallback untuk fetchCategories
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await api.get('/categories');
+      const res = await api.get('/categories?type=menu');
       setCategories(res.data);
     } catch (err) {
       console.error("Gagal ambil kategori", err);

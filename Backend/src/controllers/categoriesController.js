@@ -8,8 +8,9 @@ export const getAllCategories = async (req, res) => {
     const conn = await db.getConnection();
     logger.debug('Database connection established');
     try{
-        const categories = await categoriesModel.getAllCategories(conn);
-        logger.debug('Fetching all categories');
+        const { type } = req.query;
+        const categories = await categoriesModel.getAllCategories(conn, type);
+        logger.debug(`Fetching categories with type filter: ${type || 'none'}`);
         res.status(200).json(categories);
     } catch (error) {
         logger.error(`Error fetching all categories: ${error.message}`);

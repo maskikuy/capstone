@@ -56,7 +56,7 @@ const Menu = () => {
     try {
       const [prodRes, catRes, varRes] = await Promise.all([
         api.get('/product'), // <-- PERUBAHAN 1: Ambil SEMUA data (jangan difilter is_available di sini)
-        api.get('/categories'),
+        api.get('/categories?type=menu'),
         api.get('/product-variant')
       ]);
       setProducts(prodRes.data); 

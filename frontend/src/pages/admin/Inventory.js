@@ -26,7 +26,7 @@ const Inventory = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await api.get('/categories');
+        const res = await api.get('/categories?type=inventory');
         setCategories(res.data || []);
       } catch (err) {
         console.error('Gagal ambil kategori', err);

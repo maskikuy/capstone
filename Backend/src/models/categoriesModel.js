@@ -2,10 +2,15 @@ import baseLogger from '../utils/logger.js';
 
 const logger = baseLogger.child({ context: 'CategoriesModel' });
 
-export const getAllCategories = async (conn) => {
-    logger.debug('Fetching all categories from the database');
-    const sql = 'SELECT * FROM categories';
-    const [result] = await conn.execute(sql);
+export const getAllCategories = async (conn, type) => {
+    logger.debug(`Fetching categories from the database (type: ${type || 'all'})`);
+    let sql = 'SELECT * FROM categories';
+    let params = [];
+    if (type) {
+        sql += ' WHERE type = ?';
+        params.push(type);
+    }
+    const [result] = await conn.execute(sql, params);
     logger.info(`Fetched ${result.length} categories`);
     return result;
 }
@@ -24,16 +29,16 @@ export const getCategoryById = async (conn, categoryId) => {
 
 export const createCategory = async (conn, categoryData) => {
     logger.debug(`Creating new category with data: ${JSON.stringify(categoryData)}`);
-    const sql = 'INSERT INTO categories (name) VALUES (?)';
-    const [result] = await conn.execute(sql, [categoryData.name]);
+    const sql = 'INSERT INTO categories (name, type) VALUES (?, ?)';
+    const [result] = await conn.execute(sql, [categoryData.name, categoryData.type || 'menu']);
     logger.info(`Category created with ID: ${result.insertId}`);
     return result.insertId;
 }
 
 export const updateCategory = async (conn, categoryId, categoryData) => {
     logger.debug(`Updating category with ID: ${categoryId} with data: ${JSON.stringify(categoryData)}`);
-    const sql = 'UPDATE categories SET name = ? WHERE id = ?';
-    const [result] = await conn.execute(sql, [categoryData.name, categoryId]);
+    const sql = 'UPDATE categories SET name = ?, type = ? WHERE id = ?';
+    const [result] = await conn.execute(sql, [categoryData.name, categoryData.type || 'menu', categoryId]);
     if (result.affectedRows === 0) {
         logger.warn(`No category found to update with ID: ${categoryId}`);
         return false;
