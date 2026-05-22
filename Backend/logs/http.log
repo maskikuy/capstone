@@ -2591,3 +2591,5 @@
 {"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 6ms","method":"GET","timestamp":"2026-05-22T11:28:49.809Z","url":"/api/order"}
 {"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T11:28:54.809Z","url":"/api/order"}
 {"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T11:28:59.807Z","url":"/api/order"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T11:29:04.828Z","url":"/api/order"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 6ms","method":"GET","timestamp":"2026-05-22T11:29:09.805Z","url":"/api/order"}
