@@ -8,7 +8,7 @@ const Users = () => {
   // State untuk Form
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('kitchen'); 
+  const [role, setRole] = useState('kasir'); 
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
 
@@ -65,7 +65,7 @@ const Users = () => {
     }
 
     setUsername(user.username);
-    setRole(user.role);
+    setRole(user.role === 'kitchen' ? 'kasir' : user.role);
     setPassword(''); 
     setIsEditing(true);
     setEditId(user.id);
@@ -97,7 +97,7 @@ const Users = () => {
   const resetForm = () => {
     setUsername('');
     setPassword('');
-    setRole('kitchen');
+    setRole('kasir');
     setIsEditing(false);
     setEditId(null);
   };
@@ -142,7 +142,7 @@ const Users = () => {
                   // Disable ganti role jika targetnya Super Admin (harus tetap admin)
                   disabled={isEditing && username === 'Super Admin'}
                 >
-                  <option value="kitchen">Kitchen (Dapur)</option>
+                  <option value="kasir">Kasir</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
@@ -182,7 +182,7 @@ const Users = () => {
                   </td>
                   <td>
                     <span className={`badge ${user.role === 'admin' ? 'bg-danger' : 'bg-info text-dark'}`}>
-                      {user.role.toUpperCase()}
+                      {(user.role === 'kitchen' ? 'kasir' : user.role).toUpperCase()}
                     </span>
                   </td>
                   <td>

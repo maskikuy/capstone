@@ -39,7 +39,7 @@ const KitchenDashboard = () => {
   return (
     <div className="container-fluid p-4 bg-dark min-vh-100">
       <div className="d-flex justify-content-between align-items-center mb-4 text-white">
-        <h2>🔥 Kitchen Display System</h2>
+        <h2>🔥 Dashboard Kasir</h2>
         <span className="badge bg-secondary">Auto-refresh: 30s</span>
       </div>
 

@@ -4,7 +4,8 @@ import { confirmAction } from '../utils/notify';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const role = localStorage.getItem('role');
+  const roleRaw = localStorage.getItem('role');
+  const role = roleRaw === 'kitchen' ? 'kasir' : roleRaw;
   const username = localStorage.getItem('username');
 
   const handleLogout = async () => {
@@ -40,11 +41,6 @@ const Navbar = () => {
                 <li className="nav-item">
                 <Link className="nav-link" to="/admin/inventory">Inventori</Link>
                 </li>
-                {/* --- TAMBAHAN BARU --- */}
-                <li className="nav-item">
-                <Link className="nav-link" to="/admin/history">Riwayat Pesanan</Link>
-                </li>
-                {/* --------------------- */}
                 <li className="nav-item">
                 <Link className="nav-link" to="/admin/qr-codes">QR Meja</Link>
                 </li>
@@ -53,10 +49,15 @@ const Navbar = () => {
                 </li>
             </>
             )}
-            {role === 'kitchen' && (
-              <li className="nav-item">
-                <Link className="nav-link active" to="/kitchen/dashboard">Dashboard Dapur</Link>
-              </li>
+            {(role === 'kasir' || role === 'kitchen') && (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link active" to="/kasir/dashboard">Dashboard Kasir</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/kasir/history">Riwayat Pesanan</Link>
+                </li>
+              </>
             )}
           </ul>
           

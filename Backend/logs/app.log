@@ -13049,3 +13049,465 @@
 {"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T08:48:48.548Z"}
 {"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:48:48.553Z"}
 {"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 8ms","method":"GET","timestamp":"2026-05-22T08:48:48.555Z","url":"/api/categories"}
+{"level":"info","message":"Token verified for user ID: 1","module":"authMiddleware","timestamp":"2026-05-22T08:51:38.703Z"}
+{"context":"InventoryModel","level":"debug","message":"Creating inventory: {\"name\":\"kopi liong\",\"category_id\":2,\"selling_price\":280000,\"initial_cost\":0,\"price_type\":\"grosir\",\"retail_price_per_unit\":0,\"grosir_price_per_unit\":110000,\"grosir_min_qty\":5,\"stock_available\":100,\"stock_unit\":\"pcs\",\"low_stock_threshold\":5,\"warehouse_stock\":20,\"real_stock\":13,\"is_available\":true}","timestamp":"2026-05-22T08:51:38.709Z"}
+{"context":"InventoryModel","level":"info","message":"Inventory created with ID: 8","timestamp":"2026-05-22T08:51:38.717Z"}
+{"context":"HTTP","duration":"27 ms","ip":"::1","level":"http","message":"POST /api/inventory 201 - 27ms","method":"POST","timestamp":"2026-05-22T08:51:38.722Z","url":"/api/inventory"}
+{"context":"InventoryModel","level":"debug","message":"Fetching all inventories","timestamp":"2026-05-22T08:51:38.731Z"}
+{"context":"InventoryModel","level":"info","message":"Fetched 8 inventory items","timestamp":"2026-05-22T08:51:38.736Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/inventory 200 - 7ms","method":"GET","timestamp":"2026-05-22T08:51:38.738Z","url":"/api/inventory"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:52:11.493Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T08:52:11.493Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T08:52:11.495Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T08:52:11.495Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:52:11.496Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 5ms","method":"GET","timestamp":"2026-05-22T08:52:11.498Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:52:11.501Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T08:52:11.502Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T08:52:11.503Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T08:52:11.504Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:52:11.505Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 6ms","method":"GET","timestamp":"2026-05-22T08:52:11.506Z","url":"/api/categories"}
+{"level":"info","message":"Token verified for user ID: 1","module":"authMiddleware","timestamp":"2026-05-22T08:52:16.749Z"}
+{"context":"InventoryModel","level":"debug","message":"Updating inventory 5: {\"name\":\"Telur Ayam (per lusin)\",\"category_id\":null,\"selling_price\":30000,\"initial_cost\":20000,\"price_type\":\"retail\",\"retail_price_per_unit\":30000,\"grosir_price_per_unit\":25000,\"grosir_min_qty\":10,\"stock_available\":40,\"stock_unit\":\"pcs\",\"low_stock_threshold\":5,\"warehouse_stock\":60,\"real_stock\":40,\"is_available\":true,\"id\":5,\"created_at\":\"2026-05-22T08:31:25.000Z\",\"updated_at\":\"2026-05-22T08:31:25.000Z\"}","timestamp":"2026-05-22T08:52:16.753Z"}
+{"context":"InventoryModel","level":"info","message":"Inventory 5 updated","timestamp":"2026-05-22T08:52:16.758Z"}
+{"context":"HTTP","duration":"17 ms","ip":"::1","level":"http","message":"PUT /api/inventory/5 200 - 17ms","method":"PUT","timestamp":"2026-05-22T08:52:16.762Z","url":"/api/inventory/5"}
+{"context":"InventoryModel","level":"debug","message":"Fetching all inventories","timestamp":"2026-05-22T08:52:16.775Z"}
+{"context":"InventoryModel","level":"info","message":"Fetched 8 inventory items","timestamp":"2026-05-22T08:52:16.789Z"}
+{"context":"HTTP","duration":"16 ms","ip":"::1","level":"http","message":"GET /api/inventory 200 - 16ms","method":"GET","timestamp":"2026-05-22T08:52:16.792Z","url":"/api/inventory"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:55:22.433Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T08:55:22.434Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T08:55:22.435Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T08:55:22.436Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:55:22.439Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 7ms","method":"GET","timestamp":"2026-05-22T08:55:22.439Z","url":"/api/categories"}
+{"context":"CategoriesController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:55:22.444Z"}
+{"context":"CategoriesModel","level":"debug","message":"Fetching all categories from the database","timestamp":"2026-05-22T08:55:22.444Z"}
+{"context":"CategoriesModel","level":"info","message":"Fetched 2 categories","timestamp":"2026-05-22T08:55:22.448Z"}
+{"context":"CategoriesController","level":"debug","message":"Fetching all categories","timestamp":"2026-05-22T08:55:22.449Z"}
+{"context":"CategoriesController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:55:22.450Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/categories 304 - 7ms","method":"GET","timestamp":"2026-05-22T08:55:22.450Z","url":"/api/categories"}
+{"context":"ProductController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:55:30.765Z"}
+{"context":"ProductModel","level":"debug","message":"Fetching all products from the database","timestamp":"2026-05-22T08:55:30.766Z"}
+{"context":"ProductModel","level":"info","message":"Fetched 1 products","timestamp":"2026-05-22T08:55:30.767Z"}
+{"context":"ProductController","level":"debug","message":"Fetching all products","timestamp":"2026-05-22T08:55:30.768Z"}
+{"context":"ProductController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:55:30.769Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 5ms","method":"GET","timestamp":"2026-05-22T08:55:30.769Z","url":"/api/product"}
+{"context":"ProductController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:55:30.773Z"}
+{"context":"ProductModel","level":"debug","message":"Fetching all products from the database","timestamp":"2026-05-22T08:55:30.774Z"}
+{"context":"ProductModel","level":"info","message":"Fetched 1 products","timestamp":"2026-05-22T08:55:30.776Z"}
+{"context":"ProductController","level":"debug","message":"Fetching all products","timestamp":"2026-05-22T08:55:30.777Z"}
+{"context":"ProductController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:55:30.778Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 5ms","method":"GET","timestamp":"2026-05-22T08:55:30.779Z","url":"/api/product"}
+{"level":"info","message":"Attempting login for user: staff with ip: ::1","module":"authController","timestamp":"2026-05-22T08:58:28.154Z"}
+{"level":"info","message":"Login successful for user: staff","module":"authController","timestamp":"2026-05-22T08:58:28.333Z"}
+{"level":"info","message":"JWT token generated for user: staff","module":"authController","timestamp":"2026-05-22T08:58:28.337Z"}
+{"level":"info","message":"Connection released for user: staff","module":"authController","timestamp":"2026-05-22T08:58:28.338Z"}
+{"level":"info","message":"User logged in: staff","module":"AuthRoute","timestamp":"2026-05-22T08:58:28.338Z"}
+{"context":"HTTP","duration":"185 ms","ip":"::1","level":"http","message":"POST /api/auth/login 200 - 185ms","method":"POST","timestamp":"2026-05-22T08:58:28.339Z","url":"/api/auth/login"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:58:28.427Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:58:28.427Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:58:28.429Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:58:28.430Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:58:28.431Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T08:58:28.432Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:58:28.437Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:58:28.437Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:58:28.442Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:58:28.443Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:58:28.445Z"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 9ms","method":"GET","timestamp":"2026-05-22T08:58:28.446Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:58:33.435Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:58:33.436Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:58:33.441Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:58:33.443Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:58:33.447Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 13ms","method":"GET","timestamp":"2026-05-22T08:58:33.448Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:58:38.421Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:58:38.425Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:58:38.432Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:58:38.433Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:58:38.435Z"}
+{"context":"HTTP","duration":"15 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 15ms","method":"GET","timestamp":"2026-05-22T08:58:38.438Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:58:43.425Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:58:43.426Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:58:43.428Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:58:43.430Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:58:43.432Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T08:58:43.433Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:58:48.419Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:58:48.420Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:58:48.425Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:58:48.426Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:58:48.429Z"}
+{"context":"HTTP","duration":"11 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 11ms","method":"GET","timestamp":"2026-05-22T08:58:48.430Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:58:53.429Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:58:53.429Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:58:53.432Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:58:53.433Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:58:53.435Z"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 8ms","method":"GET","timestamp":"2026-05-22T08:58:53.436Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:58:58.425Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:58:58.426Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:58:58.431Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:58:58.432Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:58:58.438Z"}
+{"context":"HTTP","duration":"14 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 14ms","method":"GET","timestamp":"2026-05-22T08:58:58.445Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:59:03.425Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:59:03.425Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:59:03.429Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:59:03.430Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:59:03.433Z"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 9ms","method":"GET","timestamp":"2026-05-22T08:59:03.434Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:59:08.417Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:59:08.417Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:59:08.422Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:59:08.423Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:59:08.426Z"}
+{"context":"HTTP","duration":"10 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 10ms","method":"GET","timestamp":"2026-05-22T08:59:08.427Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:59:13.421Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:59:13.422Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:59:13.424Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:59:13.425Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:59:13.426Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 6ms","method":"GET","timestamp":"2026-05-22T08:59:13.427Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:59:18.417Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:59:18.418Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:59:18.420Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:59:18.421Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:59:18.423Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T08:59:18.423Z","url":"/api/order"}
+{"level":"info","message":"Attempting login for user: super admin with ip: ::1","module":"authController","timestamp":"2026-05-22T08:59:24.659Z"}
+{"level":"info","message":"Login successful for user: super admin","module":"authController","timestamp":"2026-05-22T08:59:24.848Z"}
+{"level":"info","message":"JWT token generated for user: super admin","module":"authController","timestamp":"2026-05-22T08:59:24.933Z"}
+{"level":"info","message":"Connection released for user: super admin","module":"authController","timestamp":"2026-05-22T08:59:24.935Z"}
+{"level":"info","message":"User logged in: super admin","module":"AuthRoute","timestamp":"2026-05-22T08:59:24.936Z"}
+{"context":"HTTP","duration":"280 ms","ip":"::1","level":"http","message":"POST /api/auth/login 200 - 280ms","method":"POST","timestamp":"2026-05-22T08:59:24.952Z","url":"/api/auth/login"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:59:24.995Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:59:24.996Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:59:24.997Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:59:24.998Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:59:24.999Z"}
+{"context":"HTTP","duration":"4 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 4ms","method":"GET","timestamp":"2026-05-22T08:59:25.000Z","url":"/api/order"}
+{"context":"ProductController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:59:25.001Z"}
+{"context":"ProductModel","level":"debug","message":"Fetching all products from the database","timestamp":"2026-05-22T08:59:25.001Z"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:59:25.002Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T08:59:25.003Z"}
+{"context":"ProductModel","level":"info","message":"Fetched 1 products","timestamp":"2026-05-22T08:59:25.004Z"}
+{"context":"ProductController","level":"debug","message":"Fetching all products","timestamp":"2026-05-22T08:59:25.005Z"}
+{"context":"ProductController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:59:25.006Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 6ms","method":"GET","timestamp":"2026-05-22T08:59:25.008Z","url":"/api/product"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T08:59:25.009Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T08:59:25.010Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:59:25.011Z"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 9ms","method":"GET","timestamp":"2026-05-22T08:59:25.011Z","url":"/api/order"}
+{"context":"ProductController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T08:59:25.013Z"}
+{"context":"ProductModel","level":"debug","message":"Fetching all products from the database","timestamp":"2026-05-22T08:59:25.014Z"}
+{"context":"ProductModel","level":"info","message":"Fetched 1 products","timestamp":"2026-05-22T08:59:25.016Z"}
+{"context":"ProductController","level":"debug","message":"Fetching all products","timestamp":"2026-05-22T08:59:25.016Z"}
+{"context":"ProductController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T08:59:25.017Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 6ms","method":"GET","timestamp":"2026-05-22T08:59:25.018Z","url":"/api/product"}
+{"level":"info","message":"Attempting login for user: staff with ip: ::1","module":"authController","timestamp":"2026-05-22T09:00:59.141Z"}
+{"level":"info","message":"Login successful for user: staff","module":"authController","timestamp":"2026-05-22T09:00:59.335Z"}
+{"level":"info","message":"JWT token generated for user: staff","module":"authController","timestamp":"2026-05-22T09:00:59.338Z"}
+{"level":"info","message":"Connection released for user: staff","module":"authController","timestamp":"2026-05-22T09:00:59.339Z"}
+{"level":"info","message":"User logged in: staff","module":"AuthRoute","timestamp":"2026-05-22T09:00:59.340Z"}
+{"context":"HTTP","duration":"200 ms","ip":"::1","level":"http","message":"POST /api/auth/login 200 - 200ms","method":"POST","timestamp":"2026-05-22T09:00:59.340Z","url":"/api/auth/login"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:00:59.370Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:00:59.371Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:00:59.373Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:00:59.373Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:00:59.374Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T09:00:59.375Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:00:59.378Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:00:59.378Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:00:59.380Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:00:59.381Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:00:59.382Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T09:00:59.384Z","url":"/api/order"}
+{"level":"info","message":"Token verified for user ID: 3","module":"authMiddleware","timestamp":"2026-05-22T09:01:00.907Z"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:00.909Z"}
+{"context":"OrderModel","level":"debug","message":"Updating order status for ID: 7 to status: processing","timestamp":"2026-05-22T09:01:00.913Z"}
+{"context":"OrderModel","level":"info","message":"Order status for ID: 7 updated to processing","timestamp":"2026-05-22T09:01:00.918Z"}
+{"context":"OrderController","level":"debug","message":"Order status updated for ID: 7","timestamp":"2026-05-22T09:01:00.922Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:00.924Z"}
+{"context":"HTTP","duration":"19 ms","ip":"::1","level":"http","message":"PUT /api/order/7/status 200 - 19ms","method":"PUT","timestamp":"2026-05-22T09:01:00.925Z","url":"/api/order/7/status"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:00.932Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:00.934Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:00.935Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:00.938Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:00.939Z"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/order 200 - 9ms","method":"GET","timestamp":"2026-05-22T09:01:00.940Z","url":"/api/order"}
+{"level":"info","message":"Token verified for user ID: 3","module":"authMiddleware","timestamp":"2026-05-22T09:01:02.261Z"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:02.261Z"}
+{"context":"OrderModel","level":"debug","message":"Updating order status for ID: 7 to status: completed","timestamp":"2026-05-22T09:01:02.266Z"}
+{"context":"OrderModel","level":"info","message":"Order status for ID: 7 updated to completed","timestamp":"2026-05-22T09:01:02.273Z"}
+{"context":"OrderModel","level":"debug","message":"Updating payment status for ID: 7 to status: paid","timestamp":"2026-05-22T09:01:02.275Z"}
+{"context":"OrderModel","level":"info","message":"Payment status for ID: 7 updated to paid","timestamp":"2026-05-22T09:01:02.277Z"}
+{"context":"OrderController","level":"debug","message":"Payment status automatically updated to paid for completed order ID: 7","timestamp":"2026-05-22T09:01:02.281Z"}
+{"context":"OrderController","level":"debug","message":"Order status updated for ID: 7","timestamp":"2026-05-22T09:01:02.284Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:02.289Z"}
+{"context":"HTTP","duration":"31 ms","ip":"::1","level":"http","message":"PUT /api/order/7/status 200 - 31ms","method":"PUT","timestamp":"2026-05-22T09:01:02.290Z","url":"/api/order/7/status"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:02.304Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:02.305Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:02.310Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:02.311Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:02.316Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/order 200 - 13ms","method":"GET","timestamp":"2026-05-22T09:01:02.317Z","url":"/api/order"}
+{"level":"info","message":"Token verified for user ID: 3","module":"authMiddleware","timestamp":"2026-05-22T09:01:03.436Z"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:03.442Z"}
+{"context":"OrderModel","level":"debug","message":"Updating order status for ID: 8 to status: processing","timestamp":"2026-05-22T09:01:03.449Z"}
+{"context":"OrderModel","level":"info","message":"Order status for ID: 8 updated to processing","timestamp":"2026-05-22T09:01:03.455Z"}
+{"context":"OrderController","level":"debug","message":"Order status updated for ID: 8","timestamp":"2026-05-22T09:01:03.457Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:03.461Z"}
+{"context":"HTTP","duration":"34 ms","ip":"::1","level":"http","message":"PUT /api/order/8/status 200 - 34ms","method":"PUT","timestamp":"2026-05-22T09:01:03.462Z","url":"/api/order/8/status"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:03.471Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:03.475Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:03.478Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:03.483Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:03.485Z"}
+{"context":"HTTP","duration":"14 ms","ip":"::1","level":"http","message":"GET /api/order 200 - 14ms","method":"GET","timestamp":"2026-05-22T09:01:03.489Z","url":"/api/order"}
+{"level":"info","message":"Token verified for user ID: 3","module":"authMiddleware","timestamp":"2026-05-22T09:01:04.350Z"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:04.351Z"}
+{"context":"OrderModel","level":"debug","message":"Updating order status for ID: 8 to status: completed","timestamp":"2026-05-22T09:01:04.358Z"}
+{"context":"OrderModel","level":"info","message":"Order status for ID: 8 updated to completed","timestamp":"2026-05-22T09:01:04.360Z"}
+{"context":"OrderModel","level":"debug","message":"Updating payment status for ID: 8 to status: paid","timestamp":"2026-05-22T09:01:04.365Z"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:04.367Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:04.371Z"}
+{"context":"OrderModel","level":"info","message":"Payment status for ID: 8 updated to paid","timestamp":"2026-05-22T09:01:04.374Z"}
+{"context":"OrderController","level":"debug","message":"Payment status automatically updated to paid for completed order ID: 8","timestamp":"2026-05-22T09:01:04.378Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:04.381Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:04.385Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:04.387Z"}
+{"context":"HTTP","duration":"21 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 21ms","method":"GET","timestamp":"2026-05-22T09:01:04.388Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Order status updated for ID: 8","timestamp":"2026-05-22T09:01:04.392Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:04.394Z"}
+{"context":"HTTP","duration":"50 ms","ip":"::1","level":"http","message":"PUT /api/order/8/status 200 - 50ms","method":"PUT","timestamp":"2026-05-22T09:01:04.394Z","url":"/api/order/8/status"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:04.405Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:04.406Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:04.408Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:04.408Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:04.412Z"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/order 200 - 8ms","method":"GET","timestamp":"2026-05-22T09:01:04.413Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:09.358Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:09.359Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:09.365Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:09.365Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:09.370Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 13ms","method":"GET","timestamp":"2026-05-22T09:01:09.371Z","url":"/api/order"}
+{"level":"info","message":"Attempting login for user: super admin with ip: ::1","module":"authController","timestamp":"2026-05-22T09:01:22.246Z"}
+{"level":"info","message":"Login successful for user: super admin","module":"authController","timestamp":"2026-05-22T09:01:22.421Z"}
+{"level":"info","message":"JWT token generated for user: super admin","module":"authController","timestamp":"2026-05-22T09:01:22.429Z"}
+{"level":"info","message":"Connection released for user: super admin","module":"authController","timestamp":"2026-05-22T09:01:22.431Z"}
+{"level":"info","message":"User logged in: super admin","module":"AuthRoute","timestamp":"2026-05-22T09:01:22.434Z"}
+{"context":"HTTP","duration":"191 ms","ip":"::1","level":"http","message":"POST /api/auth/login 200 - 191ms","method":"POST","timestamp":"2026-05-22T09:01:22.441Z","url":"/api/auth/login"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:22.515Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:22.515Z"}
+{"context":"ProductController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:22.521Z"}
+{"context":"ProductModel","level":"debug","message":"Fetching all products from the database","timestamp":"2026-05-22T09:01:22.522Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:22.525Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:22.525Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:22.526Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 13ms","method":"GET","timestamp":"2026-05-22T09:01:22.527Z","url":"/api/order"}
+{"context":"ProductModel","level":"info","message":"Fetched 1 products","timestamp":"2026-05-22T09:01:22.528Z"}
+{"context":"ProductController","level":"debug","message":"Fetching all products","timestamp":"2026-05-22T09:01:22.528Z"}
+{"context":"ProductController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:22.529Z"}
+{"context":"HTTP","duration":"14 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 14ms","method":"GET","timestamp":"2026-05-22T09:01:22.530Z","url":"/api/product"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:22.533Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:22.534Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:22.536Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:22.537Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:22.537Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 6ms","method":"GET","timestamp":"2026-05-22T09:01:22.540Z","url":"/api/order"}
+{"context":"ProductController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:22.541Z"}
+{"context":"ProductModel","level":"debug","message":"Fetching all products from the database","timestamp":"2026-05-22T09:01:22.542Z"}
+{"context":"ProductModel","level":"info","message":"Fetched 1 products","timestamp":"2026-05-22T09:01:22.543Z"}
+{"context":"ProductController","level":"debug","message":"Fetching all products","timestamp":"2026-05-22T09:01:22.544Z"}
+{"context":"ProductController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:22.545Z"}
+{"context":"HTTP","duration":"4 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 4ms","method":"GET","timestamp":"2026-05-22T09:01:22.546Z","url":"/api/product"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:24.588Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:24.588Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:24.590Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:24.590Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:24.591Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 6ms","method":"GET","timestamp":"2026-05-22T09:01:24.592Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:01:24.598Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:01:24.603Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:01:24.607Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:01:24.610Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:01:24.612Z"}
+{"context":"HTTP","duration":"15 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 15ms","method":"GET","timestamp":"2026-05-22T09:01:24.613Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:19:42.467Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:19:42.468Z"}
+{"context":"ProductController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:19:42.472Z"}
+{"context":"ProductModel","level":"debug","message":"Fetching all products from the database","timestamp":"2026-05-22T09:19:42.473Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:19:42.477Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:19:42.477Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:19:42.479Z"}
+{"context":"HTTP","duration":"15 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 15ms","method":"GET","timestamp":"2026-05-22T09:19:42.481Z","url":"/api/order"}
+{"context":"ProductModel","level":"info","message":"Fetched 1 products","timestamp":"2026-05-22T09:19:42.483Z"}
+{"context":"ProductController","level":"debug","message":"Fetching all products","timestamp":"2026-05-22T09:19:42.484Z"}
+{"context":"ProductController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:19:42.485Z"}
+{"context":"HTTP","duration":"14 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 14ms","method":"GET","timestamp":"2026-05-22T09:19:42.486Z","url":"/api/product"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:19:42.490Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:19:42.491Z"}
+{"context":"ProductController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:19:42.493Z"}
+{"context":"ProductModel","level":"debug","message":"Fetching all products from the database","timestamp":"2026-05-22T09:19:42.494Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:19:42.497Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:19:42.498Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:19:42.499Z"}
+{"context":"HTTP","duration":"11 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 11ms","method":"GET","timestamp":"2026-05-22T09:19:42.500Z","url":"/api/order"}
+{"context":"ProductModel","level":"info","message":"Fetched 1 products","timestamp":"2026-05-22T09:19:42.502Z"}
+{"context":"ProductController","level":"debug","message":"Fetching all products","timestamp":"2026-05-22T09:19:42.503Z"}
+{"context":"ProductController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:19:42.504Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/product 304 - 13ms","method":"GET","timestamp":"2026-05-22T09:19:42.506Z","url":"/api/product"}
+{"level":"info","message":"Attempting login for user: staff with ip: ::1","module":"authController","timestamp":"2026-05-22T09:19:51.458Z"}
+{"level":"info","message":"Login successful for user: staff","module":"authController","timestamp":"2026-05-22T09:19:51.610Z"}
+{"level":"info","message":"JWT token generated for user: staff","module":"authController","timestamp":"2026-05-22T09:19:51.613Z"}
+{"level":"info","message":"Connection released for user: staff","module":"authController","timestamp":"2026-05-22T09:19:51.615Z"}
+{"level":"info","message":"User logged in: staff","module":"AuthRoute","timestamp":"2026-05-22T09:19:51.617Z"}
+{"context":"HTTP","duration":"159 ms","ip":"::1","level":"http","message":"POST /api/auth/login 200 - 159ms","method":"POST","timestamp":"2026-05-22T09:19:51.618Z","url":"/api/auth/login"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:19:51.659Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:19:51.660Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:19:51.662Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:19:51.662Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:19:51.664Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 6ms","method":"GET","timestamp":"2026-05-22T09:19:51.665Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:19:51.668Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:19:51.669Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:19:51.671Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:19:51.672Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:19:51.675Z"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 9ms","method":"GET","timestamp":"2026-05-22T09:19:51.677Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:19:55.755Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:19:55.757Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:19:55.759Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:19:55.760Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:19:55.763Z"}
+{"context":"HTTP","duration":"10 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 10ms","method":"GET","timestamp":"2026-05-22T09:19:55.764Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:19:55.766Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:19:55.767Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:19:55.770Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:19:55.771Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:19:55.774Z"}
+{"context":"HTTP","duration":"10 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 10ms","method":"GET","timestamp":"2026-05-22T09:19:55.776Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:12.803Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:12.804Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:12.807Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:12.808Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:12.809Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T09:20:12.811Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:12.816Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:12.821Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:12.830Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:12.832Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:12.833Z"}
+{"context":"HTTP","duration":"21 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 21ms","method":"GET","timestamp":"2026-05-22T09:20:12.834Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:15.356Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:15.357Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:15.360Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:15.362Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:15.364Z"}
+{"context":"HTTP","duration":"11 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 11ms","method":"GET","timestamp":"2026-05-22T09:20:15.366Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:15.369Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:15.369Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:15.372Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:15.373Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:15.374Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T09:20:15.376Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:23.699Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:23.699Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:23.702Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:23.703Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:23.705Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T09:20:23.706Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:23.709Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:23.710Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:23.712Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:23.713Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:23.715Z"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 8ms","method":"GET","timestamp":"2026-05-22T09:20:23.717Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:28.693Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:28.695Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:28.702Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:28.703Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:28.705Z"}
+{"context":"HTTP","duration":"13 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 13ms","method":"GET","timestamp":"2026-05-22T09:20:28.706Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:33.804Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:33.804Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:33.807Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:33.807Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:33.808Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T09:20:33.809Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:38.809Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:38.809Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:38.811Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:38.811Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:38.812Z"}
+{"context":"HTTP","duration":"3 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 3ms","method":"GET","timestamp":"2026-05-22T09:20:38.812Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:43.799Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:43.800Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:43.801Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:43.801Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:43.802Z"}
+{"context":"HTTP","duration":"4 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 4ms","method":"GET","timestamp":"2026-05-22T09:20:43.803Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:48.801Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:48.803Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:48.805Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:48.806Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:48.807Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T09:20:48.808Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:53.829Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:53.829Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:53.831Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:53.832Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:53.832Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T09:20:53.833Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:20:58.812Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:20:58.813Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:20:58.815Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:20:58.816Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:20:58.817Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T09:20:58.818Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:21:03.805Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:21:03.805Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:21:03.807Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:03.808Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:03.809Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T09:21:03.809Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:21:08.962Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:21:08.963Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:21:08.964Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:08.964Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:08.964Z"}
+{"context":"HTTP","duration":"3 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 3ms","method":"GET","timestamp":"2026-05-22T09:21:08.965Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:21:13.806Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:21:13.807Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:21:13.809Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:13.809Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:13.810Z"}
+{"context":"HTTP","duration":"5 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 5ms","method":"GET","timestamp":"2026-05-22T09:21:13.811Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:21:18.810Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:21:18.811Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:21:18.813Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:18.813Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:18.814Z"}
+{"context":"HTTP","duration":"4 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 4ms","method":"GET","timestamp":"2026-05-22T09:21:18.814Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:21:23.798Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:21:23.798Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:21:23.800Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:23.800Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:23.801Z"}
+{"context":"HTTP","duration":"4 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 4ms","method":"GET","timestamp":"2026-05-22T09:21:23.802Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:21:28.808Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:21:28.808Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:21:28.812Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:28.812Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:28.813Z"}
+{"context":"HTTP","duration":"6 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 6ms","method":"GET","timestamp":"2026-05-22T09:21:28.814Z","url":"/api/order"}
+{"context":"OrderController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T09:21:45.980Z"}
+{"context":"OrderModel","level":"debug","message":"Fetching all orders from the database","timestamp":"2026-05-22T09:21:45.981Z"}
+{"context":"OrderModel","level":"info","message":"Fetched 5 orders","timestamp":"2026-05-22T09:21:45.984Z"}
+{"context":"OrderController","level":"debug","message":"Fetching all orders","timestamp":"2026-05-22T09:21:45.985Z"}
+{"context":"OrderController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T09:21:45.986Z"}
+{"context":"HTTP","duration":"7 ms","ip":"::1","level":"http","message":"GET /api/order 304 - 7ms","method":"GET","timestamp":"2026-05-22T09:21:45.987Z","url":"/api/order"}

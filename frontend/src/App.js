@@ -13,7 +13,7 @@ import Users from './pages/admin/Users';
 import OrderHistory from './pages/admin/OrderHistory';
 import Dashboard from './pages/admin/Dashboard';
 
-// Kitchen Pages
+// Kasir Pages
 import KitchenDashboard from './pages/kitchen/Dashboard';
 
 // Customer Pages
@@ -38,7 +38,8 @@ const DashboardLayout = () => (
 // Komponen Proteksi Route (Cek Token)
 const ProtectedRoute = ({ allowedRole, children }) => {
   const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
+  const roleRaw = localStorage.getItem('role');
+  const role = roleRaw === 'kitchen' ? 'kasir' : roleRaw;
 
   if (!token) return <Navigate to="/" replace />;
   if (allowedRole && role !== allowedRole) return <Navigate to="/" replace />;
@@ -78,14 +79,15 @@ function App() {
           <Route path="/admin/product/edit/:id" element={<ProductForm />} />
           <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/history" element={<OrderHistory />} />
           <Route path="/admin/qr-codes" element={<QRCodeGenerator />} />
           <Route path="/admin/inventory" element={<Inventory />} />
         </Route>
 
-        {/* Route Kitchen */}
-        <Route element={<ProtectedRoute allowedRole="kitchen"><DashboardLayout /></ProtectedRoute>}>
+        {/* Route Kasir */}
+        <Route element={<ProtectedRoute allowedRole="kasir"><DashboardLayout /></ProtectedRoute>}>
+          <Route path="/kasir/dashboard" element={<KitchenDashboard />} />
           <Route path="/kitchen/dashboard" element={<KitchenDashboard />} />
+          <Route path="/kasir/history" element={<OrderHistory />} />
         </Route>
 
         {/* Route Not Found */}

@@ -18,15 +18,18 @@ const Login = () => {
       
       const { token, user } = res.data;
       localStorage.setItem('token', token);
-      localStorage.setItem('role', user.role);
+      const normalizedRole = user.role === 'kitchen' ? 'kasir' : user.role;
+      localStorage.setItem('role', normalizedRole);
       localStorage.setItem('username', user.username);
       notifySuccess('Login Berhasil! Selamat datang.');
 
       // Redirect sesuai role
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard'); // Redirect ke halaman admin
+      if (normalizedRole === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (normalizedRole === 'kasir') {
+        navigate('/kasir/dashboard');
       } else {
-        navigate('/kitchen/dashboard'); // Redirect ke dapur
+        navigate('/');
       }
     } catch (err) {
       notifyError(err.response?.data?.error || 'Login gagal');
