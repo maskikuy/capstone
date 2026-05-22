@@ -165,3 +165,14 @@ code {
 .btn-cart-pulse:hover {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
+
+/* Hide spin-buttons / arrows on input type number */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
