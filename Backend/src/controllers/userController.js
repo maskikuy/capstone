@@ -144,6 +144,19 @@ export const deleteUser = async (req, res) => {
     logger.debug('Database connection established');
     try {
         await conn.beginTransaction();
+        const existingUser = await userModel.getUserById(conn, userId);
+        if (!existingUser) {
+            logger.warn(`User not found to delete with ID: ${userId}`);
+            await conn.rollback();
+            return res.status(404).json({ error: 'User Not Found' });
+        }
+
+        if (existingUser.role === 'admin') {
+            logger.warn(`Attempted to delete admin user: ${existingUser.username}`);
+            await conn.rollback();
+            return res.status(400).json({ error: 'Pengguna dengan role Admin tidak boleh dihapus.' });
+        }
+
         const success = await userModel.deleteUser(conn, userId);
         if (!success) {
             logger.warn(`User not found to delete with ID: ${userId}`);

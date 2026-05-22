@@ -213,13 +213,15 @@ const Users = () => {
                       <i className="bi bi-pencil"></i> Edit
                     </button>
                     {/* Tombol Hapus didisable visualnya juga jika Super Admin */}
-                    <button 
-                      onClick={() => handleDelete(user)} 
-                      className="btn btn-sm btn-outline-danger"
-                      disabled={user.username === 'Super Admin' || user.id === currentLoggedInUserId}
-                    >
-                      <i className="bi bi-trash"></i> Hapus
-                    </button>
+                    {user.role !== 'admin' && (
+                      <button 
+                        onClick={() => handleDelete(user)} 
+                        className="btn btn-sm btn-outline-danger"
+                        disabled={user.id === currentLoggedInUserId}
+                      >
+                        <i className="bi bi-trash"></i> Hapus
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
