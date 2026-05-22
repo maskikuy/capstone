@@ -33,6 +33,38 @@ const Checkout = () => {
     localStorage.setItem('wow_cart', JSON.stringify(newCart));
   };
 
+  const getProductUnitPrice = (product, qty) => {
+    if (product.price_type === 'grosir' && qty >= product.grosir_min_qty) {
+      return parseFloat(product.grosir_price_per_unit);
+    }
+    return parseFloat(product.base_price);
+  };
+
+  const handleUpdateQuantity = (tempId, newQty) => {
+    if (newQty <= 0) {
+      handleRemoveItem(tempId);
+      return;
+    }
+
+    const newCart = cart.map(item => {
+      if (item.tempId === tempId) {
+        const activeUnitPrice = getProductUnitPrice(item.product, newQty);
+        const variantsPrice = item.variants.reduce((total, v) => total + parseFloat(v.extra_price), 0);
+        const finalPrice = (activeUnitPrice + variantsPrice) * newQty;
+        return {
+          ...item,
+          quantity: newQty,
+          totalPrice: finalPrice,
+          priceAtOrder: activeUnitPrice
+        };
+      }
+      return item;
+    });
+
+    setCart(newCart);
+    localStorage.setItem('wow_cart', JSON.stringify(newCart));
+  };
+
   const handleSubmitOrder = async () => {
     if (!customerName) return showAlert('Mohon isi nama Anda');
     if (cart.length === 0) return showAlert('Keranjang kosong');
@@ -114,21 +146,54 @@ const Checkout = () => {
         </div>
         <ul className="list-group list-group-flush">
           {cart.map((item) => (
-            <li key={item.tempId} className="list-group-item">
-              <div className="d-flex justify-content-between align-items-start">
+            <li key={item.tempId} className="list-group-item py-3">
+              <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="mb-1">{item.quantity}x {item.product.name}</h6>
+                  <h6 className="mb-1 fw-bold">{item.product.name}</h6>
                   {item.variants.length > 0 && (
-                    <small className="text-muted d-block">
+                    <small className="text-muted d-block mb-1">
                       + {item.variants.map(v => v.name).join(', ')}
                     </small>
                   )}
                   {item.notes && <small className="text-danger d-block">"{item.notes}"</small>}
                 </div>
                 <div className="text-end">
-                  <div className="fw-bold">Rp {item.totalPrice.toLocaleString('id-ID')}</div>
-                  <button className="btn btn-link text-danger p-0 small text-decoration-none" 
-                    onClick={() => handleRemoveItem(item.tempId)}>Hapus</button>
+                  <div className="fw-bold mb-2">Rp {item.totalPrice.toLocaleString('id-ID')}</div>
+                  <div className="d-flex align-items-center justify-content-end gap-2">
+                    <div className="input-group input-group-sm" style={{ width: '100px' }}>
+                      <button 
+                        className="btn btn-outline-secondary px-2 py-0 d-flex align-items-center justify-content-center" 
+                        type="button"
+                        style={{ height: '28px', width: '28px', borderRadius: '0.25rem 0 0 0.25rem' }}
+                        onClick={() => handleUpdateQuantity(item.tempId, item.quantity - 1)}
+                      >
+                        -
+                      </button>
+                      <span 
+                        className="form-control text-center p-0 d-flex align-items-center justify-content-center fw-semibold"
+                        style={{ height: '28px', fontSize: '0.9rem', backgroundColor: '#fff', borderLeft: 'none', borderRight: 'none' }}
+                      >
+                        {item.quantity}
+                      </span>
+                      <button 
+                        className="btn btn-outline-secondary px-2 py-0 d-flex align-items-center justify-content-center" 
+                        type="button"
+                        style={{ height: '28px', width: '28px', borderRadius: '0 0.25rem 0.25rem 0' }}
+                        onClick={() => handleUpdateQuantity(item.tempId, item.quantity + 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+                    
+                    <button 
+                      className="btn btn-sm btn-outline-danger p-0 d-flex align-items-center justify-content-center" 
+                      style={{ height: '28px', width: '28px', borderRadius: '0.25rem' }}
+                      onClick={() => handleRemoveItem(item.tempId)}
+                      title="Hapus"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
             </li>
