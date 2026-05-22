@@ -113,7 +113,11 @@ const Inventory = () => {
                         <span className="badge bg-warning text-dark ms-2">Stok Rendah</span>
                       )}
                     </td>
-                    <td>{it.is_available ? 'Tersedia' : 'Habis'}</td>
+                    <td>
+                      <span className={`badge ${ (it.is_available && Number(it.stock_available) > 0) ? 'bg-success' : 'bg-danger' }`}>
+                        {(it.is_available && Number(it.stock_available) > 0) ? 'Tersedia' : 'Habis'}
+                      </span>
+                    </td>
                     <td>
                       <button className="btn btn-sm btn-warning me-2" onClick={() => handleEdit(it)}>Edit</button>
                       <button className="btn btn-sm btn-danger" onClick={() => handleDelete(it.id)}>Hapus</button>

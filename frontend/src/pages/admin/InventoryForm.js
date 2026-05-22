@@ -59,7 +59,19 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
       v = value === '' ? '' : Number(value);
     }
     if (type === 'checkbox') v = checked;
-    setForm(prev => ({ ...prev, [name]: v }));
+    
+    setForm(prev => {
+      const nextForm = { ...prev, [name]: v };
+      if (name === 'stock_available') {
+        const stockVal = Number(v) || 0;
+        if (stockVal <= 0) {
+          nextForm.is_available = false;
+        } else if (prev.stock_available <= 0 && stockVal > 0) {
+          nextForm.is_available = true;
+        }
+      }
+      return nextForm;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -195,8 +207,23 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
           </div>
 
           <div className="mb-2 form-check form-switch">
-            <input className="form-check-input" type="checkbox" id="is_available" name="is_available" checked={!!form.is_available} onChange={handleChange} />
-            <label className="form-check-label" htmlFor="is_available">Tersedia</label>
+            <input 
+              className="form-check-input" 
+              type="checkbox" 
+              id="is_available" 
+              name="is_available" 
+              checked={form.stock_available <= 0 ? false : !!form.is_available} 
+              onChange={handleChange}
+              disabled={form.stock_available <= 0}
+            />
+            <label className="form-check-label" htmlFor="is_available">
+              {form.stock_available <= 0 ? 'Habis' : 'Tersedia'}
+            </label>
+            {form.stock_available <= 0 && (
+              <span className="text-danger ms-2" style={{ fontSize: '0.85rem' }}>
+                (Stok kosong, status otomatis Habis)
+              </span>
+            )}
           </div>
 
           <div className="d-flex gap-2">

@@ -45,6 +45,9 @@ export const ensureInventoryTable = async () => {
             await conn.query(insertSql, [values]);
             logger.info('Inserted seed inventories');
         }
+        // Sinkronisasi data lama: jika ada item dengan stock_available <= 0 namun is_available masih true, ubah menjadi false
+        const syncResult = await conn.query('UPDATE inventories SET is_available = 0 WHERE stock_available <= 0 AND is_available = 1');
+        logger.info(`Synced existing inventory stock statuses: updated ${syncResult[0]?.affectedRows || 0} rows`);
     } catch (err) {
         logger.error(`Failed ensuring inventories table: ${err.message}`);
         throw err;
