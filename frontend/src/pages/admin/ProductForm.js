@@ -16,6 +16,9 @@ const ProductForm = () => {
   const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
   const [currentImage, setCurrentImage] = useState('');
+  const [priceType, setPriceType] = useState('retail');
+  const [grosirPricePerUnit, setGrosirPricePerUnit] = useState(0);
+  const [grosirMinQty, setGrosirMinQty] = useState(0);
 
   // State Data Varian
   const [variants, setVariants] = useState([{ name: '', extra_price: 0 }]);
@@ -42,6 +45,9 @@ const ProductForm = () => {
       setBasePrice(product.base_price);
       setDescription(product.description || '');
       setCurrentImage(product.image_url);
+      setPriceType(product.price_type || 'retail');
+      setGrosirPricePerUnit(product.grosir_price_per_unit || 0);
+      setGrosirMinQty(product.grosir_min_qty || 0);
 
       // Ambil varian
       const { data: allVariants } = await api.get('/product-variant');
@@ -98,6 +104,9 @@ const ProductForm = () => {
     formData.append('base_price', basePrice);
     formData.append('description', description);
     formData.append('is_available', 1);
+    formData.append('price_type', priceType);
+    formData.append('grosir_price_per_unit', priceType === 'grosir' ? grosirPricePerUnit : 0);
+    formData.append('grosir_min_qty', priceType === 'grosir' ? grosirMinQty : 0);
     
     if (image) {
       formData.append('image', image);
@@ -197,6 +206,52 @@ const ProductForm = () => {
               <label className="form-label">Deskripsi</label>
               <textarea className="form-control" rows="2" value={description} onChange={e => setDescription(e.target.value)}></textarea>
             </div>
+
+            {(() => {
+              const selectedCategory = categories.find(c => c.id === parseInt(categoryId));
+              const isBahanBaku = selectedCategory && selectedCategory.name.toLowerCase() === 'bahan baku';
+              if (!isBahanBaku) return null;
+              return (
+                <div className="card p-3 mb-3 bg-light border-0 shadow-sm" style={{ borderRadius: '0.75rem' }}>
+                  <h6 className="fw-bold mb-3 text-warning">⚙️ Pengaturan Grosir & Retail</h6>
+                  <div className="row">
+                    <div className="col-md-4 mb-3">
+                      <label className="form-label small fw-bold text-secondary">Tipe Harga</label>
+                      <select className="form-select" value={priceType} onChange={e => setPriceType(e.target.value)}>
+                        <option value="retail">Retail (Eceran)</option>
+                        <option value="grosir">Grosir</option>
+                      </select>
+                    </div>
+                    {priceType === 'grosir' && (
+                      <>
+                        <div className="col-md-4 mb-3">
+                          <label className="form-label small fw-bold text-secondary">Minimal Pembelian Grosir (pcs)</label>
+                          <input 
+                            type="number" 
+                            className="form-control" 
+                            value={grosirMinQty} 
+                            onChange={e => setGrosirMinQty(Math.max(1, parseInt(e.target.value) || 0))} 
+                            min="1"
+                            required
+                          />
+                        </div>
+                        <div className="col-md-4 mb-3">
+                          <label className="form-label small fw-bold text-secondary">Harga Grosir per Unit (Rp)</label>
+                          <input 
+                            type="number" 
+                            className="form-control" 
+                            value={grosirPricePerUnit} 
+                            onChange={e => setGrosirPricePerUnit(Math.max(0, parseInt(e.target.value) || 0))} 
+                            min="0"
+                            required
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             <hr />
 

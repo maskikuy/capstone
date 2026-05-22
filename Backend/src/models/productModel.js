@@ -24,16 +24,37 @@ export const getProductById = async (conn, productId) => {
 
 export const createProduct = async (conn, productData) => {
     logger.debug(`Creating new product with data: ${JSON.stringify(productData)}`);
-    const sql = 'INSERT INTO products (category_id, name, description, base_price, image_url, is_available) VALUES (?, ?, ?, ?, ?, ?)';
-    const [result] = await conn.execute(sql, [productData.category_id, productData.name, productData.description, productData.base_price, productData.image_url, productData.is_available]);
+    const sql = 'INSERT INTO products (category_id, name, description, base_price, image_url, is_available, price_type, grosir_price_per_unit, grosir_min_qty) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    const [result] = await conn.execute(sql, [
+        productData.category_id, 
+        productData.name, 
+        productData.description, 
+        productData.base_price, 
+        productData.image_url, 
+        productData.is_available,
+        productData.price_type || 'retail',
+        productData.grosir_price_per_unit || 0.00,
+        productData.grosir_min_qty || 0
+    ]);
     logger.info(`Product created with ID: ${result.insertId}`);
     return result.insertId;
 }
 
 export const updateProduct = async (conn, productId, productData) => {
     logger.debug(`Updating product with ID: ${productId} with data: ${JSON.stringify(productData)}`);
-    const sql = 'UPDATE products SET category_id = ?, name = ?, description = ?, base_price = ?, image_url = ?, is_available = ? WHERE id = ?';
-    const [result] = await conn.execute(sql, [productData.category_id, productData.name, productData.description, productData.base_price, productData.image_url, productData.is_available, productId]);
+    const sql = 'UPDATE products SET category_id = ?, name = ?, description = ?, base_price = ?, image_url = ?, is_available = ?, price_type = ?, grosir_price_per_unit = ?, grosir_min_qty = ? WHERE id = ?';
+    const [result] = await conn.execute(sql, [
+        productData.category_id, 
+        productData.name, 
+        productData.description, 
+        productData.base_price, 
+        productData.image_url, 
+        productData.is_available, 
+        productData.price_type || 'retail',
+        productData.grosir_price_per_unit || 0.00,
+        productData.grosir_min_qty || 0,
+        productId
+    ]);
     if (result.affectedRows === 0) {
         logger.warn(`No product found to update with ID: ${productId}`);
         return false;

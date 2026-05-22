@@ -93,12 +93,19 @@ const Menu = () => {
     }
   };
 
+  const getProductUnitPrice = (product, qty) => {
+    if (product.price_type === 'grosir' && qty >= product.grosir_min_qty) {
+      return parseFloat(product.grosir_price_per_unit);
+    }
+    return parseFloat(product.base_price);
+  };
+
   const addToCart = () => {
     if (!selectedProduct) return;
 
-    const basePrice = parseFloat(selectedProduct.base_price);
+    const activeUnitPrice = getProductUnitPrice(selectedProduct, orderQty);
     const variantsPrice = selectedVariants.reduce((total, v) => total + parseFloat(v.extra_price), 0);
-    const finalPrice = (basePrice + variantsPrice) * orderQty;
+    const finalPrice = (activeUnitPrice + variantsPrice) * orderQty;
 
     const newItem = {
       tempId: Date.now(),
@@ -107,7 +114,7 @@ const Menu = () => {
       variants: selectedVariants,
       notes: orderNotes,
       totalPrice: finalPrice,
-      priceAtOrder: basePrice
+      priceAtOrder: activeUnitPrice
     };
 
     const updatedCart = [...cart, newItem];
@@ -217,6 +224,11 @@ const Menu = () => {
                   <p className={`card-text fw-bold mb-0 ${!isAvailable ? 'text-muted' : 'text-warning'}`}>
                     Rp {parseInt(product.base_price).toLocaleString('id-ID')}
                   </p>
+                  {product.price_type === 'grosir' && (
+                    <div className="text-success small fw-bold mt-1 animate-pulse" style={{ fontSize: '0.75rem' }}>
+                      📦 Grosir: Rp {parseInt(product.grosir_price_per_unit).toLocaleString('id-ID')} (min {product.grosir_min_qty} pcs)
+                    </div>
+                  )}
                 </div>
                 
                 <div className="card-footer p-2 bg-transparent border-0">
@@ -261,6 +273,22 @@ const Menu = () => {
                 )}
                 <p className="text-muted small">{selectedProduct.description}</p>
                 
+                {selectedProduct.price_type === 'grosir' && (
+                  <div className={`alert ${orderQty >= selectedProduct.grosir_min_qty ? 'alert-success border-success' : 'alert-info border-info'} py-2 px-3 mb-3 d-flex align-items-center justify-content-between`} style={{ borderRadius: '0.75rem', fontSize: '0.85rem' }}>
+                    <div>
+                      <strong className="d-block text-dark">🏷️ Promo Grosir Aktif</strong>
+                      <span className="text-muted">Beli min {selectedProduct.grosir_min_qty} pcs: Rp {parseInt(selectedProduct.grosir_price_per_unit).toLocaleString('id-ID')}/pcs</span>
+                      <br/>
+                      <span className="text-muted">Eceran: Rp {parseInt(selectedProduct.base_price).toLocaleString('id-ID')}/pcs</span>
+                    </div>
+                    {orderQty >= selectedProduct.grosir_min_qty ? (
+                      <span className="badge bg-success py-1 px-2 text-white">🎉 Aktif</span>
+                    ) : (
+                      <span className="badge bg-secondary py-1 px-2 text-white">Kurang {selectedProduct.grosir_min_qty - orderQty} pcs</span>
+                    )}
+                  </div>
+                )}
+                
                 {productVariants.filter(v => v.product_id === selectedProduct.id).length > 0 && (
                   <div className="mb-3">
                     <label className="fw-bold mb-2">Opsi Tambahan:</label>
@@ -304,7 +332,7 @@ const Menu = () => {
               </div>
               <div className="modal-footer border-0">
                 <button className="btn btn-warning w-100 fw-bold py-2" onClick={addToCart}>
-                  Tambah ke Pesanan - Rp {((parseFloat(selectedProduct.base_price) + selectedVariants.reduce((t,v)=>t+parseFloat(v.extra_price),0)) * orderQty).toLocaleString('id-ID')}
+                  Tambah ke Pesanan - Rp {((getProductUnitPrice(selectedProduct, orderQty) + selectedVariants.reduce((t,v)=>t+parseFloat(v.extra_price),0)) * orderQty).toLocaleString('id-ID')}
                 </button>
               </div>
             </div>
