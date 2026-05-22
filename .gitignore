@@ -3,3 +3,4 @@
 /frontend/node_modules
 /Backend/src/uploads
 /frontend/.env
+.env
