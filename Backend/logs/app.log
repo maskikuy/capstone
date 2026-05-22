@@ -14139,3 +14139,18 @@
 {"context":"UserController","level":"debug","message":"Fetching all users","timestamp":"2026-05-22T10:21:32.185Z"}
 {"context":"UserController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:21:32.190Z"}
 {"context":"HTTP","duration":"22 ms","ip":"::1","level":"http","message":"GET /api/user 304 - 22ms","method":"GET","timestamp":"2026-05-22T10:21:32.195Z","url":"/api/user"}
+{"level":"info","message":"Token verified for user ID: 1","module":"authMiddleware","timestamp":"2026-05-22T10:28:28.956Z"}
+{"context":"UserController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:28:28.958Z"}
+{"context":"UserController","level":"debug","message":"User password hashed","timestamp":"2026-05-22T10:28:29.130Z"}
+{"context":"UserModel","level":"debug","message":"Creating new user with data: {\"username\":\"admin\",\"password\":\"$2b$10$.SuKc9NTsFZCBwc0nuWOWO.LaGT8ovuQen3puXrnGo710BalpwBpa\",\"role\":\"admin\"}","timestamp":"2026-05-22T10:28:29.131Z"}
+{"context":"UserModel","level":"info","message":"User created with ID: 4","timestamp":"2026-05-22T10:28:29.134Z"}
+{"context":"UserController","level":"debug","message":"User created with ID: 4","timestamp":"2026-05-22T10:28:29.136Z"}
+{"context":"UserController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:28:29.137Z"}
+{"context":"HTTP","duration":"187 ms","ip":"::1","level":"http","message":"POST /api/user 201 - 187ms","method":"POST","timestamp":"2026-05-22T10:28:29.138Z","url":"/api/user"}
+{"level":"info","message":"Token verified for user ID: 1","module":"authMiddleware","timestamp":"2026-05-22T10:28:29.144Z"}
+{"context":"UserController","level":"debug","message":"Database connection established","timestamp":"2026-05-22T10:28:29.145Z"}
+{"context":"UserModel","level":"debug","message":"Fetching all users from the database","timestamp":"2026-05-22T10:28:29.145Z"}
+{"context":"UserModel","level":"info","message":"Fetched 3 users","timestamp":"2026-05-22T10:28:29.148Z"}
+{"context":"UserController","level":"debug","message":"Fetching all users","timestamp":"2026-05-22T10:28:29.149Z"}
+{"context":"UserController","level":"debug","message":"Database connection released","timestamp":"2026-05-22T10:28:29.150Z"}
+{"context":"HTTP","duration":"9 ms","ip":"::1","level":"http","message":"GET /api/user 200 - 9ms","method":"GET","timestamp":"2026-05-22T10:28:29.152Z","url":"/api/user"}
