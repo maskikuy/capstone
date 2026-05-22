@@ -14,6 +14,7 @@ import authRoute from './src/routes/authRoute.js';
 import * as limiter from './src/middleware/rateLimiter.js';
 import {Server} from 'socket.io';
 import http from 'http';
+import { ensureInventoryTable } from './src/utils/initDb.js';
 
 dotenv.config();
 
@@ -42,6 +43,12 @@ app.use((req, res) => {
     res.status(404).send("404 Not Found");
 });
 
-app.listen(PORT, () => {
-    logger.info(`Server is running on http://localhost:${PORT}`);
+// Ensure DB tables then start server
+ensureInventoryTable().then(() => {
+    app.listen(PORT, () => {
+        logger.info(`Server is running on http://localhost:${PORT}`);
+    });
+}).catch((err) => {
+    logger.error(`Failed to initialize DB: ${err.message}`);
+    process.exit(1);
 });
