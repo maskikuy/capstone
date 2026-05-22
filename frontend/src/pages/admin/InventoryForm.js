@@ -120,7 +120,10 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
             </div>
             <div className="col-md-4 mb-2">
               <label className="form-label">Stok Tersedia</label>
-              <input name="stock_available" type="number" value={form.stock_available} onChange={handleChange} className="form-control" min="0" step="0.001" />
+              <div className="input-group">
+                <input name="stock_available" type="number" value={form.stock_available} onChange={handleChange} className="form-control" min="0" step={form.stock_unit === 'gram' ? '1' : '1'} />
+                <span className="input-group-text">{form.stock_unit === 'gram' ? 'gram' : 'pcs'}</span>
+              </div>
             </div>
             <div className="col-md-4 mb-2">
               <label className="form-label">Unit</label>
@@ -128,6 +131,32 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
                 <option value="pcs">pcs</option>
                 <option value="gram">gram</option>
               </select>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-md-4 mb-2">
+              <label className="form-label">Stok Gudang</label>
+              <div className="input-group">
+                <input name="warehouse_stock" type="number" value={form.warehouse_stock} onChange={handleChange} className="form-control" min="0" step={form.stock_unit === 'gram' ? '1' : '1'} />
+                <span className="input-group-text">{form.stock_unit === 'gram' ? 'gram' : 'pcs'}</span>
+              </div>
+            </div>
+
+            <div className="col-md-4 mb-2">
+              <label className="form-label">Stok Real</label>
+              <div className="input-group">
+                <input name="real_stock" type="number" value={form.real_stock} onChange={handleChange} className="form-control" min="0" step={form.stock_unit === 'gram' ? '1' : '1'} />
+                <span className="input-group-text">{form.stock_unit === 'gram' ? 'gram' : 'pcs'}</span>
+              </div>
+            </div>
+
+            <div className="col-md-4 mb-2">
+              <label className="form-label">Ambang Stok Rendah</label>
+              <div className="input-group">
+                <input name="low_stock_threshold" type="number" value={form.low_stock_threshold} onChange={handleChange} className="form-control" min="0" step={form.stock_unit === 'gram' ? '1' : '1'} />
+                <span className="input-group-text">{form.stock_unit === 'gram' ? 'gram' : 'pcs'}</span>
+              </div>
             </div>
           </div>
 

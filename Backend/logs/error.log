@@ -167,3 +167,13 @@
 {"level":"error","message":"Login error for user: Super Admin - read ECONNRESET","module":"authController","timestamp":"2026-05-09T04:10:36.741Z"}
 {"level":"error","message":"Login error for user: Super Admin - read ECONNRESET","module":"authController","timestamp":"2026-05-09T04:10:36.750Z"}
 {"level":"error","message":"Login error for user: Super Admin - read ECONNRESET","module":"authController","timestamp":"2026-05-09T04:10:36.771Z"}
+{"context":"InventoryController","level":"error","message":"Error fetching inventories: Table 'wow_db.inventories' doesn't exist","timestamp":"2026-05-22T08:25:06.678Z"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"error","message":"GET /api/inventory 500 - 8ms","method":"GET","timestamp":"2026-05-22T08:25:06.680Z","url":"/api/inventory"}
+{"context":"InventoryController","level":"error","message":"Error fetching inventories: Table 'wow_db.inventories' doesn't exist","timestamp":"2026-05-22T08:25:06.705Z"}
+{"context":"HTTP","duration":"21 ms","ip":"::1","level":"error","message":"GET /api/inventory 500 - 21ms","method":"GET","timestamp":"2026-05-22T08:25:06.712Z","url":"/api/inventory"}
+{"context":"InventoryController","level":"error","message":"Error creating inventory: Table 'wow_db.inventories' doesn't exist","timestamp":"2026-05-22T08:26:05.966Z"}
+{"context":"HTTP","duration":"43 ms","ip":"::1","level":"error","message":"POST /api/inventory 500 - 43ms","method":"POST","timestamp":"2026-05-22T08:26:05.981Z","url":"/api/inventory"}
+{"context":"InventoryController","level":"error","message":"Error creating inventory: Table 'wow_db.inventories' doesn't exist","timestamp":"2026-05-22T08:26:16.820Z"}
+{"context":"HTTP","duration":"8 ms","ip":"::1","level":"error","message":"POST /api/inventory 500 - 8ms","method":"POST","timestamp":"2026-05-22T08:26:16.821Z","url":"/api/inventory"}
+{"context":"InventoryController","level":"error","message":"Error fetching inventories: Table 'wow_db.inventories' doesn't exist","timestamp":"2026-05-22T08:26:30.546Z"}
+{"context":"HTTP","duration":"3 ms","ip":"::1","level":"error","message":"GET /api/inventory 500 - 3ms","method":"GET","timestamp":"2026-05-22T08:26:30.547Z","url":"/api/inventory"}

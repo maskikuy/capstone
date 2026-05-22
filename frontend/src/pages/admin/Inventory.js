@@ -96,7 +96,9 @@ const Inventory = () => {
                       <td>{(categories.find(c => c.id === it.category_id)?.name) || (it.category_id ? it.category_id : '-')}</td>
                     <td>Rp {parseFloat(it.selling_price || 0).toLocaleString('id-ID')}</td>
                     <td>
-                      {parseFloat(it.stock_available || 0)} {it.stock_unit}
+                      {it.stock_unit === 'gram'
+                        ? `${Math.round(Number(it.stock_available || 0))} gram`
+                        : `${parseInt(Number(it.stock_available || 0), 10)} pcs`}
                       {Number(it.low_stock_threshold) >= 0 && Number(it.stock_available) <= Number(it.low_stock_threshold) && (
                         <span className="badge bg-warning text-dark ms-2">Stok Rendah</span>
                       )}
