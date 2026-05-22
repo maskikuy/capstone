@@ -51,7 +51,18 @@ const PaymentQris = () => {
   // Helper Copy Nominal
   const copyToClipboard = () => {
     navigator.clipboard.writeText(totalAmount);
-    alert("Nominal berhasil disalin!");
+    showAlert("Nominal berhasil disalin!");
+  };
+
+  // Helper Download QR Code
+  const downloadQR = () => {
+    if (!qris_image) return;
+    const link = document.createElement('a');
+    link.href = qris_image;
+    link.download = `qris-order-${orderId}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -97,11 +108,35 @@ const PaymentQris = () => {
                     *Pastikan nominal transfer sesuai hingga digit terakhir
                 </small>
             </div>
+
+            {/* Petunjuk Pengguna Mobile */}
+            <div className="alert alert-info border-0 py-2 px-3 mb-0 text-start" style={{ borderRadius: '10px' }}>
+                <small className="d-block text-dark fw-bold mb-1" style={{ fontSize: '0.75rem' }}>
+                    💡 Tips Bayar via HP:
+                </small>
+                <small className="text-muted d-block" style={{ fontSize: '0.7rem', lineHeight: '1.3' }}>
+                    1. Klik tombol <strong>Simpan QR ke Galeri</strong> di bawah. <br />
+                    2. Buka aplikasi e-wallet Anda (GoPay, OVO, Dana, BCA, dll). <br />
+                    3. Pilih <strong>Scan/Bayar</strong>, lalu pilih ikon <strong>Galeri</strong> untuk mengunggah gambar QR tadi. <br />
+                    4. Nominal pembayaran akan terisi secara otomatis!
+                </small>
+            </div>
         </div>
       </div>
 
       {/* 3. TOMBOL AKSI */}
       <div className="w-100" style={{ maxWidth: '400px' }}>
+        {qris_image && (
+          <button 
+              className="btn btn-primary w-100 py-3 fw-bold shadow-sm mb-3" 
+              style={{borderRadius: '12px', fontSize: '1.1rem', backgroundColor: '#0d6efd', border: 'none'}}
+              onClick={downloadQR}
+          >
+              <i className="bi bi-download me-2"></i>
+              Simpan QR ke Galeri
+          </button>
+        )}
+
         <button 
             className="btn btn-success w-100 py-3 fw-bold shadow-sm mb-3" 
             style={{borderRadius: '12px', fontSize: '1.1rem'}}

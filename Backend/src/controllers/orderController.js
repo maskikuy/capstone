@@ -97,6 +97,9 @@ export const updateOrder = async (req, res) => {
     try {
         const { items, ...orderInfo } = req.body;
         await conn.beginTransaction();
+        if (orderInfo.order_status === 'completed') {
+            orderInfo.payment_status = 'paid';
+        }
         const updated = await orderModel.updateOrder(conn, orderId, orderInfo);
         if (!updated) {
             logger.warn(`Order not found for update with ID: ${orderId}`);
@@ -169,14 +172,24 @@ export const updateOrderStatus = async (req, res) => {
     const conn = await db.getConnection();
     logger.debug('Database connection established');
     try {
+        await conn.beginTransaction();
         const updated = await orderModel.updateOrderStatus(conn, orderId, order_status);
         if (!updated) {
             logger.warn(`Order not found for status update with ID: ${orderId}`);
+            await conn.rollback();
             return res.status(404).json({ error: 'Order Not Found' });
         }
+        
+        if (order_status === 'completed') {
+            await orderModel.updatePaymentStatus(conn, orderId, 'paid');
+            logger.debug(`Payment status automatically updated to paid for completed order ID: ${orderId}`);
+        }
+        
+        await conn.commit();
         logger.debug(`Order status updated for ID: ${orderId}`);
         res.status(200).json({ message: 'Order status updated successfully' });
     } catch (error) {
+        await conn.rollback();
         logger.error(`Error updating order status for ID ${orderId}: ${error.message}`);
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {

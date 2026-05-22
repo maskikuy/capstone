@@ -1,0 +1,149 @@
+import React, { useState, useEffect } from 'react';
+import api from '../../utils/api';
+import { notifyError, notifySuccess } from '../../utils/notify';
+
+const InventoryForm = ({ item, onSaved, onCancel }) => {
+  const [form, setForm] = useState({
+    name: '',
+    category_id: '',
+    selling_price: 0,
+    initial_cost: 0,
+    price_type: 'retail',
+    retail_price_per_unit: 0,
+    grosir_price_per_unit: 0,
+    grosir_min_qty: 0,
+    stock_available: 0,
+    stock_unit: 'pcs',
+    low_stock_threshold: 0,
+    warehouse_stock: 0,
+    real_stock: 0,
+    is_available: true
+  });
+  const [categories, setCategories] = useState([]);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (item) {
+      setForm({ ...form, ...item });
+    }
+    // eslint-disable-next-line
+  }, [item]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get('/categories');
+        setCategories(res.data || []);
+      } catch (err) {
+        // non-blocking
+        console.error('Gagal ambil kategori', err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    let v = value;
+    if (type === 'number') {
+      v = value === '' ? '' : Number(value);
+    }
+    if (type === 'checkbox') v = checked;
+    setForm(prev => ({ ...prev, [name]: v }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Basic validation
+    if (!form.name || form.name.trim() === '') return notifyError('Nama wajib diisi');
+    if (Number(form.selling_price) < 0) return notifyError('Harga jual tidak valid');
+    if (Number(form.stock_available) < 0) return notifyError('Stok tidak boleh negatif');
+    if (form.price_type === 'grosir' && Number(form.grosir_min_qty) <= 0) return notifyError('Minimal pembelian grosir wajib diisi');
+
+    // Prepare payload: ensure numeric types
+    const payload = {
+      ...form,
+      selling_price: Number(form.selling_price) || 0,
+      initial_cost: Number(form.initial_cost) || 0,
+      retail_price_per_unit: Number(form.retail_price_per_unit) || 0,
+      grosir_price_per_unit: Number(form.grosir_price_per_unit) || 0,
+      grosir_min_qty: Number(form.grosir_min_qty) || 0,
+      stock_available: Number(form.stock_available) || 0,
+      low_stock_threshold: Number(form.low_stock_threshold) || 0,
+      warehouse_stock: Number(form.warehouse_stock) || 0,
+      real_stock: Number(form.real_stock) || 0,
+      category_id: form.category_id ? (Number(form.category_id) || null) : null,
+      is_available: !!form.is_available
+    };
+
+    setSaving(true);
+    try {
+      if (item) {
+        await api.put(`/inventory/${item.id}`, payload);
+        notifySuccess('Inventori berhasil diperbarui');
+      } else {
+        await api.post('/inventory', payload);
+        notifySuccess('Inventori berhasil dibuat');
+      }
+      onSaved();
+    } catch (err) {
+      console.error(err);
+      notifyError(err?.response?.data?.error || 'Gagal menyimpan inventori');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="card mb-3">
+      <div className="card-body">
+        <h5>{item ? 'Edit Inventori' : 'Tambah Inventori'}</h5>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-2">
+            <label className="form-label">Nama</label>
+            <input name="name" value={form.name} onChange={handleChange} className="form-control" required />
+          </div>
+          <div className="mb-2">
+            <label className="form-label">Kategori</label>
+            <select name="category_id" value={form.category_id || ''} onChange={handleChange} className="form-select">
+              <option value="">-- Pilih Kategori --</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="row">
+            <div className="col-md-4 mb-2">
+              <label className="form-label">Harga Jual</label>
+              <input name="selling_price" type="number" value={form.selling_price} onChange={handleChange} className="form-control" min="0" step="0.01" />
+            </div>
+            <div className="col-md-4 mb-2">
+              <label className="form-label">Stok Tersedia</label>
+              <input name="stock_available" type="number" value={form.stock_available} onChange={handleChange} className="form-control" min="0" step="0.001" />
+            </div>
+            <div className="col-md-4 mb-2">
+              <label className="form-label">Unit</label>
+              <select name="stock_unit" value={form.stock_unit} onChange={handleChange} className="form-select">
+                <option value="pcs">pcs</option>
+                <option value="gram">gram</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="mb-2 form-check form-switch">
+            <input className="form-check-input" type="checkbox" id="is_available" name="is_available" checked={!!form.is_available} onChange={handleChange} />
+            <label className="form-check-label" htmlFor="is_available">Tersedia</label>
+          </div>
+
+          <div className="d-flex gap-2">
+            <button className="btn btn-primary" type="submit" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+            <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={saving}>Batal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default InventoryForm;

@@ -11,15 +11,18 @@ const Checkout = () => {
   // Form Customer
   const [customerName, setCustomerName] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash'); // cash atau qris
+  const [diningMethod, setDiningMethod] = useState('dine-in');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // Load data dari LocalStorage
     const savedCart = localStorage.getItem('wow_cart');
     const savedTable = localStorage.getItem('wow_table');
+    const savedLocation = localStorage.getItem('wow_location');
     
     if (savedCart) setCart(JSON.parse(savedCart));
     if (savedTable) setTableNumber(savedTable);
+    if (savedLocation) setDiningMethod(savedLocation);
   }, []);
 
   const cartTotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -52,7 +55,7 @@ const Checkout = () => {
     const payload = {
       table_number: tableNumber,
       customer_name: customerName,
-      location: 'dine-in', // Default dine-in sesuai scope PDF
+      location: diningMethod, // Menggunakan state diningMethod dinamis
       total_amount: cartTotal,
       payment_method: paymentMethod,
       payment_status: 'pending', // Default pending
@@ -148,6 +151,33 @@ const Checkout = () => {
               placeholder="Masukkan nama Anda" 
               value={customerName} onChange={e => setCustomerName(e.target.value)}
             />
+          </div>
+          <div className="mb-3">
+            <label className="form-label fw-bold">Tipe Pesanan</label>
+            <div className="d-flex gap-2">
+              <button
+                type="button"
+                className={`btn flex-fill py-2 fw-bold d-flex align-items-center justify-content-center gap-2 ${diningMethod === 'dine-in' ? 'btn-success text-white shadow-sm' : 'btn-outline-secondary'}`}
+                style={{ borderRadius: '0.5rem' }}
+                onClick={() => {
+                  setDiningMethod('dine-in');
+                  localStorage.setItem('wow_location', 'dine-in');
+                }}
+              >
+                🍽️ Makan di Sini
+              </button>
+              <button
+                type="button"
+                className={`btn flex-fill py-2 fw-bold d-flex align-items-center justify-content-center gap-2 ${diningMethod === 'takeaway' ? 'btn-secondary text-white shadow-sm' : 'btn-outline-secondary'}`}
+                style={{ borderRadius: '0.5rem' }}
+                onClick={() => {
+                  setDiningMethod('takeaway');
+                  localStorage.setItem('wow_location', 'takeaway');
+                }}
+              >
+                🛍️ Bawa Pulang
+              </button>
+            </div>
           </div>
           <div className="mb-3">
             <label className="form-label fw-bold">Metode Pembayaran</label>

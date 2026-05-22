@@ -35,7 +35,6 @@ export const CustomerReceipt = ({ order, receiptRef }) => {
       {/* HEADER */}
       <div className="text-center mb-3 pb-2" style={{ borderBottom: '2px dashed #000' }}>
         <h4 className="fw-bold mb-0">Billion Cafe</h4>
-        <small>Warmindo Order Wae</small>
         <div className="mt-2" style={{ fontSize: '12px' }}>
           {dateDisplay}
         </div>

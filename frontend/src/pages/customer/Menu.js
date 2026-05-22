@@ -20,6 +20,14 @@ const Menu = () => {
   const [selectedVariants, setSelectedVariants] = useState([]);
   const [productVariants, setProductVariants] = useState([]);
 
+  // State Dine In / Take Away
+  const [diningMethod, setDiningMethod] = useState(() => {
+    return localStorage.getItem('wow_location') || null;
+  });
+  const [showDiningModal, setShowDiningModal] = useState(() => {
+    return !localStorage.getItem('wow_location');
+  });
+
   useEffect(() => {
     fetchData();
 
@@ -30,8 +38,19 @@ const Menu = () => {
     const savedCart = localStorage.getItem('wow_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
 
+    // Simpan nomor meja ke localStorage
+    if (tableNumber !== '0') {
+      localStorage.setItem('wow_table', tableNumber);
+    }
+
     return () => clearInterval(interval);
-  }, []);
+  }, [tableNumber]);
+
+  const handleSelectDiningMethod = (method) => {
+    setDiningMethod(method);
+    localStorage.setItem('wow_location', method);
+    setShowDiningModal(false);
+  };
 
   const fetchData = async () => {
     try {
@@ -111,7 +130,26 @@ const Menu = () => {
       <div className="bg-warning text-white p-3 sticky-top shadow-sm d-flex justify-content-between align-items-center" style={{zIndex: 1020}}>
         <div>
           <h5 className="mb-0 fw-bold">Billion Cafe Menu</h5>
-          <small className="opacity-75">Meja No: {tableNumber}</small>
+          <div className="d-flex align-items-center gap-2 mt-1">
+            <span className="badge bg-white text-dark py-1 px-2" style={{fontSize: '0.75rem', borderRadius: '5px'}}>
+              Meja {tableNumber !== '0' ? tableNumber : '-'}
+            </span>
+            {diningMethod && (
+              <span 
+                className="badge py-1 px-2 text-white" 
+                style={{
+                  fontSize: '0.75rem', 
+                  borderRadius: '5px', 
+                  backgroundColor: diningMethod === 'dine-in' ? '#198754' : '#6c757d',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setShowDiningModal(true)}
+              >
+                {diningMethod === 'dine-in' ? '🍽️ Makan di Sini' : '🛍️ Bawa Pulang'}
+                <i className="bi bi-pencil-square ms-1" style={{fontSize: '0.65rem'}}></i>
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -268,6 +306,69 @@ const Menu = () => {
                 <button className="btn btn-warning w-100 fw-bold py-2" onClick={addToCart}>
                   Tambah ke Pesanan - Rp {((parseFloat(selectedProduct.base_price) + selectedVariants.reduce((t,v)=>t+parseFloat(v.extra_price),0)) * orderQty).toLocaleString('id-ID')}
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pilihan Tipe Pesanan (Dine In / Take Away) */}
+      {showDiningModal && (
+        <div className="modal show d-block animate-fade-in" style={{backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1060, backdropFilter: 'blur(10px)'}}>
+          <div className="modal-dialog modal-dialog-centered" style={{maxWidth: '450px'}}>
+            <div className="modal-content border-0 shadow-lg text-dark mx-3" style={{borderRadius: '1.5rem', overflow: 'hidden'}}>
+              <div className="modal-body p-4 text-center">
+                <div className="mb-2" style={{fontSize: '3rem'}}>☕</div>
+                <h4 className="fw-bold mb-1">Selamat Datang di Billion Cafe</h4>
+                <p className="text-muted small mb-4">Silakan pilih metode pelayanan untuk pesanan Anda:</p>
+                
+                <div className="d-grid gap-3">
+                  {/* Card Dine In */}
+                  <div 
+                    className="card border-2 p-3 text-start transition-all"
+                    style={{
+                      borderRadius: '1rem',
+                      borderColor: diningMethod === 'dine-in' ? '#ffc107' : '#f1f3f5',
+                      backgroundColor: diningMethod === 'dine-in' ? '#fffbe6' : '#f8f9fa',
+                      cursor: 'pointer',
+                      borderStyle: 'solid'
+                    }}
+                    onClick={() => handleSelectDiningMethod('dine-in')}
+                  >
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{width: 48, height: 48}}>
+                        <i className="bi bi-shop fs-4"></i>
+                      </div>
+                      <div>
+                        <h6 className="fw-bold mb-0">Makan di Sini (Dine In)</h6>
+                        <small className="text-muted" style={{fontSize: '0.75rem'}}>Disajikan di piring hangat di meja Anda</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Take Away */}
+                  <div 
+                    className="card border-2 p-3 text-start transition-all"
+                    style={{
+                      borderRadius: '1rem',
+                      borderColor: diningMethod === 'takeaway' ? '#ffc107' : '#f1f3f5',
+                      backgroundColor: diningMethod === 'takeaway' ? '#fffbe6' : '#f8f9fa',
+                      cursor: 'pointer',
+                      borderStyle: 'solid'
+                    }}
+                    onClick={() => handleSelectDiningMethod('takeaway')}
+                  >
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{width: 48, height: 48}}>
+                        <i className="bi bi-bag-check-fill fs-4"></i>
+                      </div>
+                      <div>
+                        <h6 className="fw-bold mb-0">Bawa Pulang (Take Away)</h6>
+                        <small className="text-muted" style={{fontSize: '0.75rem'}}>Dibungkus rapi, praktis dibawa pulang</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

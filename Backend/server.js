@@ -8,6 +8,7 @@ import userRoute from './src/routes/userRoute.js';
 import orderRoute from './src/routes/orderRoute.js';
 import categoriesRoute from './src/routes/categoriesRoute.js';
 import productVariantRoute from './src/routes/productVariantRoute.js';
+import inventoryRoute from './src/routes/inventoryRoute.js';
 import httpLogger from './src/middleware/httplogger.js';
 import authRoute from './src/routes/authRoute.js';
 import * as limiter from './src/middleware/rateLimiter.js';
@@ -35,6 +36,7 @@ app.use('/api', productRoute);
 app.use('/api', userRoute);
 app.use('/api', categoriesRoute);
 app.use('/api', productVariantRoute);
+app.use('/api', inventoryRoute);
 app.use((req, res) => {
     logger.warn(`404 Not Found - ${req.originalUrl}`);
     res.status(404).send("404 Not Found");

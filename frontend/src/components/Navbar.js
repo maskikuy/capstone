@@ -37,6 +37,9 @@ const Navbar = () => {
                 <li className="nav-item">
                 <Link className="nav-link" to="/admin/categories">Kategori</Link>
                 </li>
+                <li className="nav-item">
+                <Link className="nav-link" to="/admin/inventory">Inventori</Link>
+                </li>
                 {/* --- TAMBAHAN BARU --- */}
                 <li className="nav-item">
                 <Link className="nav-link" to="/admin/history">Riwayat Pesanan</Link>

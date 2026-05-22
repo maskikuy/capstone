@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 // Admin Pages
 import ProductList from './pages/admin/ProductList';
 import ProductForm from './pages/admin/ProductForm';
+import Inventory from './pages/admin/Inventory';
 import Categories from './pages/admin/Categories';
 import Users from './pages/admin/Users';
 import OrderHistory from './pages/admin/OrderHistory';
@@ -79,6 +80,7 @@ function App() {
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/history" element={<OrderHistory />} />
           <Route path="/admin/qr-codes" element={<QRCodeGenerator />} />
+          <Route path="/admin/inventory" element={<Inventory />} />
         </Route>
 
         {/* Route Kitchen */}
