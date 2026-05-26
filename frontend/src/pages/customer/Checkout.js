@@ -3,6 +3,120 @@ import api from '../../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { notifyError, showAlert } from '../../utils/notify';
 
+// Shopee-style quantity selector with direct numeric input support
+const CartItemQuantity = ({ quantity, onChange, onRemove }) => {
+  const [localQty, setLocalQty] = useState(quantity.toString());
+
+  // Keep local quantity in sync with parent prop updates
+  useEffect(() => {
+    setLocalQty(quantity.toString());
+  }, [quantity]);
+
+  const handleInputChange = (e) => {
+    const val = e.target.value.replace(/[^0-9]/g, '');
+    setLocalQty(val);
+    
+    if (val !== '') {
+      const parsed = parseInt(val, 10);
+      if (parsed > 0) {
+        onChange(parsed);
+      }
+    }
+  };
+
+  const handleBlur = () => {
+    if (localQty === '' || parseInt(localQty, 10) <= 0) {
+      setLocalQty(quantity.toString());
+      onChange(quantity);
+    } else {
+      const parsed = parseInt(localQty, 10);
+      setLocalQty(parsed.toString());
+      onChange(parsed);
+    }
+  };
+
+  const handleMinus = () => {
+    if (quantity <= 1) {
+      onRemove();
+    } else {
+      onChange(quantity - 1);
+    }
+  };
+
+  const handlePlus = () => {
+    onChange(quantity + 1);
+  };
+
+  return (
+    <div className="d-flex align-items-center" style={{ 
+      border: '1px solid #dee2e6', 
+      borderRadius: '6px',
+      overflow: 'hidden',
+      height: '32px',
+      backgroundColor: '#fff'
+    }}>
+      <button
+        type="button"
+        onClick={handleMinus}
+        className="btn d-flex align-items-center justify-content-center p-0"
+        style={{
+          width: '32px',
+          height: '100%',
+          border: 'none',
+          borderRadius: '0',
+          backgroundColor: '#f8f9fa',
+          color: '#495057',
+          fontSize: '1.1rem',
+          fontWeight: '500',
+          cursor: 'pointer'
+        }}
+      >
+        -
+      </button>
+      <input
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        value={localQty}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        className="text-center p-0 fw-bold"
+        style={{
+          width: '45px',
+          height: '100%',
+          borderTop: 'none',
+          borderBottom: 'none',
+          borderLeft: '1px solid #dee2e6',
+          borderRight: '1px solid #dee2e6',
+          borderRadius: '0',
+          fontSize: '0.9rem',
+          outline: 'none',
+          color: '#212529',
+          boxShadow: 'none'
+        }}
+      />
+      <button
+        type="button"
+        onClick={handlePlus}
+        className="btn d-flex align-items-center justify-content-center p-0"
+        style={{
+          width: '32px',
+          height: '100%',
+          border: 'none',
+          borderRadius: '0',
+          backgroundColor: '#f8f9fa',
+          color: '#495057',
+          fontSize: '1.1rem',
+          fontWeight: '500',
+          cursor: 'pointer'
+        }}
+      >
+        +
+      </button>
+    </div>
+  );
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
@@ -160,34 +274,15 @@ const Checkout = () => {
                 <div className="text-end">
                   <div className="fw-bold mb-2">Rp {item.totalPrice.toLocaleString('id-ID')}</div>
                   <div className="d-flex align-items-center justify-content-end gap-2">
-                    <div className="input-group input-group-sm" style={{ width: '100px' }}>
-                      <button 
-                        className="btn btn-outline-secondary px-2 py-0 d-flex align-items-center justify-content-center" 
-                        type="button"
-                        style={{ height: '28px', width: '28px', borderRadius: '0.25rem 0 0 0.25rem' }}
-                        onClick={() => handleUpdateQuantity(item.tempId, item.quantity - 1)}
-                      >
-                        -
-                      </button>
-                      <span 
-                        className="form-control text-center p-0 d-flex align-items-center justify-content-center fw-semibold"
-                        style={{ height: '28px', fontSize: '0.9rem', backgroundColor: '#fff', borderLeft: 'none', borderRight: 'none' }}
-                      >
-                        {item.quantity}
-                      </span>
-                      <button 
-                        className="btn btn-outline-secondary px-2 py-0 d-flex align-items-center justify-content-center" 
-                        type="button"
-                        style={{ height: '28px', width: '28px', borderRadius: '0 0.25rem 0.25rem 0' }}
-                        onClick={() => handleUpdateQuantity(item.tempId, item.quantity + 1)}
-                      >
-                        +
-                      </button>
-                    </div>
+                    <CartItemQuantity
+                      quantity={item.quantity}
+                      onChange={(newQty) => handleUpdateQuantity(item.tempId, newQty)}
+                      onRemove={() => handleRemoveItem(item.tempId)}
+                    />
                     
                     <button 
                       className="btn btn-sm btn-outline-danger p-0 d-flex align-items-center justify-content-center" 
-                      style={{ height: '28px', width: '28px', borderRadius: '0.25rem' }}
+                      style={{ height: '32px', width: '32px', borderRadius: '6px' }}
                       onClick={() => handleRemoveItem(item.tempId)}
                       title="Hapus"
                     >

@@ -38,25 +38,24 @@ const formatFile = winston.format.combine(
   winston.format.json()
 );
 
-const logger = winston.createLogger({
-  level: 'debug',
-  levels,
-  transports: [
-    new winston.transports.Console({
-      format: formatConsole,
-    }),
-    
+const transports = [
+  new winston.transports.Console({
+    format: formatConsole,
+  }),
+];
+
+// Only write to files in production to avoid file locks/conflict errors in development
+if (process.env.NODE_ENV === 'production') {
+  transports.push(
     new winston.transports.File({
       filename: 'logs/error.log',
       level: 'error',
       format: formatFile,
     }),
-
     new winston.transports.File({
       filename: 'logs/app.log',
       format: formatFile,
     }),
-
     new winston.transports.File({
       filename: 'logs/http.log',
       level: 'debug',
@@ -65,8 +64,14 @@ const logger = winston.createLogger({
         winston.format.timestamp(),
         winston.format.json()
       ),
-    }),
-  ],
+    })
+  );
+}
+
+const logger = winston.createLogger({
+  level: 'debug',
+  levels,
+  transports,
 });
 
 export default logger;
