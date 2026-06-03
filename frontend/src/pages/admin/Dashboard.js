@@ -211,6 +211,9 @@ const Dashboard = () => {
               <Link to="/admin/qr-codes" className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                 Cetak QR Code Meja <span className="text-muted">➔</span>
               </Link>
+              <Link to="/admin/qris-settings" className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                Pengaturan QRIS Statis <span className="text-muted">➔</span>
+              </Link>
               <Link to="/admin/users" className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                 Buat Akun Dapur <span className="text-muted">➔</span>
               </Link>

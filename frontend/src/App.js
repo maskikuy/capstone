@@ -12,6 +12,7 @@ import Categories from './pages/admin/Categories';
 import Users from './pages/admin/Users';
 import OrderHistory from './pages/admin/OrderHistory';
 import Dashboard from './pages/admin/Dashboard';
+import QrisSettings from './pages/admin/QrisSettings';
 
 // Kasir Pages
 import KitchenDashboard from './pages/kitchen/Dashboard';
@@ -81,6 +82,7 @@ function App() {
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/qr-codes" element={<QRCodeGenerator />} />
           <Route path="/admin/inventory" element={<Inventory />} />
+          <Route path="/admin/qris-settings" element={<QrisSettings />} />
         </Route>
 
         {/* Route Kasir */}

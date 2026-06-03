@@ -15,6 +15,7 @@ import * as limiter from './src/middleware/rateLimiter.js';
 import {Server} from 'socket.io';
 import http from 'http';
 import { ensureInventoryTable } from './src/utils/initDb.js';
+import qrisRoute from './src/routes/qrisRoute.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use('/api', userRoute);
 app.use('/api', categoriesRoute);
 app.use('/api', productVariantRoute);
 app.use('/api', inventoryRoute);
+app.use('/api', qrisRoute);
 app.use((req, res) => {
     logger.warn(`404 Not Found - ${req.originalUrl}`);
     res.status(404).send("404 Not Found");

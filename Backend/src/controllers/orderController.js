@@ -4,6 +4,13 @@ import * as orderItemModel from '../models/orderItemModel.js';
 import * as orderItemVariantModel from '../models/orderItemVariantModel.js';
 import baseLogger from '../utils/logger.js';
 import { generateDynamicQRIS } from '../utils/qrisHelper.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadDir = path.join(__dirname, '../uploads');
 
 const logger = baseLogger.child({ context: 'OrderController' });
 const qrisStatic = process.env.MY_STATIC_QRIS || '';
@@ -77,9 +84,20 @@ export const createOrder = async (req, res) => {
         }
         await conn.commit();
         const totalBayar = orderInfo.total_amount;
-        const qrisData = await generateDynamicQRIS(qrisStatic, totalBayar);
+        
+        let qrisImage = '';
+        const staticQrisPath = path.join(uploadDir, 'qris_statis.png');
+        if (fs.existsSync(staticQrisPath)) {
+            qrisImage = `${req.protocol}://${req.get('host')}/uploads/qris_statis.png?t=${Date.now()}`;
+            logger.info(`Serving static QRIS for order ID: ${orderId}`);
+        } else {
+            const qrisData = await generateDynamicQRIS(qrisStatic, totalBayar);
+            qrisImage = qrisData.qr_image;
+            logger.info(`Generated dynamic QRIS for order ID: ${orderId}`);
+        }
+        
         logger.debug(`Order created with ID: ${orderId}`);
-        res.status(201).json({ id: orderId, qris_image: qrisData.qr_image });
+        res.status(201).json({ id: orderId, qris_image: qrisImage });
     } catch (error) {
         await conn.rollback();
         logger.error(`Error creating order: ${error.message}`);

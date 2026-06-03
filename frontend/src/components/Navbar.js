@@ -45,6 +45,9 @@ const Navbar = () => {
                 <Link className="nav-link" to="/admin/qr-codes">QR Meja</Link>
                 </li>
                 <li className="nav-item">
+                <Link className="nav-link" to="/admin/qris-settings">QRIS Statis</Link>
+                </li>
+                <li className="nav-item">
                 <Link className="nav-link" to="/admin/users">Kelola User</Link>
                 </li>
             </>
