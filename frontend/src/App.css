@@ -36,3 +36,85 @@
     transform: rotate(360deg);
   }
 }
+
+.dashboard-page {
+  min-height: 100vh;
+  background: #111111;
+}
+
+.dashboard-title {
+  color: #f8fafc;
+}
+
+.dashboard-card {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.25rem;
+}
+
+.dashboard-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dashboard-badge-success {
+  color: #22c55e;
+}
+
+.dashboard-badge-primary {
+  color: #38bdf8;
+}
+
+.dashboard-badge-warning {
+  color: #f59e0b;
+}
+
+.dashboard-badge-danger {
+  color: #ef4444;
+}
+
+.chart-wrapper {
+  width: 100%;
+  min-height: 320px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+}
+
+.bg-info {
+  background-color: #38bdf8 !important;
+}
+
+.preview-image {
+  width: 44px;
+  height: 44px;
+}
+
+.preview-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder-image {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hover-fade:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hover-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff !important;
+}
