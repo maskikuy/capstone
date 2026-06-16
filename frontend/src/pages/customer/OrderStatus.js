@@ -3,7 +3,6 @@ import { useLocation, Link } from 'react-router-dom';
 import api from '../../utils/api';
 import html2canvas from 'html2canvas'; // 1. Import library
 import { CustomerReceipt } from '../../components/CustomerReceipt'; // 2. Import komponen Nota
-
 const OrderStatus = () => {
   const location = useLocation();
   const { orderId, customerName, tableNumber } = location.state || {};
@@ -17,7 +16,24 @@ const OrderStatus = () => {
   const receiptRef = useRef(null); // Ref untuk elemen nota
   // ------------------------------
 
-useEffect(() => {
+  // --- BARU: Google Review States ---
+  const [googleReviewUrl, setGoogleReviewUrl] = useState('');
+  const [showReviewModal, setShowReviewModal] = useState(false);
+
+  // --- BARU: Fetch Google Review Settings ---
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await api.get('/settings');
+        setGoogleReviewUrl(res.data.google_review_url || '');
+      } catch (err) {
+        console.error("Gagal memuat pengaturan Google Review", err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  useEffect(() => {
     if (!orderId) return;
 
 const fetchFullDetails = async () => {
@@ -54,6 +70,13 @@ const fetchFullDetails = async () => {
         if (fixedData.order_status) {
             setStatus(fixedData.order_status);
         }
+
+        if (fixedData.payment_status === 'paid') {
+            const shown = sessionStorage.getItem(`review_prompt_shown_${orderId}`);
+            if (shown !== 'true') {
+                setShowReviewModal(true);
+            }
+        }
         
       } catch (err) {
         console.error("Gagal ambil detail", err);
@@ -67,6 +90,13 @@ const fetchFullDetails = async () => {
         
         // Update state status saja
         setStatus(res.data.order_status);
+
+        if (res.data.payment_status === 'paid') {
+            const shown = sessionStorage.getItem(`review_prompt_shown_${orderId}`);
+            if (shown !== 'true') {
+                setShowReviewModal(true);
+            }
+        }
         
         // Update fullOrder tanpa menghapus data lama
         setFullOrder(prevOrder => {
@@ -284,7 +314,44 @@ const fetchFullDetails = async () => {
           </div>
         </div>
       )}
-      {/* ------------------------------- */}
+      {/* --------------------      {/* --- MODAL RATING GOOGLE --- */}
+      {showReviewModal && (
+        <div className="modal show d-block animate__animated animate__fadeIn" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1060 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg text-center" style={{ borderRadius: '20px', overflow: 'hidden', maxWidth: '400px', margin: '0 auto' }}>
+              
+              {/* Header */}
+              <div className="modal-header bg-warning text-dark border-0 py-3 text-center">
+                <h5 className="modal-title fw-bold mx-auto">Billion Coffee</h5>
+              </div>
+
+              {/* Body */}
+              <div className="modal-body p-4">
+                <div className="fs-1 mb-2">☕🥰</div>
+                <h4 className="fw-bold mb-3">Lanjut rating kita yuk :)</h4>
+                <p className="text-muted small mb-4">Ulasan Anda sangat berharga untuk membantu Billion Coffee tumbuh lebih baik!</p>
+                
+                <div className="d-grid gap-2">
+                  <a 
+                    href={googleReviewUrl || "https://google.com"} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn btn-warning fw-bold text-dark py-3 rounded-pill shadow-sm"
+                    style={{ fontSize: '1.1rem' }}
+                    onClick={() => {
+                      sessionStorage.setItem(`review_prompt_shown_${orderId}`, 'true');
+                      setShowReviewModal(false);
+                    }}
+                  >
+                    Lanjuttt
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

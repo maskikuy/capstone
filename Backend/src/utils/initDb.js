@@ -27,6 +27,30 @@ export const ensureInventoryTable = async () => {
 
     const conn = await db.getConnection();
     try {
+        // Create settings table
+        await conn.query(`CREATE TABLE IF NOT EXISTS settings (
+            setting_key VARCHAR(100) PRIMARY KEY,
+            setting_value TEXT NOT NULL
+        );`);
+        logger.info('Ensured settings table exists');
+
+        // Seed settings
+        await conn.query(`INSERT IGNORE INTO settings (setting_key, setting_value) VALUES 
+            ('google_review_url', 'https://www.google.com/search?kgmid=%2Fg%2F11ss4k_t11&hl=id-ID&q=Billioncoffee&shem=epsdc%2Crimspwouoe&shndl=30&source=sh%2Fx%2Floc%2Fosrp%2Fm5%2F1&kgs=3794780af58c5109'),
+            ('review_threshold', '4');`);
+        logger.info('Seeded default settings');
+
+        // Create feedbacks table
+        await conn.query(`CREATE TABLE IF NOT EXISTS feedbacks (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            order_id INT,
+            rating INT,
+            comments TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL
+        );`);
+        logger.info('Ensured feedbacks table exists');
+
         await conn.query(createSql);
         logger.info('Ensured inventories table exists');
 
