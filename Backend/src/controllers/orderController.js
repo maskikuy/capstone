@@ -8,6 +8,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import * as productRecipeModel from '../models/productRecipeModel.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadDir = path.join(__dirname, '../uploads');
@@ -71,6 +73,10 @@ export const createOrder = async (req, res) => {
             };
             const orderItemId = await orderItemModel.createOrderItem(conn, itemData);
             logger.debug(`Order item created for order ID: ${orderId}`);
+
+            // Otomatis kurangi stok inventori berdasarkan resep produk
+            await productRecipeModel.deductInventoryStockForProduct(conn, item.product_id, item.quantity);
+
             const orderItemVariants = item.itemVariants || [];
             for (const variant of orderItemVariants) {
                 const variantData = {

@@ -8,6 +8,7 @@ const ProductForm = () => {
   const { id } = useParams();
   
   const [categories, setCategories] = useState([]);
+  const [inventories, setInventories] = useState([]);
   
   // State Data Produk
   const [name, setName] = useState('');
@@ -20,11 +21,12 @@ const ProductForm = () => {
   const [grosirPricePerUnit, setGrosirPricePerUnit] = useState('');
   const [grosirMinQty, setGrosirMinQty] = useState('');
 
-  // State Data Varian
+  // State Data Varian & Resep
   const [variants, setVariants] = useState([{ name: '', extra_price: 0 }]);
   const [deletedVariantIds, setDeletedVariantIds] = useState([]);
+  const [recipes, setRecipes] = useState([{ inventory_id: '', quantity_required: '' }]);
 
-  // 2. Gunakan useCallback untuk fetchCategories
+  // 2. Gunakan useCallback untuk fetchCategories & fetchInventories
   const fetchCategories = useCallback(async () => {
     try {
       const res = await api.get('/categories?type=menu');
@@ -34,8 +36,16 @@ const ProductForm = () => {
     }
   }, []);
 
+  const fetchInventories = useCallback(async () => {
+    try {
+      const res = await api.get('/inventory');
+      setInventories(res.data);
+    } catch (err) {
+      console.error("Gagal ambil data inventori", err);
+    }
+  }, []);
+
   // 3. Gunakan useCallback untuk fetchProductData
-  // Dependency-nya adalah [id], karena fungsi ini bergantung pada nilai id
   const fetchProductData = useCallback(async () => {
     try {
       // Ambil data detail produk
@@ -60,6 +70,19 @@ const ProductForm = () => {
           extra_price: v.extra_price
         })));
       }
+
+      // Ambil resep komposisi bahan baku
+      try {
+        const { data: recipeData } = await api.get(`/product-recipe/${id}`);
+        if (recipeData && recipeData.length > 0) {
+          setRecipes(recipeData.map(r => ({
+            inventory_id: r.inventory_id,
+            quantity_required: r.quantity_required
+          })));
+        }
+      } catch (rErr) {
+        console.error("Gagal ambil resep produk", rErr);
+      }
     } catch (err) {
       console.error("Gagal ambil data produk", err);
       alert("Gagal memuat data produk");
@@ -69,10 +92,11 @@ const ProductForm = () => {
   // 4. Masukkan fungsi ke dependency array useEffect
   useEffect(() => {
     fetchCategories();
+    fetchInventories();
     if (id) {
       fetchProductData();
     }
-  }, [id, fetchCategories, fetchProductData]);
+  }, [id, fetchCategories, fetchInventories, fetchProductData]);
 
   // ... (Sisa kode handler dan return JSX tetap sama seperti sebelumnya) ...
 
@@ -93,6 +117,21 @@ const ProductForm = () => {
     }
     const newVariants = variants.filter((_, i) => i !== index);
     setVariants(newVariants);
+  };
+
+  const handleRecipeChange = (index, field, value) => {
+    const newRecipes = [...recipes];
+    newRecipes[index][field] = value;
+    setRecipes(newRecipes);
+  };
+
+  const addRecipeField = () => {
+    setRecipes([...recipes, { inventory_id: '', quantity_required: '' }]);
+  };
+
+  const removeRecipeField = (index) => {
+    const newRecipes = recipes.filter((_, i) => i !== index);
+    setRecipes(newRecipes);
   };
 
   const handleSubmit = async (e) => {
@@ -149,6 +188,10 @@ const ProductForm = () => {
           }
         }
       }
+
+      // Simpan Komposisi / Resep Bahan Baku
+      const validRecipes = recipes.filter(r => r.inventory_id && Number(r.quantity_required) > 0);
+      await api.put(`/product-recipe/${targetProductId}`, { recipes: validRecipes });
 
       notifySuccess('Data berhasil disimpan!');
       navigate('/admin/products');
@@ -264,6 +307,55 @@ const ProductForm = () => {
             })()}
 
             <hr />
+
+            <h5 className="mb-3 text-secondary">🧪 Komposisi / Resep Bahan Baku</h5>
+            <p className="small text-muted">Pilih bahan dari inventori yang akan otomatis berkurang stoknya setiap kali menu ini dipesan.</p>
+
+            {recipes.map((recipe, index) => {
+              const selectedItem = inventories.find(i => i.id === parseInt(recipe.inventory_id));
+              return (
+                <div key={index} className="row g-2 align-items-center mb-2">
+                  <div className="col-md-6">
+                    <select 
+                      className="form-select"
+                      value={recipe.inventory_id}
+                      onChange={e => handleRecipeChange(index, 'inventory_id', e.target.value)}
+                    >
+                      <option value="">-- Pilih Bahan Baku dari Inventori --</option>
+                      {inventories.map(inv => (
+                        <option key={inv.id} value={inv.id}>
+                          {inv.name} (Stok: {inv.stock_available} {inv.stock_unit})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="input-group">
+                      <input 
+                        type="number" 
+                        step="0.001"
+                        className="form-control" 
+                        placeholder="Jumlah / Takaran per Porsi" 
+                        value={recipe.quantity_required}
+                        onChange={e => handleRecipeChange(index, 'quantity_required', e.target.value)} 
+                      />
+                      <span className="input-group-text">
+                        {selectedItem ? selectedItem.stock_unit : 'unit'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-md-2">
+                    <button type="button" className="btn btn-outline-danger w-100" onClick={() => removeRecipeField(index)}>
+                      <i className="bi bi-trash"></i> Hapus
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+            <button type="button" className="btn btn-outline-secondary btn-sm mt-2" onClick={addRecipeField}>+ Tambah Bahan Baku</button>
+
+            <hr className="mt-4" />
 
             <h5 className="mb-3 text-secondary">Varian / Opsi Tambahan</h5>
             <p className="small text-muted">Contoh: "Level Pedas", "Extra Kerupuk".</p>

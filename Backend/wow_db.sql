@@ -101,6 +101,16 @@ CREATE TABLE inventories (
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
 
+-- 9. Tabel Product Recipes (Resep Komposisi Bahan Baku per Menu)
+CREATE TABLE product_recipes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    inventory_id INT NOT NULL,
+    quantity_required DECIMAL(12,3) NOT NULL DEFAULT 0.000,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE
+);
+
 -- Seed contoh data untuk tabel inventories
 INSERT INTO inventories (name, category_id, selling_price, initial_cost, price_type, retail_price_per_unit, grosir_price_per_unit, grosir_min_qty, stock_available, stock_unit, low_stock_threshold, warehouse_stock, real_stock, is_available)
 VALUES

@@ -17,6 +17,7 @@ import http from 'http';
 import { ensureInventoryTable } from './src/utils/initDb.js';
 import qrisRoute from './src/routes/qrisRoute.js';
 import settingsRoute from './src/routes/settingsRoute.js';
+import productRecipeRoute from './src/routes/productRecipeRoute.js';
 
 dotenv.config();
 
@@ -42,6 +43,7 @@ app.use('/api', productVariantRoute);
 app.use('/api', inventoryRoute);
 app.use('/api', qrisRoute);
 app.use('/api', settingsRoute);
+app.use('/api', productRecipeRoute);
 app.use((req, res) => {
     logger.warn(`404 Not Found - ${req.originalUrl}`);
     res.status(404).send("404 Not Found");

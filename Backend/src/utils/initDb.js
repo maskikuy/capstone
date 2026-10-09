@@ -62,6 +62,17 @@ export const ensureInventoryTable = async () => {
         await conn.query(createSql);
         logger.info('Ensured inventories table exists');
 
+        // Create product_recipes table
+        await conn.query(`CREATE TABLE IF NOT EXISTS product_recipes (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            product_id INT NOT NULL,
+            inventory_id INT NOT NULL,
+            quantity_required DECIMAL(12,3) NOT NULL DEFAULT 0.000,
+            FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+            FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB;`);
+        logger.info('Ensured product_recipes table exists');
+
         // Insert seed data only if table is empty
         const [rows] = await conn.query('SELECT COUNT(*) as c FROM inventories');
         if (rows && rows[0] && Number(rows[0].c) === 0) {
