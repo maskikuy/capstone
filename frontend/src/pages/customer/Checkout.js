@@ -221,6 +221,23 @@ const Checkout = () => {
       // Bersihkan cart
       localStorage.removeItem('wow_cart');
 
+      // Simpan pesanan ke riwayat pesanan (localStorage)
+      try {
+        const history = JSON.parse(localStorage.getItem('wow_order_history') || '[]');
+        if (!history.some(h => h.orderId === newOrderId)) {
+          history.push({
+            orderId: newOrderId,
+            customerName: customerName,
+            tableNumber: tableNumber,
+            totalAmount: payload.total_amount,
+            date: new Date().toISOString()
+          });
+          localStorage.setItem('wow_order_history', JSON.stringify(history));
+        }
+      } catch (err) {
+        console.error('Gagal menyimpan riwayat pesanan:', err);
+      }
+
       if(paymentMethod === 'qris') {
         navigate('/customer/payment-qris', { 
             state: { 

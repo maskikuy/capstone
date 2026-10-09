@@ -3,10 +3,10 @@ import bcrypt from 'bcryptjs';
 import {createUser} from './src/models/userModel.js';
 
 const seedDatabase = async () => {
+    let conn;
     try {
-        const conn = await db.getConnection();
-        console.log('Database synced successfully.');
-        // Tambahkan data seeding di sini jika diperlukan
+        conn = await db.getConnection();
+        console.log('Database connected successfully.');
 
         // Contoh: Menambahkan user admin
         const hashedPassword = await bcrypt.hash('123', 10);
@@ -19,7 +19,7 @@ const seedDatabase = async () => {
     } catch (error) {
         console.error('Error seeding database:', error);
     } finally {
-        await conn.close();
+        if (conn) conn.release();
         console.log('Database connection closed.');
     }
 };

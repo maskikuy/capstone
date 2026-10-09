@@ -28,6 +28,17 @@ const Menu = () => {
     return !localStorage.getItem('wow_location');
   });
 
+  // State Riwayat Pesanan
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [orderHistory, setOrderHistory] = useState([]);
+
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('wow_order_history');
+    if (savedHistory) {
+      setOrderHistory(JSON.parse(savedHistory));
+    }
+  }, [showHistoryModal]);
+
   useEffect(() => {
     fetchData();
 
@@ -198,6 +209,13 @@ const Menu = () => {
             )}
           </div>
         </div>
+        <button 
+          className="btn btn-sm btn-dark text-white rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1 shadow-sm border-0"
+          style={{ fontSize: '0.75rem', backgroundColor: '#212529' }}
+          onClick={() => setShowHistoryModal(true)}
+        >
+          📜 Riwayat
+        </button>
       </div>
 
       {/* Kategori Filter */}
@@ -437,6 +455,77 @@ const Menu = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Modal Riwayat Pesanan --- */}
+      {showHistoryModal && (
+        <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1050, backdropFilter: 'blur(5px)'}}>
+          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable" style={{maxWidth: '450px'}}>
+            <div className="modal-content border-0 shadow-lg text-dark" style={{borderRadius: '1.5rem'}}>
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title fw-bold fs-4">📜 Riwayat Pesanan</h5>
+                <button className="btn-close" onClick={() => setShowHistoryModal(false)}></button>
+              </div>
+              <div className="modal-body p-4">
+                {orderHistory.length > 0 ? (
+                  <div className="d-flex flex-column gap-3">
+                    {orderHistory.slice().reverse().map((item) => (
+                      <div 
+                        key={item.orderId} 
+                        className="card border-0 bg-light p-3 shadow-sm rounded-3 hover-fade"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          setShowHistoryModal(false);
+                          navigate('/customer/status', { 
+                            state: { 
+                              orderId: item.orderId, 
+                              customerName: item.customerName, 
+                              tableNumber: item.tableNumber 
+                            } 
+                          });
+                        }}
+                      >
+                        <div className="d-flex justify-content-between align-items-start mb-2">
+                          <div>
+                            <span className="badge bg-warning text-dark fw-bold me-2">ID: #{item.orderId}</span>
+                            <span className="badge bg-secondary text-white">Meja {item.tableNumber}</span>
+                          </div>
+                          <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                            {new Date(item.date).toLocaleDateString('id-ID', {
+                              day: 'numeric',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </small>
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center mt-2">
+                          <div>
+                            <span className="text-secondary small d-block">Total Pembayaran</span>
+                            <span className="fw-bold text-dark">Rp {parseInt(item.totalAmount || 0).toLocaleString('id-ID')}</span>
+                          </div>
+                          <span className="btn btn-sm btn-dark rounded-pill px-3 py-1 fw-bold" style={{ fontSize: '0.75rem' }}>
+                            Lacak Status ⚡
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-muted">
+                    <div className="fs-1 mb-2">📭</div>
+                    <p className="mb-0 small">Belum ada riwayat pesanan dari perangkat ini.</p>
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer border-0">
+                <button className="btn btn-secondary w-100 fw-bold py-2" style={{ borderRadius: '0.75rem' }} onClick={() => setShowHistoryModal(false)}>
+                  Tutup
+                </button>
               </div>
             </div>
           </div>

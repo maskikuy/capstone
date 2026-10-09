@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { Link } from 'react-router-dom';
 import { Banknote, FileText, Users, AlertCircle, ChevronRight, ArrowUpRight } from 'lucide-react';
@@ -19,6 +19,7 @@ const Dashboard = () => {
     return [...Array(7)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
+      
       return d.toLocaleDateString('id-ID');
     });
   }, []);

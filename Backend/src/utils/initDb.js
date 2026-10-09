@@ -43,12 +43,13 @@ export const ensureInventoryTable = async () => {
         // Create feedbacks table
         await conn.query(`CREATE TABLE IF NOT EXISTS feedbacks (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            order_id INT,
+            order_id INT DEFAULT NULL,
             rating INT,
             comments TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL
-        );`);
+            INDEX idx_feedbacks_order_id (order_id),
+            CONSTRAINT fk_feedbacks_orders FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB;`);
         logger.info('Ensured feedbacks table exists');
 
         await conn.query(createSql);
