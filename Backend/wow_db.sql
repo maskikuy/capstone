@@ -27,6 +27,9 @@ CREATE TABLE products (
     base_price DECIMAL(10, 2) NOT NULL, -- Harga dasar menu
     image_url VARCHAR(255),
     is_available BOOLEAN DEFAULT TRUE,
+    price_type ENUM('retail','grosir') DEFAULT 'retail',
+    grosir_price_per_unit DECIMAL(10,2) DEFAULT 0.00,
+    grosir_min_qty INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );

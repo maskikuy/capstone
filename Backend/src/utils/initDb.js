@@ -52,6 +52,13 @@ export const ensureInventoryTable = async () => {
         ) ENGINE=InnoDB;`);
         logger.info('Ensured feedbacks table exists');
 
+        // Ensure columns in products table
+        const [prodCols] = await conn.query("SHOW COLUMNS FROM products LIKE 'price_type'");
+        if (!prodCols || prodCols.length === 0) {
+            await conn.query("ALTER TABLE products ADD COLUMN price_type ENUM('retail','grosir') DEFAULT 'retail', ADD COLUMN grosir_price_per_unit DECIMAL(10,2) DEFAULT 0.00, ADD COLUMN grosir_min_qty INT DEFAULT 0");
+            logger.info('Added missing grosir/retail columns to products table');
+        }
+
         await conn.query(createSql);
         logger.info('Ensured inventories table exists');
 
