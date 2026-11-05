@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import MenuDropdown from './MenuDropdown';
 
 const Menu = () => {
   const [searchParams] = useSearchParams();
@@ -230,24 +232,14 @@ const Menu = () => {
           </div>
         </div>
 
-        {/* Tombol Riwayat Pesanan */}
-        <button 
-          className="d-flex align-items-center gap-1 shadow-sm"
-          style={{
-            fontSize: '0.78rem',
-            fontWeight: '600',
-            backgroundColor: '#222433',
-            color: '#cbd5e1',
-            border: '1px solid #2c2f40',
-            borderRadius: '20px',
-            padding: '7px 14px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
+        {/* Hamburger Dropdown */}
+        <MenuDropdown
+          onHistoryClick={() => setShowHistoryModal(true)}
+          onAboutClick={() => {
+            const query = searchParams.toString();
+            navigate(query ? `/customer/about?${query}` : '/customer/about');
           }}
-          onClick={() => setShowHistoryModal(true)}
-        >
-          <i className="bi bi-clock-history me-1" style={{ fontSize: '0.85rem' }}></i> Riwayat
-        </button>
+        />
       </div>
 
       {/* 2. Kategori Filter (Pills Bar) */}

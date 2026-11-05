@@ -3,8 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Navbar from './components/Navbar';
-
-// Admin Pages
 import ProductList from './pages/admin/ProductList';
 import ProductForm from './pages/admin/ProductForm';
 import Inventory from './pages/admin/Inventory';
@@ -13,30 +11,24 @@ import Users from './pages/admin/Users';
 import OrderHistory from './pages/admin/OrderHistory';
 import Dashboard from './pages/admin/Dashboard';
 import QrisSettings from './pages/admin/QrisSettings';
-
-// Kasir Pages
 import KitchenDashboard from './pages/kitchen/Dashboard';
-
-// Customer Pages
 import CustomerMenu from './pages/customer/Menu';
 import Checkout from './pages/customer/Checkout';
 import OrderStatus from './pages/customer/OrderStatus';
 import QRCodeGenerator from './pages/admin/QRCodeGenerator';
 import PaymentQris from './pages/customer/PaymentQris';
-
+import CustomerAbout from './pages/customer/About';
 import NotFound from './pages/NotFound';
 
-// Layout Component agar Navbar selalu muncul setelah login
 const DashboardLayout = () => (
   <div style={{ minHeight: '100vh', backgroundColor: '#101116', color: '#f8fafc' }}>
     <Navbar />
     <div className="container-fluid px-3 px-md-4 pb-4">
-      <Outlet /> {/* Ini tempat konten halaman dirender */}
+      <Outlet />
     </div>
   </div>
 );
 
-// Komponen Proteksi Route (Cek Token)
 const ProtectedRoute = ({ allowedRole, children }) => {
   const token = localStorage.getItem('token');
   const roleRaw = localStorage.getItem('role');
@@ -51,30 +43,28 @@ const ProtectedRoute = ({ allowedRole, children }) => {
 function App() {
   return (
     <Router>
-      <Toaster 
+      <Toaster
         position="top-right"
         reverseOrder={false}
         toastOptions={{
           style: {
             borderRadius: '10px',
             background: '#fff',
-            color: '#000',
-          },
+            color: '#000'
+          }
         }}
       />
       <Routes>
-        {/* Route Public */}
         <Route path="/" element={<Login />} />
 
-        {/* Route Customer */}
         <Route path="/customer/menu" element={<CustomerMenu />} />
+        <Route path="/customer/about" element={<CustomerAbout />} />
         <Route path="/customer/checkout" element={<Checkout />} />
         <Route path="/customer/status" element={<OrderStatus />} />
         <Route path="/customer/payment-qris" element={<PaymentQris />} />
 
-        {/* Route Admin */}
         <Route element={<ProtectedRoute allowedRole="admin"><DashboardLayout /></ProtectedRoute>}>
-          <Route path="/admin/dashboard" element={<Dashboard />} /> {/* Default Admin Page */}
+          <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/products" element={<ProductList />} />
           <Route path="/admin/product/new" element={<ProductForm />} />
           <Route path="/admin/product/edit/:id" element={<ProductForm />} />
@@ -85,14 +75,12 @@ function App() {
           <Route path="/admin/qris-settings" element={<QrisSettings />} />
         </Route>
 
-        {/* Route Kasir */}
         <Route element={<ProtectedRoute allowedRole="kasir"><DashboardLayout /></ProtectedRoute>}>
           <Route path="/kasir/dashboard" element={<KitchenDashboard />} />
           <Route path="/kitchen/dashboard" element={<KitchenDashboard />} />
           <Route path="/kasir/history" element={<OrderHistory />} />
         </Route>
 
-        {/* Route Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
