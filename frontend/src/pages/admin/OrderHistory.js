@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { notifySuccess, notifyError, confirmAction } from '../../utils/notify';
 import { printReceipt } from '../../utils/printHelper';
+import { Search, Printer, Receipt, SquarePen, Trash2, Eye, X } from 'lucide-react';
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
@@ -30,26 +31,20 @@ const OrderHistory = () => {
     fetchOrders();
   }, []);
 
-  // Filter berjalan setiap kali orders atau filterStatus berubah
   useEffect(() => {
     let result = orders;
 
     if (filterStatus === 'all') {
-      setFilteredOrders(orders);
+      result = orders;
     } else {
-      setFilteredOrders(orders.filter(o => o.order_status === filterStatus));
+      result = orders.filter(o => o.order_status === filterStatus);
     }
 
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
-      
       result = result.filter(order => {
-        // Ambil nama (aman dari null)
         const name = (order.customer_name || '').toLowerCase();
-        // Ambil ID string
         const id = order.id.toString();
-
-        // Cek apakah nama ATAU ID mengandung kata kunci pencarian
         return name.includes(lowerQuery) || id.includes(lowerQuery);
       });
     }
@@ -60,7 +55,6 @@ const OrderHistory = () => {
   const fetchOrders = async () => {
     try {
       const res = await api.get('/order');
-      // Urutkan dari yang terbaru (ID besar ke kecil atau created_at)
       const sorted = res.data.sort((a, b) => b.id - a.id);
       setFilteredOrders(sorted);
       setOrders(sorted);
@@ -86,8 +80,7 @@ const OrderHistory = () => {
   };
 
   const updatePaymentStatus = async (orderId, currentStatus) => {
-    // Toggle status: Jika 'pending' jadi 'paid', jika 'paid' jadi 'pending'
-    const newStatus = currentStatus === 'pending' ? 'paid' : 'pending';
+    const newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
     
     const isConfirmed = await confirmAction(
       'Ubah Status Pembayaran?', 
@@ -119,7 +112,7 @@ const OrderHistory = () => {
         notifyError('Gagal menghapus pesanan');
       }
     }
-  }
+  };
 
   const handleEditClick = (order) => {
     setEditFormData({
@@ -145,10 +138,9 @@ const OrderHistory = () => {
   const handleSaveEdit = async () => {
     try {
       await api.put(`/order/${editFormData.id}`, editFormData);
-      
       notifySuccess("Data pesanan berhasil diperbarui!");
       setShowEditModal(false);
-      fetchOrders(); // Refresh tabel agar data terbaru muncul
+      fetchOrders();
     } catch (err) {
       console.error(err);
       notifyError("Gagal mengupdate pesanan.");
@@ -156,269 +148,661 @@ const OrderHistory = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Riwayat Pesanan</h2>
+    <div style={{ backgroundColor: '#101116', color: '#f8fafc', minHeight: '100vh', padding: '24px 28px 60px' }}>
+      
+      {/* Title */}
+      <div className="mb-4">
+        <h3 style={{ color: '#f1f5f9', fontWeight: '700', fontSize: '1.45rem', margin: '0 0 6px' }}>
+          Riwayat Pesanan
+        </h3>
+        <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>
+          Daftar seluruh transaksi pemesanan kasir dan scan QR pelanggan
+        </p>
+      </div>
 
-      {<div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <div className="row g-3">
-            
-            {/* Bagian Search Bar (Kiri) */}
-            <div className="col-md-6 col-12">
-              <div className="input-group">
-                <span className="input-group-text bg-white border-end-0">
-                  <i className="bi bi-search text-muted"></i>
-                </span>
-                <input 
-                  type="text" 
-                  className="form-control border-start-0 ps-0" 
-                  placeholder="Cari nama pelanggan atau ID..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+      {/* Filter and Search Bar */}
+      <div 
+        style={{
+          backgroundColor: '#161720',
+          border: '1px solid #23253a',
+          borderRadius: '14px',
+          padding: '18px 24px',
+          marginBottom: '24px',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.25)'
+        }}
+      >
+        <div className="row g-3 align-items-center">
+          {/* Search */}
+          <div className="col-md-6 col-12">
+            <div 
+              style={{
+                backgroundColor: '#0d0e17',
+                border: '1px solid #2a2d45',
+                borderRadius: '8px',
+                padding: '9px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}
+            >
+              <Search size={16} color="#64748b" />
+              <input 
+                type="text" 
+                placeholder="Cari nama pelanggan atau ID pesanan..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#f1f5f9',
+                  fontSize: '13px',
+                  width: '100%'
+                }}
+              />
+              {searchQuery && (
+                <button 
+                  type="button" 
+                  onClick={() => setSearchQuery('')}
+                  style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0 }}
+                >
+                  ✕
+                </button>
+              )}
             </div>
-
-            {/* Bagian Filter Status (Kanan) */}
-            <div className="col-md-6 col-12 d-flex align-items-center justify-content-md-end gap-2">
-              <label className="fw-bold text-nowrap">Filter Status:</label>
-              <select 
-                className="form-select w-auto" 
-                value={filterStatus} 
-                onChange={(e) => setFilterStatus(e.target.value)}
-              >
-                <option value="all">Semua Status</option>
-                <option value="completed">Selesai (Completed)</option>
-                <option value="cancelled">Dibatalkan (Cancelled)</option>
-                <option value="pending">Pending</option>
-                <option value="processing">Sedang Dimasak</option>
-              </select>
-            </div>
-
           </div>
-          
-          {/* Info Total Data */}
-          <div className="mt-3 text-muted small">
-            Menampilkan <strong>{filteredOrders.length}</strong> dari <strong>{orders.length}</strong> transaksi
+
+          {/* Filter Status */}
+          <div className="col-md-6 col-12 d-flex align-items-center justify-content-md-end gap-2">
+            <label style={{ fontSize: '12.5px', color: '#94a3b8', fontWeight: '600', whiteSpace: 'nowrap' }}>
+              Filter Status:
+            </label>
+            <select 
+              value={filterStatus} 
+              onChange={(e) => setFilterStatus(e.target.value)}
+              style={{
+                backgroundColor: '#0d0e17',
+                border: '1px solid #2a2d45',
+                borderRadius: '8px',
+                color: '#f1f5f9',
+                fontSize: '13px',
+                padding: '8px 12px',
+                outline: 'none'
+              }}
+            >
+              <option value="all">Semua Status</option>
+              <option value="completed">Selesai (Completed)</option>
+              <option value="processing">Sedang Dimasak (Processing)</option>
+              <option value="pending">Menunggu (Pending)</option>
+              <option value="cancelled">Dibatalkan (Cancelled)</option>
+            </select>
           </div>
         </div>
-      </div>}
+        
+        {/* Total info */}
+        <div style={{ marginTop: '14px', fontSize: '12px', color: '#64748b' }}>
+          Menampilkan <strong style={{ color: '#d8a744' }}>{filteredOrders.length}</strong> dari <strong>{orders.length}</strong> total transaksi
+        </div>
+      </div>
 
-      {/* --- Tabel Riwayat (Tidak Berubah) --- */}
-      <div className="table-responsive card shadow-sm">
-        <table className="table table-hover mb-0 align-middle">
-          {/* ... (isi tabel sama seperti sebelumnya) ... */}
-           <thead className="table-light">
-            <tr>
-              <th>ID</th>
-              <th>Waktu</th>
-              <th>Meja</th>
-              <th>Pelanggan</th>
-              <th>Total Harga</th>
-              <th>Pembayaran</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredOrders.length > 0 ? (
-              filteredOrders.map(order => (
-                <tr key={order.id}>
-                  <td>#{order.id}</td>
-                  <td>{new Date(order.created_at).toLocaleString('id-ID')}</td>
-                  <td>{order.table_number}</td>
-                  <td>
-                    {order.customer_name} <br/>
-                    <span className="badge bg-light text-dark border">{order.location}</span>
-                  </td>
-                  <td className="fw-bold">Rp {parseInt(order.total_amount).toLocaleString('id-ID')}</td>
-                  <td>
-                      <div className="d-flex flex-column align-items-start gap-1">
-                        <button 
-                          className={`btn btn-sm badge ${order.payment_status === 'paid' ? 'btn-success' : 'btn-danger'} border-0`}
-                          onClick={() => updatePaymentStatus(order.id, order.payment_status)}
+      {/* Table Card */}
+      <div 
+        style={{
+          backgroundColor: '#161720',
+          border: '1px solid #23253a',
+          borderRadius: '14px',
+          overflow: 'hidden',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.25)'
+        }}
+      >
+        <div className="table-responsive" style={{ margin: 0 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', color: '#cbd5e1' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #23253a' }}>
+                <th style={thStyle({ width: '70px', textAlign: 'center' })}>ID</th>
+                <th style={thStyle({ width: '140px' })}>Waktu</th>
+                <th style={thStyle({ width: '75px', textAlign: 'center' })}>Meja</th>
+                <th style={thStyle({})}>Pelanggan</th>
+                <th style={thStyle({ width: '130px' })}>Total</th>
+                <th style={thStyle({ width: '160px' })}>Pembayaran</th>
+                <th style={thStyle({ width: '130px', textAlign: 'center' })}>Status Pesanan</th>
+                <th style={thStyle({ width: '190px', textAlign: 'center' })}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredOrders.length > 0 ? (
+                filteredOrders.map(order => {
+                  const isPaid = order.payment_status === 'paid';
+                  const isCompleted = order.order_status === 'completed';
+                  const isCancelled = order.order_status === 'cancelled';
+                  const isProcessing = order.order_status === 'processing';
+
+                  return (
+                    <tr 
+                      key={order.id}
+                      style={{ borderBottom: '1px solid #1e2030' }}
+                      onMouseEnter={(e) => { [...e.currentTarget.cells].forEach(c => c.style.backgroundColor = '#1b1d2b'); }}
+                      onMouseLeave={(e) => { [...e.currentTarget.cells].forEach(c => c.style.backgroundColor = '#161720'); }}
+                    >
+                      {/* ID */}
+                      <td style={tdStyle({ textAlign: 'center', color: '#94a3b8', fontWeight: '600' })}>
+                        #{order.id}
+                      </td>
+
+                      {/* Waktu */}
+                      <td style={tdStyle({ fontSize: '12px', color: '#94a3b8' })}>
+                        {new Date(order.created_at).toLocaleString('id-ID', {
+                          day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+                        })}
+                      </td>
+
+                      {/* Meja */}
+                      <td style={tdStyle({ textAlign: 'center' })}>
+                        <span 
+                          style={{
+                            backgroundColor: '#26293d',
+                            color: '#f1f5f9',
+                            fontWeight: '700',
+                            fontSize: '12.5px',
+                            padding: '4px 9px',
+                            borderRadius: '6px',
+                            border: '1px solid #363a54'
+                          }}
                         >
-                          {order.payment_status === 'paid' ? 'LUNAS (Paid)' : 'BELUM (Pending)'} 
-                          <i className="bi bi-pencil-square ms-2"></i>
-                        </button>
-                        <span className="text-muted small text-uppercase">via {order.payment_method}</span>
-                      </div>
-                    </td>
-                  <td>
-                    <span className={`badge ${
-                      order.order_status === 'completed' ? 'bg-success' : 
-                      order.order_status === 'cancelled' ? 'bg-danger' : 
-                      'bg-warning text-dark'
-                    }`}>
-                      {order.order_status.toUpperCase()}
-                    </span>
-                  </td>
-                  <td>
-                    <button className="btn btn-sm btn-info text-white" onClick={() => handleShowDetail(order)}>
-                      Detail
-                    </button>
-                    <button className="btn btn-sm btn-warning text-white ms-2" onClick={() => handleEditClick(order)}>
-                      Edit
-                    </button>
-                    <button className="btn btn-sm btn-danger ms-2" onClick={() => handleDelete(order.id)}>
-                      Hapus
-                    </button>
+                          {order.table_number}
+                        </span>
+                      </td>
+
+                      {/* Pelanggan */}
+                      <td style={tdStyle({})}>
+                        <div style={{ color: '#f1f5f9', fontWeight: '600', fontSize: '13.5px' }}>
+                          {order.customer_name}
+                        </div>
+                        {order.location && (
+                          <span 
+                            style={{
+                              fontSize: '10.5px',
+                              color: '#94a3b8',
+                              backgroundColor: '#1b1d2b',
+                              padding: '2px 7px',
+                              borderRadius: '4px',
+                              border: '1px solid #282a3c',
+                              display: 'inline-block',
+                              marginTop: '3px'
+                            }}
+                          >
+                            {order.location}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Total */}
+                      <td style={tdStyle({ color: '#f1f5f9', fontWeight: '700', fontSize: '14px' })}>
+                        Rp {parseInt(order.total_amount).toLocaleString('id-ID')}
+                      </td>
+
+                      {/* Pembayaran */}
+                      <td style={tdStyle({})}>
+                        <div className="d-flex flex-column align-items-start gap-1">
+                          <button 
+                            type="button"
+                            onClick={() => updatePaymentStatus(order.id, order.payment_status)}
+                            title="Klik untuk ubah status pembayaran"
+                            style={{
+                              backgroundColor: isPaid ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                              border: `1px solid ${isPaid ? '#166534' : '#7f1d1d'}`,
+                              color: isPaid ? '#4ade80' : '#f87171',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              borderRadius: '9999px',
+                              padding: '3px 10px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px'
+                            }}
+                          >
+                            <span>{isPaid ? '✓ LUNAS' : '○ PENDING'}</span>
+                          </button>
+                          <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase' }}>
+                            via {order.payment_method}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Status */}
+                      <td style={tdStyle({ textAlign: 'center' })}>
+                        <span 
+                          style={{
+                            display: 'inline-block',
+                            padding: '3px 10px',
+                            borderRadius: '9999px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            backgroundColor: isCompleted ? 'rgba(34, 197, 94, 0.12)' : isCancelled ? 'rgba(239, 68, 68, 0.12)' : isProcessing ? 'rgba(216, 167, 68, 0.15)' : 'rgba(148, 163, 184, 0.12)',
+                            color: isCompleted ? '#4ade80' : isCancelled ? '#f87171' : isProcessing ? '#d8a744' : '#94a3b8',
+                            border: `1px solid ${isCompleted ? '#166534' : isCancelled ? '#7f1d1d' : isProcessing ? '#785a28' : '#334155'}`
+                          }}
+                        >
+                          {order.order_status.toUpperCase()}
+                        </span>
+                      </td>
+
+                      {/* Aksi */}
+                      <td style={tdStyle({ textAlign: 'center' })}>
+                        <div className="d-flex align-items-center justify-content-center gap-1">
+                          {/* Detail */}
+                          <button 
+                            onClick={() => handleShowDetail(order)}
+                            title="Lihat Detail Pesanan"
+                            style={{
+                              backgroundColor: '#1f2235',
+                              border: '1px solid #2e3566',
+                              color: '#93c5fd',
+                              borderRadius: '6px',
+                              padding: '5px 9px',
+                              fontSize: '11.5px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Eye size={12} className="me-1" />
+                            Detail
+                          </button>
+
+                          {/* Edit */}
+                          <button 
+                            onClick={() => handleEditClick(order)}
+                            title="Edit Data Pesanan"
+                            style={{
+                              backgroundColor: 'transparent',
+                              border: '1.5px solid #c9973b',
+                              color: '#c9973b',
+                              borderRadius: '6px',
+                              padding: '4px 9px',
+                              fontSize: '11.5px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <SquarePen size={12} className="me-1" />
+                            Edit
+                          </button>
+
+                          {/* Hapus */}
+                          <button 
+                            onClick={() => handleDelete(order.id)}
+                            title="Hapus Pesanan"
+                            style={{
+                              backgroundColor: '#7f1d1d',
+                              border: 'none',
+                              color: '#fca5a5',
+                              borderRadius: '6px',
+                              padding: '5px 9px',
+                              fontSize: '11.5px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                    Tidak ada data riwayat pesanan.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr><td colSpan="8" className="text-center py-4">Tidak ada data.</td></tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* --- Modal Detail --- */}
       {showModal && selectedOrder && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Detail Pesanan #{selectedOrder.id}</h5>
-                <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1050,
+            padding: '20px'
+          }}
+        >
+          <div 
+            style={{
+              backgroundColor: '#161720',
+              border: '1px solid #23253a',
+              borderRadius: '16px',
+              maxWidth: '520px',
+              width: '100%',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Header */}
+            <div 
+              style={{
+                padding: '18px 24px',
+                borderBottom: '1px solid #23253a',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >
+              <div>
+                <h5 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#f1f5f9' }}>
+                  Detail Pesanan #{selectedOrder.id}
+                </h5>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                  Meja {selectedOrder.table_number} · {selectedOrder.customer_name}
+                </span>
               </div>
-              <div className="modal-body">
-                {/* ... (Isi Body Modal Sama) ... */}
-                <div className="d-flex justify-content-between mb-3">
-                  <span><strong>Nama:</strong> {selectedOrder.customer_name}</span>
-                  <span><strong>Meja:</strong> {selectedOrder.table_number}</span>
-                </div>
-                <ul className="list-group mb-3">
-                  {selectedOrder.items && selectedOrder.items.map((item, idx) => {
-                      
-                      // --- PERBAIKAN LOGIKA HARGA DI SINI ---
-                      const basePrice = parseFloat(item.price_at_order || 0);
-                      
-                      const variantsTotal = (item.variants && Array.isArray(item.variants))
-                        ? item.variants.reduce((sum, v) => sum + parseFloat(v.variant_price || 0), 0)
-                        : 0;
+              <button 
+                onClick={handleCloseModal}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-                      const subtotal = (basePrice + variantsTotal) * item.quantity;
-                      // ---------------------------------------
-
-                      return (
-                        <li key={idx} className="list-group-item">
-                          <div className="d-flex justify-content-between">
-                            <span>{item.quantity}x {item.product_name}</span>
-                            
-                            {/* Tampilkan Subtotal yang sudah dikoreksi */}
-                            <span className="fw-bold">Rp {parseInt(subtotal).toLocaleString('id-ID')}</span>
-                          </div>
-                          
-                          {/* Varian */}
-                          {item.variants && item.variants.map((v, vIdx) => (
-                            <small key={vIdx} className="text-muted d-block ms-3">
-                              + {v.variant_name} (Rp {parseInt(v.variant_price).toLocaleString('id-ID')})
-                            </small>
-                          ))}
-                          
-                          {/* Notes */}
-                          {item.notes && <small className="text-danger d-block ms-3">Note: {item.notes}</small>}
-                        </li>
-                      );
-                    })}
-                </ul>
-                <h5 className="text-end">Total: Rp {parseInt(selectedOrder.total_amount).toLocaleString('id-ID')}</h5>
+            {/* Body */}
+            <div style={{ padding: '20px 24px', maxHeight: '60vh', overflowY: 'auto' }}>
+              <div 
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '10px 14px',
+                  backgroundColor: '#0d0e17',
+                  borderRadius: '8px',
+                  marginBottom: '16px',
+                  fontSize: '12.5px',
+                  color: '#cbd5e1'
+                }}
+              >
+                <div>Lokasi: <strong style={{ color: '#f1f5f9' }}>{selectedOrder.location || 'Dine-In'}</strong></div>
+                <div>Metode: <strong style={{ color: '#d8a744' }}>{selectedOrder.payment_method?.toUpperCase()}</strong></div>
               </div>
 
-              <div className="modal-footer bg-light">
-                <button 
-                    type="button" 
-                    className="btn btn-warning"
-                    onClick={() => handleManualPrint('kitchen')}
-                >
-                    <i className="bi bi-printer-fill me-2"></i>Tiket Dapur
-                </button>
+              {/* Items List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+                {selectedOrder.items && selectedOrder.items.map((item, idx) => {
+                  const basePrice = parseFloat(item.price_at_order || 0);
+                  const variantsTotal = (item.variants && Array.isArray(item.variants))
+                    ? item.variants.reduce((sum, v) => sum + parseFloat(v.variant_price || 0), 0)
+                    : 0;
+                  const subtotal = (basePrice + variantsTotal) * item.quantity;
 
-                <button 
-                    type="button" 
-                    className="btn btn-primary"
-                    onClick={() => handleManualPrint('customer')}
-                >
-                    <i className="bi bi-receipt me-2"></i>Struk Kasir
-                </button>
-                <button type="button" className="btn btn-danger" onClick={() => handleCloseModal()}>
-                  Tutup
-                </button>
+                  return (
+                    <div 
+                      key={idx}
+                      style={{
+                        padding: '12px',
+                        backgroundColor: '#1b1d2b',
+                        border: '1px solid #25283c',
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span style={{ fontWeight: '600', color: '#f1f5f9', fontSize: '13.5px' }}>
+                          {item.quantity}x {item.product_name}
+                        </span>
+                        <span style={{ fontWeight: '700', color: '#d8a744', fontSize: '13.5px' }}>
+                          Rp {parseInt(subtotal).toLocaleString('id-ID')}
+                        </span>
+                      </div>
+
+                      {/* Variants */}
+                      {item.variants && item.variants.map((v, vIdx) => (
+                        <div key={vIdx} style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: '2px', marginLeft: '14px' }}>
+                          + {v.variant_name} (Rp {parseInt(v.variant_price).toLocaleString('id-ID')})
+                        </div>
+                      ))}
+
+                      {/* Notes */}
+                      {item.notes && (
+                        <div style={{ fontSize: '11px', color: '#f87171', marginTop: '4px', marginLeft: '14px' }}>
+                          📝 Note: {item.notes}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+
+              <div 
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingTop: '12px',
+                  borderTop: '1px solid #23253a'
+                }}
+              >
+                <span style={{ fontSize: '14px', color: '#94a3b8', fontWeight: '600' }}>Total Pembayaran</span>
+                <span style={{ fontSize: '18px', color: '#f1f5f9', fontWeight: '800' }}>
+                  Rp {parseInt(selectedOrder.total_amount).toLocaleString('id-ID')}
+                </span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div 
+              style={{
+                padding: '16px 24px',
+                borderTop: '1px solid #23253a',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '10px',
+                backgroundColor: '#12131b'
+              }}
+            >
+              <button 
+                type="button" 
+                onClick={() => handleManualPrint('kitchen')}
+                style={{
+                  backgroundColor: '#26293d',
+                  border: '1px solid #363a54',
+                  color: '#cbd5e1',
+                  borderRadius: '8px',
+                  padding: '8px 14px',
+                  fontSize: '12.5px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Printer size={14} color="#d8a744" />
+                Tiket Dapur
+              </button>
+
+              <button 
+                type="button" 
+                onClick={() => handleManualPrint('customer')}
+                style={{
+                  backgroundColor: '#c9973b',
+                  border: 'none',
+                  color: '#101116',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
+                  fontSize: '12.5px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Receipt size={14} />
+                Struk Kasir
+              </button>
+
+              <button 
+                type="button" 
+                onClick={handleCloseModal}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: '1px solid #2d3045',
+                  color: '#94a3b8',
+                  borderRadius: '8px',
+                  padding: '8px 14px',
+                  fontSize: '12.5px',
+                  cursor: 'pointer'
+                }}
+              >
+                Tutup
+              </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* --- Modal Edit --- */}
       {showEditModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Edit Pesanan #{editFormData.id}</h5>
-                <button type="button" className="btn-close" onClick={() => setShowEditModal(false)}></button>
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1050,
+            padding: '20px'
+          }}
+        >
+          <div 
+            style={{
+              backgroundColor: '#161720',
+              border: '1px solid #23253a',
+              borderRadius: '16px',
+              maxWidth: '480px',
+              width: '100%',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+              overflow: 'hidden'
+            }}
+          >
+            <div 
+              style={{
+                padding: '18px 24px',
+                borderBottom: '1px solid #23253a',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >
+              <h5 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#f1f5f9' }}>
+                Edit Pesanan #{editFormData.id}
+              </h5>
+              <button 
+                onClick={() => setShowEditModal(false)}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ padding: '20px 24px' }}>
+              <div className="mb-3">
+                <label style={{ display: 'block', fontSize: '12.5px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px' }}>
+                  Nama Pelanggan
+                </label>
+                <input 
+                  type="text" 
+                  name="customer_name"
+                  value={editFormData.customer_name}
+                  onChange={handleEditChange}
+                  style={inputStyle}
+                />
               </div>
-              <div className="modal-body">
-                <form>
-                  {/* Nama Pelanggan */}
-                  <div className="mb-3">
-                    <label className="form-label">Nama Pelanggan</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      name="customer_name"
-                      value={editFormData.customer_name}
-                      onChange={handleEditChange}
-                    />
-                  </div>
 
-                  {/* Nomor Meja */}
-                  <div className="mb-3">
-                    <label className="form-label">Nomor Meja</label>
-                    <input 
-                      type="number" 
-                      className="form-control" 
-                      name="table_number"
-                      value={editFormData.table_number}
-                      onChange={handleEditChange}
-                    />
-                  </div>
-
-                  {/* Status Pesanan */}
-                  <div className="mb-3">
-                    <label className="form-label">Status Pesanan</label>
-                    <select 
-                      className="form-select" 
-                      name="order_status"
-                      value={editFormData.order_status}
-                      onChange={handleEditChange}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="processing">Sedang Dimasak (Processing)</option>
-                      <option value="completed">Selesai (Completed)</option>
-                      <option value="cancelled">Dibatalkan (Cancelled)</option>
-                    </select>
-                  </div>
-
-                  {/* Status Pembayaran */}
-                  <div className="mb-3">
-                    <label className="form-label">Status Pembayaran</label>
-                    <select 
-                      className="form-select" 
-                      name="payment_status"
-                      value={editFormData.payment_status}
-                      onChange={handleEditChange}
-                    >
-                      <option value="pending">Belum Bayar (Pending)</option>
-                      <option value="paid">Lunas (Paid)</option>
-                    </select>
-                  </div>
-                </form>
+              <div className="mb-3">
+                <label style={{ display: 'block', fontSize: '12.5px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px' }}>
+                  Nomor Meja
+                </label>
+                <input 
+                  type="number" 
+                  name="table_number"
+                  value={editFormData.table_number}
+                  onChange={handleEditChange}
+                  style={inputStyle}
+                />
               </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Batal</button>
-                <button type="button" className="btn btn-primary" onClick={handleSaveEdit}>Simpan Perubahan</button>
+
+              <div className="mb-3">
+                <label style={{ display: 'block', fontSize: '12.5px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px' }}>
+                  Status Pesanan
+                </label>
+                <select 
+                  name="order_status"
+                  value={editFormData.order_status}
+                  onChange={handleEditChange}
+                  style={inputStyle}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Sedang Dimasak (Processing)</option>
+                  <option value="completed">Selesai (Completed)</option>
+                  <option value="cancelled">Dibatalkan (Cancelled)</option>
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label style={{ display: 'block', fontSize: '12.5px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px' }}>
+                  Status Pembayaran
+                </label>
+                <select 
+                  name="payment_status"
+                  value={editFormData.payment_status}
+                  onChange={handleEditChange}
+                  style={inputStyle}
+                >
+                  <option value="pending">Belum Bayar (Pending)</option>
+                  <option value="paid">Lunas (Paid)</option>
+                </select>
+              </div>
+
+              <div className="d-flex justify-content-end gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => setShowEditModal(false)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: '1px solid #2d3045',
+                    color: '#94a3b8',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '12.5px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Batal
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleSaveEdit}
+                  style={{
+                    backgroundColor: '#c9973b',
+                    color: '#101116',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 20px',
+                    fontSize: '12.5px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Simpan Perubahan
+                </button>
               </div>
             </div>
           </div>
@@ -427,5 +811,43 @@ const OrderHistory = () => {
     </div>
   );
 };
+
+const inputStyle = {
+  backgroundColor: '#0d0e17',
+  border: '1px solid #2a2d45',
+  borderRadius: '8px',
+  color: '#f1f5f9',
+  fontSize: '13px',
+  padding: '10px 14px',
+  width: '100%',
+  outline: 'none',
+  transition: 'border-color 0.15s ease'
+};
+
+const thStyle = (extra = {}) => ({
+  backgroundColor: '#161720',
+  color: '#94a3b8',
+  fontSize: '13px',
+  fontWeight: '600',
+  padding: '16px 18px',
+  textAlign: 'left',
+  borderTop: 'none',
+  borderLeft: 'none',
+  borderRight: 'none',
+  ...extra
+});
+
+const tdStyle = (extra = {}) => ({
+  backgroundColor: '#161720',
+  color: '#cbd5e1',
+  fontSize: '13.5px',
+  padding: '16px 18px',
+  verticalAlign: 'middle',
+  borderTop: 'none',
+  borderLeft: 'none',
+  borderRight: 'none',
+  transition: 'background-color 0.15s',
+  ...extra
+});
 
 export default OrderHistory;

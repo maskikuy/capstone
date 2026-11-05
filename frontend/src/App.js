@@ -28,12 +28,12 @@ import NotFound from './pages/NotFound';
 
 // Layout Component agar Navbar selalu muncul setelah login
 const DashboardLayout = () => (
-  <>
+  <div style={{ minHeight: '100vh', backgroundColor: '#101116', color: '#f8fafc' }}>
     <Navbar />
-    <div className="container-fluid">
+    <div className="container-fluid px-3 px-md-4 pb-4">
       <Outlet /> {/* Ini tempat konten halaman dirender */}
     </div>
-  </>
+  </div>
 );
 
 // Komponen Proteksi Route (Cek Token)

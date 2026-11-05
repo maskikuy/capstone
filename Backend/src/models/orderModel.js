@@ -213,6 +213,13 @@ export const updatePaymentStatus = async (conn, orderId, status) => {
     return true;
 }
 
+export const saveMidtransInfo = async (conn, orderId, midtransOrderId, midtransTransactionId, qrisImage) => {
+    logger.debug(`Saving Midtrans info for order ID: ${orderId}`);
+    const sql = 'UPDATE orders SET midtrans_order_id = ?, midtrans_transaction_id = ?, qris_image = ? WHERE id = ?';
+    await conn.execute(sql, [midtransOrderId, midtransTransactionId || null, qrisImage || null, orderId]);
+    logger.info(`Midtrans info saved for order ID: ${orderId}`);
+};
+
 export const getOrderStatus = async (conn, orderId) => {
     logger.debug(`Fetching order status for ID: ${orderId}`);
     const sql = 'SELECT order_status, payment_status FROM orders WHERE id = ?';

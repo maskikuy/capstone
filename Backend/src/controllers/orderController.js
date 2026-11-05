@@ -3,19 +3,10 @@ import * as orderModel from '../models/orderModel.js';
 import * as orderItemModel from '../models/orderItemModel.js';
 import * as orderItemVariantModel from '../models/orderItemVariantModel.js';
 import baseLogger from '../utils/logger.js';
-import { generateDynamicQRIS } from '../utils/qrisHelper.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
+import { createQrisCharge, checkMidtransStatus, verifyMidtransSignature } from '../utils/midtransHelper.js';
 import * as productRecipeModel from '../models/productRecipeModel.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, '../uploads');
-
 const logger = baseLogger.child({ context: 'OrderController' });
-const qrisStatic = process.env.MY_STATIC_QRIS || '';
 
 export const getAllOrders = async (req, res) => {
     const conn = await db.getConnection();
@@ -89,19 +80,21 @@ export const createOrder = async (req, res) => {
             }
         }
         await conn.commit();
-        const totalBayar = orderInfo.total_amount;
-        
+
         let qrisImage = '';
-        const staticQrisPath = path.join(uploadDir, 'qris_statis.png');
-        if (fs.existsSync(staticQrisPath)) {
-            qrisImage = `${req.protocol}://${req.get('host')}/uploads/qris_statis.png?t=${Date.now()}`;
-            logger.info(`Serving static QRIS for order ID: ${orderId}`);
-        } else {
-            const qrisData = await generateDynamicQRIS(qrisStatic, totalBayar);
+        if (orderInfo.payment_method === 'qris') {
+            const midtransOrderId = `order-${orderId}`;
+            logger.info(`Calling Midtrans QRIS for order ID: ${orderId}`);
+            const qrisData = await createQrisCharge({
+                orderId: midtransOrderId,
+                grossAmount: orderInfo.total_amount,
+                customerName: orderInfo.customer_name || 'Customer'
+            });
             qrisImage = qrisData.qr_image;
-            logger.info(`Generated dynamic QRIS for order ID: ${orderId}`);
+            await orderModel.saveMidtransInfo(conn, orderId, midtransOrderId, qrisData.transaction_id, qrisImage);
+            logger.info(`Midtrans QRIS generated for order ID: ${orderId}`);
         }
-        
+
         logger.debug(`Order created with ID: ${orderId}`);
         res.status(201).json({ id: orderId, qris_image: qrisImage });
     } catch (error) {
@@ -265,5 +258,72 @@ export const getOrderStatus = async (req, res) => {
     } finally {
         if (conn) conn.release();
         logger.debug('Database connection released');
+    }
+};
+
+// Polling endpoint: cek status pembayaran Midtrans secara langsung
+export const checkMidtransPaymentStatus = async (req, res) => {
+    const orderId = req.params.id;
+    const conn = await db.getConnection();
+    try {
+        const [rows] = await conn.execute(
+            'SELECT midtrans_order_id, payment_status FROM orders WHERE id = ?',
+            [orderId]
+        );
+        if (!rows.length) return res.status(404).json({ error: 'Order Not Found' });
+
+        const { midtrans_order_id, payment_status } = rows[0];
+
+        // Kalau sudah paid di DB, langsung return
+        if (payment_status === 'paid') return res.json({ payment_status: 'paid' });
+
+        // Kalau belum ada midtrans_order_id, berarti bukan order QRIS
+        if (!midtrans_order_id) return res.json({ payment_status: 'pending' });
+
+        // Cek ke Midtrans
+        const mtStatus = await checkMidtransStatus(midtrans_order_id);
+        logger.info(`Midtrans status for ${midtrans_order_id}: ${mtStatus.transaction_status}`);
+
+        if (mtStatus.transaction_status === 'settlement' || mtStatus.transaction_status === 'capture') {
+            await orderModel.updatePaymentStatus(conn, orderId, 'paid');
+            return res.json({ payment_status: 'paid' });
+        }
+
+        res.json({ payment_status: 'pending', midtrans_status: mtStatus.transaction_status });
+    } catch (error) {
+        logger.error(`Error checking Midtrans payment status for order ${orderId}: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (conn) conn.release();
+    }
+};
+
+// Webhook: Midtrans notification handler
+export const handleMidtransNotification = async (req, res) => {
+    const { order_id, transaction_status, fraud_status, gross_amount, status_code, signature_key } = req.body;
+    logger.info(`Midtrans notification received: order=${order_id} status=${transaction_status}`);
+
+    const isValid = verifyMidtransSignature(order_id, status_code, gross_amount, signature_key);
+    if (!isValid) {
+        logger.warn(`Invalid Midtrans signature for order: ${order_id}`);
+        return res.status(403).json({ error: 'Invalid signature' });
+    }
+
+    const dbOrderId = order_id.replace('order-', '');
+    const conn = await db.getConnection();
+    try {
+        if (
+            (transaction_status === 'settlement' || transaction_status === 'capture') &&
+            fraud_status !== 'deny'
+        ) {
+            await orderModel.updatePaymentStatus(conn, dbOrderId, 'paid');
+            logger.info(`Payment confirmed via webhook for order ID: ${dbOrderId}`);
+        }
+        res.json({ status: 'ok' });
+    } catch (error) {
+        logger.error(`Error handling Midtrans notification: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (conn) conn.release();
     }
 };

@@ -14,5 +14,7 @@ router.delete('/order/:id', verifyToken, orderController.deleteOrder);
 router.put('/order/:id/status', verifyToken, orderController.updateOrderStatus);
 router.put('/order/:id/updatePayment', verifyToken, orderController.updatePaymentStatus);
 router.get('/order/:id/getStatus', orderController.getOrderStatus);
+router.get('/order/:id/midtrans-status', orderController.checkMidtransPaymentStatus);
+router.post('/midtrans/notification', orderController.handleMidtransNotification);
 
 export default router;

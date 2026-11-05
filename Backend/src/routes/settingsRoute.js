@@ -8,6 +8,7 @@ const logger = baseLogger.child({ module: 'SettingsRoute' });
 
 router.get('/settings', settingsController.getSettings);
 router.put('/settings', verifyToken, settingsController.updateSettings);
+router.get('/server-info', settingsController.getServerInfo);
 router.post('/feedback', settingsController.createFeedback);
 router.get('/feedback', verifyToken, settingsController.getAllFeedbacks);
 

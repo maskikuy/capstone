@@ -50,6 +50,14 @@ export const deductInventoryStockForProduct = async (conn, productId, orderQuant
             WHERE id = ?
         `;
         await conn.execute(updateSql, [totalAmountNeeded, totalAmountNeeded, totalAmountNeeded, recipe.inventory_id]);
+
+        // Sync product availability if inventory is tied to a product
+        await conn.execute(`
+            UPDATE products p
+            JOIN inventories i ON p.inventory_id = i.id
+            SET p.is_available = i.is_available
+            WHERE i.id = ?
+        `, [recipe.inventory_id]);
     }
     return true;
 };

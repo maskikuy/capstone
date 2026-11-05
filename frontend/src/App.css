@@ -118,3 +118,121 @@
   background: rgba(255, 255, 255, 0.04);
   color: #ffffff !important;
 }
+
+/* Custom Menu Table Dark Mode Overrides */
+.custom-menu-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background-color: #161720 !important;
+  color: #cbd5e1 !important;
+  margin: 0 !important;
+}
+
+.custom-menu-table th {
+  background-color: #161720 !important;
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 15px 20px !important;
+  border-bottom: 1px solid #232530 !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  text-align: left !important;
+}
+
+.custom-menu-table td {
+  background-color: #161720 !important;
+  color: #cbd5e1 !important;
+  font-size: 13.5px !important;
+  padding: 18px 20px !important;
+  border-bottom: 1px solid #20222d !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  vertical-align: middle !important;
+  box-shadow: none !important;
+}
+
+.custom-menu-table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+.custom-menu-table tbody tr:hover td {
+  background-color: #1b1c27 !important;
+}
+
+/* SweetAlert Dark Compact Theme */
+.custom-swal-popup {
+  border: 1px solid #282a36 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+.custom-swal-icon {
+  transform: scale(0.65) !important;
+  margin: 6px auto 0 !important;
+  border-width: 2.5px !important;
+}
+
+.custom-swal-title {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: #f1f5f9 !important;
+  padding: 8px 14px 0 !important;
+  line-height: 1.4 !important;
+}
+
+.custom-swal-text {
+  font-size: 0.85rem !important;
+  color: #94a3b8 !important;
+  margin: 6px 0 0 !important;
+}
+
+.custom-swal-confirm {
+  background-color: #d8a744 !important;
+  color: #101116 !important;
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  border-radius: 10px !important;
+  padding: 8px 24px !important;
+  box-shadow: 0 2px 10px rgba(216, 167, 68, 0.35) !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.custom-swal-confirm:hover {
+  background-color: #c99839 !important;
+}
+
+.custom-swal-cancel {
+  background-color: #222433 !important;
+  color: #cbd5e1 !important;
+  font-weight: 600 !important;
+  font-size: 0.88rem !important;
+  border-radius: 10px !important;
+  padding: 8px 20px !important;
+  border: 1px solid #2c2f40 !important;
+  cursor: pointer !important;
+}
+
+.swal2-icon.swal2-info {
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+}
+
+.swal2-icon.swal2-warning {
+  border-color: #d8a744 !important;
+  color: #d8a744 !important;
+}
+
+.swal2-icon.swal2-success {
+  border-color: #22c55e !important;
+  color: #22c55e !important;
+}
+
+.swal2-icon.swal2-error {
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+}
+

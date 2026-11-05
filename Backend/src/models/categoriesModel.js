@@ -6,6 +6,18 @@ export const getAllCategories = async (conn, type) => {
     logger.debug(`Fetching categories from the database (type: ${type || 'all'})`);
     let sql = 'SELECT * FROM categories';
     let params = [];
+    if (type === 'menu') {
+        sql = `
+            SELECT DISTINCT c.* 
+            FROM categories c
+            LEFT JOIN products p ON c.id = p.category_id
+            WHERE c.type = 'menu' OR (p.id IS NOT NULL AND p.is_available = 1)
+            ORDER BY c.name ASC
+        `;
+        const [result] = await conn.execute(sql);
+        logger.info(`Fetched ${result.length} categories`);
+        return result;
+    }
     if (type) {
         sql += ' WHERE type = ?';
         params.push(type);
@@ -13,7 +25,7 @@ export const getAllCategories = async (conn, type) => {
     const [result] = await conn.execute(sql, params);
     logger.info(`Fetched ${result.length} categories`);
     return result;
-}
+};
 
 export const getCategoryById = async (conn, categoryId) => {
     logger.debug(`Fetching category with ID: ${categoryId}`);
@@ -25,7 +37,7 @@ export const getCategoryById = async (conn, categoryId) => {
     }
     logger.info(`Category found: ${JSON.stringify(result[0])}`);
     return result[0];
-}
+};
 
 export const createCategory = async (conn, categoryData) => {
     logger.debug(`Creating new category with data: ${JSON.stringify(categoryData)}`);
@@ -33,7 +45,7 @@ export const createCategory = async (conn, categoryData) => {
     const [result] = await conn.execute(sql, [categoryData.name, categoryData.type || 'menu']);
     logger.info(`Category created with ID: ${result.insertId}`);
     return result.insertId;
-}
+};
 
 export const updateCategory = async (conn, categoryId, categoryData) => {
     logger.debug(`Updating category with ID: ${categoryId} with data: ${JSON.stringify(categoryData)}`);
@@ -45,7 +57,7 @@ export const updateCategory = async (conn, categoryId, categoryData) => {
     }
     logger.info(`Category with ID: ${categoryId} updated successfully`);
     return true;
-}
+};
 
 export const deleteCategory = async (conn, categoryId) => {
     logger.debug(`Deleting category with ID: ${categoryId}`);
@@ -57,4 +69,4 @@ export const deleteCategory = async (conn, categoryId) => {
     }
     logger.info(`Category with ID: ${categoryId} deleted successfully`);
     return true;
-}
+};

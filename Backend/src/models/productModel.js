@@ -4,11 +4,11 @@ const logger = baseLogger.child({ context: 'ProductModel' });
 
 export const getAllProducts = async (conn) => {
     logger.debug('Fetching all products from the database');
-    const sql = 'SELECT * FROM products ORDER BY name ASC';
+    const sql = 'SELECT * FROM products';
     const [result] = await conn.execute(sql);
     logger.info(`Fetched ${result.length} products`);
     return result;
-}
+};
 
 export const getProductById = async (conn, productId) => {
     logger.debug(`Fetching product with ID: ${productId}`);
@@ -20,39 +20,39 @@ export const getProductById = async (conn, productId) => {
     }
     logger.info(`Product found: ${JSON.stringify(result[0])}`);
     return result[0];
-}
+};
 
 export const createProduct = async (conn, productData) => {
     logger.debug(`Creating new product with data: ${JSON.stringify(productData)}`);
     const sql = 'INSERT INTO products (category_id, name, description, base_price, image_url, is_available, price_type, grosir_price_per_unit, grosir_min_qty) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
     const [result] = await conn.execute(sql, [
-        productData.category_id, 
+        productData.category_id ? Number(productData.category_id) : null, 
         productData.name, 
-        productData.description, 
-        productData.base_price, 
-        productData.image_url, 
-        productData.is_available,
+        productData.description || '', 
+        Number(productData.base_price) || 0, 
+        productData.image_url || '', 
+        productData.is_available == null ? 1 : (Number(productData.is_available) ? 1 : 0),
         productData.price_type || 'retail',
-        productData.grosir_price_per_unit || 0.00,
-        productData.grosir_min_qty || 0
+        Number(productData.grosir_price_per_unit) || 0.00,
+        Number(productData.grosir_min_qty) || 0
     ]);
     logger.info(`Product created with ID: ${result.insertId}`);
     return result.insertId;
-}
+};
 
 export const updateProduct = async (conn, productId, productData) => {
     logger.debug(`Updating product with ID: ${productId} with data: ${JSON.stringify(productData)}`);
     const sql = 'UPDATE products SET category_id = ?, name = ?, description = ?, base_price = ?, image_url = ?, is_available = ?, price_type = ?, grosir_price_per_unit = ?, grosir_min_qty = ? WHERE id = ?';
     const [result] = await conn.execute(sql, [
-        productData.category_id, 
+        productData.category_id ? Number(productData.category_id) : null, 
         productData.name, 
-        productData.description, 
-        productData.base_price, 
-        productData.image_url, 
-        productData.is_available, 
+        productData.description || '', 
+        Number(productData.base_price) || 0, 
+        productData.image_url || '', 
+        productData.is_available == null ? 1 : (Number(productData.is_available) ? 1 : 0), 
         productData.price_type || 'retail',
-        productData.grosir_price_per_unit || 0.00,
-        productData.grosir_min_qty || 0,
+        Number(productData.grosir_price_per_unit) || 0.00,
+        Number(productData.grosir_min_qty) || 0,
         productId
     ]);
     if (result.affectedRows === 0) {
@@ -61,7 +61,7 @@ export const updateProduct = async (conn, productId, productData) => {
     }
     logger.info(`Product with ID: ${productId} updated successfully`);
     return true;
-}
+};
 
 export const deleteProduct = async (conn, productId) => {
     logger.debug(`Deleting product with ID: ${productId}`);
@@ -73,10 +73,10 @@ export const deleteProduct = async (conn, productId) => {
     }
     logger.info(`Product with ID: ${productId} deleted successfully`);
     return true;
-}
+};
 
 export const updateProductAvailability = async (conn, productId, isAvailable) => {
-    logger.debug(`Updating availability of product with ID: ${productId} to ${isAvailable}`);
+    logger.debug(`Updating availability for product with ID: ${productId} to ${isAvailable}`);
     const sql = 'UPDATE products SET is_available = ? WHERE id = ?';
     const [result] = await conn.execute(sql, [isAvailable, productId]);
     if (result.affectedRows === 0) {
@@ -85,4 +85,4 @@ export const updateProductAvailability = async (conn, productId, isAvailable) =>
     }
     logger.info(`Product with ID: ${productId} availability updated to ${isAvailable}`);
     return true;
-}
+};

@@ -10,7 +10,7 @@ export const ensureInventoryTable = async () => {
         category_id INT DEFAULT NULL,
         selling_price DECIMAL(10,2) DEFAULT 0,
         initial_cost DECIMAL(10,2) DEFAULT 0,
-        price_type ENUM('retail','grosir') DEFAULT 'retail',
+        price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'bahan_baku',
         retail_price_per_unit DECIMAL(10,2) DEFAULT 0,
         grosir_price_per_unit DECIMAL(10,2) DEFAULT 0,
         grosir_min_qty INT DEFAULT 0,
@@ -55,11 +55,28 @@ export const ensureInventoryTable = async () => {
         // Ensure columns in products table
         const [prodCols] = await conn.query("SHOW COLUMNS FROM products LIKE 'price_type'");
         if (!prodCols || prodCols.length === 0) {
-            await conn.query("ALTER TABLE products ADD COLUMN price_type ENUM('retail','grosir') DEFAULT 'retail', ADD COLUMN grosir_price_per_unit DECIMAL(10,2) DEFAULT 0.00, ADD COLUMN grosir_min_qty INT DEFAULT 0");
+            await conn.query("ALTER TABLE products ADD COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'retail', ADD COLUMN grosir_price_per_unit DECIMAL(10,2) DEFAULT 0.00, ADD COLUMN grosir_min_qty INT DEFAULT 0");
             logger.info('Added missing grosir/retail columns to products table');
+        } else {
+            await conn.query("ALTER TABLE products MODIFY COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'retail'");
+        }
+
+        const [prodInvCols] = await conn.query("SHOW COLUMNS FROM products LIKE 'inventory_id'");
+        if (!prodInvCols || prodInvCols.length === 0) {
+            await conn.query("ALTER TABLE products ADD COLUMN inventory_id INT NULL");
+            await conn.query("ALTER TABLE products ADD CONSTRAINT fk_products_inventory FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE");
+            logger.info('Added inventory_id column to products table');
+        }
+
+        // Ensure columns in orders table for Midtrans QRIS
+        const [orderCols] = await conn.query("SHOW COLUMNS FROM orders LIKE 'midtrans_order_id'");
+        if (!orderCols || orderCols.length === 0) {
+            await conn.query("ALTER TABLE orders ADD COLUMN midtrans_order_id VARCHAR(100) NULL, ADD COLUMN midtrans_transaction_id VARCHAR(100) NULL, ADD COLUMN qris_image LONGTEXT NULL");
+            logger.info('Added midtrans columns to orders table');
         }
 
         await conn.query(createSql);
+        await conn.query("ALTER TABLE inventories MODIFY COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'bahan_baku'");
         logger.info('Ensured inventories table exists');
 
         // Create product_recipes table

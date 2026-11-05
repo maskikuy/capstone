@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { notifySuccess } from '../../utils/notify'; // Opsional jika ingin pakai toast saat tambah
 
 const Menu = () => {
   const [searchParams] = useSearchParams();
@@ -66,13 +65,13 @@ const Menu = () => {
   const fetchData = async () => {
     try {
       const [prodRes, catRes, varRes] = await Promise.all([
-        api.get('/product'), // <-- PERUBAHAN 1: Ambil SEMUA data (jangan difilter is_available di sini)
+        api.get('/product'),
         api.get('/categories?type=menu'),
         api.get('/product-variant')
       ]);
-      setProducts(prodRes.data); 
-      setCategories(catRes.data);
-      setProductVariants(varRes.data);
+      setProducts(prodRes.data || []); 
+      setCategories(catRes.data || []);
+      setProductVariants(varRes.data || []);
     } catch (err) {
       console.error("Gagal memuat menu", err);
     }
@@ -86,7 +85,6 @@ const Menu = () => {
   // --- Logic Tambah ke Keranjang ---
 
   const openProductModal = (product) => {
-    // PERUBAHAN 2: Cegah buka modal jika produk habis
     if (!product.is_available) return;
 
     setSelectedProduct(product);
@@ -114,7 +112,6 @@ const Menu = () => {
   const addToCart = () => {
     if (!selectedProduct) return;
 
-    // Helper functions to check identical items
     const areVariantsEqual = (varList1, varList2) => {
       const v1 = varList1 || [];
       const v2 = varList2 || [];
@@ -136,7 +133,6 @@ const Menu = () => {
 
     let updatedCart;
     if (existingIndex > -1) {
-      // Item matching exists! Update quantity and recalculate price
       updatedCart = [...cart];
       const existingItem = updatedCart[existingIndex];
       const newQty = existingItem.quantity + orderQty;
@@ -149,10 +145,9 @@ const Menu = () => {
         ...existingItem,
         quantity: newQty,
         totalPrice: finalPrice,
-        priceAtOrder: activeUnitPrice
+        unitPrice: activeUnitPrice
       };
     } else {
-      // New item
       const activeUnitPrice = getProductUnitPrice(selectedProduct, orderQty);
       const variantsPrice = selectedVariants.reduce((total, v) => total + parseFloat(v.extra_price), 0);
       const finalPrice = (activeUnitPrice + variantsPrice) * orderQty;
@@ -164,18 +159,13 @@ const Menu = () => {
         variants: selectedVariants,
         notes: orderNotes,
         totalPrice: finalPrice,
-        priceAtOrder: activeUnitPrice
+        unitPrice: activeUnitPrice
       };
       updatedCart = [...cart, newItem];
     }
 
     setCart(updatedCart);
     localStorage.setItem('wow_cart', JSON.stringify(updatedCart));
-    localStorage.setItem('wow_table', tableNumber);
-    
-    // Optional: Feedback visual
-    notifySuccess(`${selectedProduct.name} masuk keranjang`);
-
     setSelectedProduct(null);
   };
 
@@ -183,214 +173,513 @@ const Menu = () => {
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="container-fluid p-0 mb-5 pb-5">
-      {/* Header */}
-      <div className="bg-warning text-white p-3 sticky-top shadow-sm d-flex justify-content-between align-items-center" style={{zIndex: 1020}}>
+    <div style={{ backgroundColor: '#101116', minHeight: '100vh', color: '#f1f5f9', paddingBottom: '90px' }}>
+      
+      {/* 1. Header Info Meja & Menu (Dark Theme) */}
+      <div 
+        className="d-flex justify-content-between align-items-center p-3 sticky-top"
+        style={{
+          backgroundColor: '#161720',
+          borderBottom: '1px solid #23253a',
+          top: 0,
+          zIndex: 1020,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+        }}
+      >
         <div>
-          <h5 className="mb-0 fw-bold">Billion Cafe Menu</h5>
-          <div className="d-flex align-items-center gap-2 mt-1">
-            <span className="badge bg-white text-dark py-1 px-2" style={{fontSize: '0.75rem', borderRadius: '5px'}}>
-              Meja {tableNumber !== '0' ? tableNumber : '-'}
+          <h5 className="mb-0 fw-bold" style={{ color: '#f1f5f9', fontSize: '1.2rem', letterSpacing: '0.2px' }}>
+            Billion Cafe Menu
+          </h5>
+          <div className="d-flex align-items-center gap-2 mt-2">
+            <span 
+              style={{
+                fontSize: '0.72rem',
+                fontWeight: '600',
+                backgroundColor: '#222433',
+                color: '#cbd5e1',
+                border: '1px solid #2c2f40',
+                borderRadius: '20px',
+                padding: '3px 10px',
+                display: 'inline-flex',
+                alignItems: 'center'
+              }}
+            >
+              Meja {tableNumber}
             </span>
             {diningMethod && (
               <span 
-                className="badge py-1 px-2 text-white" 
                 style={{
-                  fontSize: '0.75rem', 
-                  borderRadius: '5px', 
-                  backgroundColor: diningMethod === 'dine-in' ? '#198754' : '#6c757d',
-                  cursor: 'pointer'
+                  fontSize: '0.72rem',
+                  fontWeight: '600',
+                  backgroundColor: '#222433',
+                  color: '#cbd5e1',
+                  border: '1px solid #2c2f40',
+                  borderRadius: '20px',
+                  padding: '3px 10px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
                 }}
                 onClick={() => setShowDiningModal(true)}
               >
-                {diningMethod === 'dine-in' ? '🍽️ Makan di Sini' : '🛍️ Bawa Pulang'}
-                <i className="bi bi-pencil-square ms-1" style={{fontSize: '0.65rem'}}></i>
+                {diningMethod === 'dine-in' ? 'Makan di Sini' : 'Bawa Pulang'}
+                <i className="bi bi-pencil-square" style={{ fontSize: '0.65rem', color: '#94a3b8' }}></i>
               </span>
             )}
           </div>
         </div>
+
+        {/* Tombol Riwayat Pesanan */}
         <button 
-          className="btn btn-sm btn-dark text-white rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1 shadow-sm border-0"
-          style={{ fontSize: '0.75rem', backgroundColor: '#212529' }}
+          className="d-flex align-items-center gap-1 shadow-sm"
+          style={{
+            fontSize: '0.78rem',
+            fontWeight: '600',
+            backgroundColor: '#222433',
+            color: '#cbd5e1',
+            border: '1px solid #2c2f40',
+            borderRadius: '20px',
+            padding: '7px 14px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
           onClick={() => setShowHistoryModal(true)}
         >
-          📜 Riwayat
+          <i className="bi bi-clock-history me-1" style={{ fontSize: '0.85rem' }}></i> Riwayat
         </button>
       </div>
 
-      {/* Kategori Filter */}
-      <div className="d-flex overflow-auto p-3 bg-white border-bottom gap-2 hide-scrollbar shadow-sm sticky-top" style={{whiteSpace: 'nowrap', top: '70px', zIndex: 1010}}>
+      {/* 2. Kategori Filter (Pills Bar) */}
+      <div 
+        className="d-flex overflow-auto p-3 gap-2 hide-scrollbar sticky-top"
+        style={{
+          whiteSpace: 'nowrap',
+          top: '73px',
+          zIndex: 1010,
+          backgroundColor: '#101116',
+          borderBottom: '1px solid #1c1d27'
+        }}
+      >
         <button 
-          className={`btn btn-sm rounded-pill px-3 ${activeCategory === 'all' ? 'btn-dark' : 'btn-outline-dark'}`}
+          className="border-0 transition-all"
+          style={{
+            borderRadius: '20px',
+            padding: '7px 18px',
+            fontSize: '0.85rem',
+            fontWeight: '700',
+            backgroundColor: activeCategory === 'all' ? '#d8a744' : '#222433',
+            color: activeCategory === 'all' ? '#101116' : '#94a3b8',
+            border: activeCategory === 'all' ? 'none' : '1px solid #2c2f40',
+            cursor: 'pointer',
+            boxShadow: activeCategory === 'all' ? '0 2px 8px rgba(216, 167, 68, 0.3)' : 'none'
+          }}
           onClick={() => setActiveCategory('all')}
         >
           Semua
         </button>
-        {categories.map(cat => (
-          <button 
-            key={cat.id} 
-            className={`btn btn-sm rounded-pill px-4 py-2 fw-bold transition-all ${activeCategory === cat.id ? 'btn-warning text-white shadow-sm' : 'btn-outline-secondary border-0 bg-light'}`}
-            onClick={() => setActiveCategory(cat.id)}
-          >
-            {cat.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Daftar Produk Grid */}
-      <div className="row g-3 p-3">
-        {filteredProducts.map(product => {
-          // Cek ketersediaan untuk styling
-          const isAvailable = product.is_available;
-
+        {categories.map(cat => {
+          const isActive = activeCategory === cat.id;
           return (
-            <div 
-              key={product.id} 
-              className="col-6 col-md-4 col-lg-3" 
-              // PERUBAHAN 3: Hanya bisa diklik jika available
-              onClick={() => isAvailable && openProductModal(product)}
-              style={{ cursor: isAvailable ? 'pointer' : 'default' }}
+            <button 
+              key={cat.id} 
+              className="border-0 transition-all"
+              style={{
+                borderRadius: '20px',
+                padding: '7px 18px',
+                fontSize: '0.85rem',
+                fontWeight: '700',
+                backgroundColor: isActive ? '#d8a744' : '#222433',
+                color: isActive ? '#101116' : '#94a3b8',
+                border: isActive ? 'none' : '1px solid #2c2f40',
+                cursor: 'pointer',
+                boxShadow: isActive ? '0 2px 8px rgba(216, 167, 68, 0.3)' : 'none'
+              }}
+              onClick={() => setActiveCategory(cat.id)}
             >
-              <div className={`card h-100 border-0 ${isAvailable ? 'card-hover-lift' : 'opacity-75 bg-light'}`}>
-                
-                {/* Image Container */}
-                <div style={{height: '120px', overflow: 'hidden', position: 'relative'}} className="bg-secondary rounded-top">
-                  {product.image_url ? (
-                    <img 
-                      src={`${API_IMAGE_URL}/${product.image_url}`} 
-                      className={`w-100 h-100 ${!isAvailable ? 'grayscale' : ''}`} 
-                      style={{objectFit: 'cover', filter: !isAvailable ? 'grayscale(100%)' : 'none'}} 
-                      alt={product.name}
-                    />
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100 text-white small">No Image</div>
-                  )}
-
-                  {/* Badge HABIS di atas gambar */}
-                  {!isAvailable && (
-                    <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
-                         style={{backgroundColor: 'rgba(0,0,0,0.4)'}}>
-                      <span className="badge bg-danger fs-6 px-3 py-2 border border-white">HABIS</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="card-body p-2">
-                  <h6 className={`card-title mb-1 fw-bold ${!isAvailable ? 'text-muted text-decoration-line-through' : 'text-dark'}`} style={{fontSize: '0.95rem'}}>
-                    {product.name}
-                  </h6>
-                  <p className={`card-text fw-bold mb-0 ${!isAvailable ? 'text-muted' : 'text-warning'}`}>
-                    Rp {parseInt(product.base_price).toLocaleString('id-ID')}
-                  </p>
-                  {product.price_type === 'grosir' && (
-                    <div className="text-success small fw-bold mt-1 animate-pulse" style={{ fontSize: '0.75rem' }}>
-                      📦 Grosir: Rp {parseInt(product.grosir_price_per_unit).toLocaleString('id-ID')} (min {product.grosir_min_qty} pcs)
-                    </div>
-                  )}
-                </div>
-                
-                <div className="card-footer p-2 bg-transparent border-0">
-                  <button 
-                    className={`btn btn-sm w-100 ${isAvailable ? 'btn-outline-warning' : 'btn-secondary disabled'}`}
-                    disabled={!isAvailable}
-                  >
-                    {isAvailable ? 'Tambah' : 'Stok Habis'}
-                  </button>
-                </div>
-              </div>
-            </div>
+              {cat.name}
+            </button>
           );
         })}
       </div>
 
-      {/* Floating Cart Button (Hanya muncul jika ada item) */}
+      {/* 3. Daftar Produk Grid */}
+      <div className="container-fluid px-3 pt-3">
+        <div className="row g-3">
+          {filteredProducts.map(product => {
+            const isAvailable = product.is_available;
+            const hasGrosir = product.price_type === 'grosir';
+
+            return (
+              <div 
+                key={product.id} 
+                className="col-6 col-md-4 col-lg-3"
+                onClick={() => isAvailable && openProductModal(product)}
+                style={{ cursor: isAvailable ? 'pointer' : 'default' }}
+              >
+                <div 
+                  className="h-100 d-flex flex-column justify-content-between transition-all"
+                  style={{
+                    backgroundColor: '#161720',
+                    border: '1px solid #23253a',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    opacity: isAvailable ? 1 : 0.6,
+                    padding: '10px'
+                  }}
+                >
+                  {/* Foto Produk */}
+                  <div>
+                    <div 
+                      style={{
+                        height: '135px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        borderRadius: '12px',
+                        backgroundColor: '#222433'
+                      }}
+                    >
+                      {product.image_url ? (
+                        <img 
+                          src={`${API_IMAGE_URL}/${product.image_url}`} 
+                          className="w-100 h-100"
+                          style={{
+                            objectFit: 'cover',
+                            filter: !isAvailable ? 'grayscale(100%)' : 'none'
+                          }} 
+                          alt={product.name}
+                        />
+                      ) : (
+                        <div className="d-flex align-items-center justify-content-center h-100 text-muted small">
+                          No Image
+                        </div>
+                      )}
+
+                      {/* Badge HABIS */}
+                      {!isAvailable && (
+                        <div 
+                          className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
+                          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+                        >
+                          <span 
+                            className="badge"
+                            style={{
+                              backgroundColor: '#ef4444',
+                              color: '#fff',
+                              fontSize: '0.8rem',
+                              padding: '6px 14px',
+                              borderRadius: '8px',
+                              letterSpacing: '0.5px',
+                              fontWeight: '700'
+                            }}
+                          >
+                            HABIS
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Informasi Produk */}
+                    <div className="pt-2 px-1">
+                      <h6 
+                        className="mb-1 fw-bold text-truncate" 
+                        style={{
+                          fontSize: '0.92rem',
+                          color: isAvailable ? '#f1f5f9' : '#94a3b8',
+                          textDecoration: !isAvailable ? 'line-through' : 'none'
+                        }}
+                        title={product.name}
+                      >
+                        {product.name}
+                      </h6>
+                      <div 
+                        style={{
+                          color: '#d8a744',
+                          fontWeight: '700',
+                          fontSize: '1rem',
+                          marginBottom: hasGrosir ? '2px' : '4px'
+                        }}
+                      >
+                        Rp {parseInt(product.base_price, 10).toLocaleString('id-ID')}
+                      </div>
+                      
+                      {/* Sub-keterangan Grosir jika ada */}
+                      {hasGrosir && (
+                        <div 
+                          style={{
+                            fontSize: '0.72rem',
+                            color: '#94a3b8',
+                            fontWeight: '500',
+                            marginBottom: '6px'
+                          }}
+                        >
+                          Grosir: Rp {parseInt(product.grosir_price_per_unit, 10).toLocaleString('id-ID')} (min {product.grosir_min_qty} pcs)
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Tombol Tambah */}
+                  <div className="pt-2">
+                    <button 
+                      className="w-100 border-0 fw-bold transition-all"
+                      style={{
+                        backgroundColor: isAvailable ? '#d8a744' : '#282a36',
+                        color: isAvailable ? '#101116' : '#64748b',
+                        padding: '8px 0',
+                        borderRadius: '10px',
+                        fontSize: '0.88rem',
+                        cursor: isAvailable ? 'pointer' : 'not-allowed'
+                      }}
+                      disabled={!isAvailable}
+                    >
+                      {isAvailable ? 'Tambah' : 'Stok Habis'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 4. Floating Cart Button */}
       {cart.length > 0 && (
-        <div className="fixed-bottom p-3" style={{zIndex: 1040}}>
-          <button 
-            className="btn btn-cart-pulse text-white w-100 py-3 rounded-pill d-flex justify-content-between align-items-center shadow-lg px-4"
-            onClick={() => navigate('/customer/checkout')}
-          >
-            <span className="fw-bold fs-6">🛒 {cartCount} Item</span>
-            <span className="fw-bold fs-5">Rp {cartTotal.toLocaleString('id-ID')}</span>
-          </button>
+        <div 
+          className="fixed-bottom p-3 d-flex justify-content-center"
+          style={{ zIndex: 1040 }}
+        >
+          <div style={{ width: '100%', maxWidth: '500px' }}>
+            <button 
+              className="w-100 border-0 d-flex justify-content-between align-items-center shadow-lg transition-all"
+              style={{
+                backgroundColor: '#d8a744',
+                color: '#101116',
+                padding: '14px 22px',
+                borderRadius: '30px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                boxShadow: '0 8px 24px rgba(216, 167, 68, 0.4)'
+              }}
+              onClick={() => navigate('/customer/checkout')}
+            >
+              <span className="d-flex align-items-center gap-2" style={{ fontSize: '0.95rem' }}>
+                {cartCount} Item
+              </span>
+              <span style={{ fontSize: '1.05rem', fontWeight: '800' }}>
+                Rp {cartTotal.toLocaleString('id-ID')}
+              </span>
+            </button>
+          </div>
         </div>
       )}
 
-      {/* --- Modal Detail Produk --- */}
+      {/* 5. Modal Detail Produk (Dark Theme) */}
       {selectedProduct && (
-        <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1050, backdropFilter: 'blur(5px)'}}>
-          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '1.5rem'}}>
-              <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold fs-4">{selectedProduct.name}</h5>
-                <button className="btn-close" onClick={() => setSelectedProduct(null)}></button>
+        <div 
+          className="modal show d-block" 
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.75)',
+            zIndex: 1050,
+            backdropFilter: 'blur(6px)'
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: '440px' }}>
+            <div 
+              className="modal-content border-0 shadow-lg"
+              style={{
+                backgroundColor: '#161720',
+                border: '1px solid #23253a',
+                borderRadius: '20px',
+                color: '#f1f5f9',
+                overflow: 'hidden'
+              }}
+            >
+              <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 className="modal-title fw-bold" style={{ color: '#f1f5f9', fontSize: '1.2rem' }}>
+                  {selectedProduct.name}
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close btn-close-white" 
+                  onClick={() => setSelectedProduct(null)}
+                />
               </div>
-              <div className="modal-body">
+
+              <div className="modal-body px-4 pt-3 pb-2">
                 {selectedProduct.image_url && (
-                  <img src={`${API_IMAGE_URL}/${selectedProduct.image_url}`} className="w-100 rounded mb-3" style={{maxHeight: '200px', objectFit: 'cover'}} alt="detail"/>
+                  <img 
+                    src={`${API_IMAGE_URL}/${selectedProduct.image_url}`} 
+                    className="w-100 rounded mb-3" 
+                    style={{ maxHeight: '190px', objectFit: 'cover', borderRadius: '12px' }} 
+                    alt="detail"
+                  />
                 )}
-                <p className="text-muted small">{selectedProduct.description}</p>
                 
+                {selectedProduct.description && (
+                  <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '16px' }}>
+                    {selectedProduct.description}
+                  </p>
+                )}
+                
+                {/* Informasi Promo Grosir */}
                 {selectedProduct.price_type === 'grosir' && (
-                  <div className={`alert ${orderQty >= selectedProduct.grosir_min_qty ? 'alert-success border-success' : 'alert-info border-info'} py-2 px-3 mb-3 d-flex align-items-center justify-content-between`} style={{ borderRadius: '0.75rem', fontSize: '0.85rem' }}>
-                    <div>
-                      <strong className="d-block text-dark">🏷️ Promo Grosir Aktif</strong>
-                      <span className="text-muted">Beli min {selectedProduct.grosir_min_qty} pcs: Rp {parseInt(selectedProduct.grosir_price_per_unit).toLocaleString('id-ID')}/pcs</span>
-                      <br/>
-                      <span className="text-muted">Eceran: Rp {parseInt(selectedProduct.base_price).toLocaleString('id-ID')}/pcs</span>
+                  <div 
+                    style={{
+                      backgroundColor: 'rgba(216, 167, 68, 0.1)',
+                      border: '1px solid rgba(216, 167, 68, 0.3)',
+                      borderRadius: '12px',
+                      padding: '12px 14px',
+                      fontSize: '0.82rem',
+                      marginBottom: '16px'
+                    }}
+                  >
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <strong style={{ color: '#d8a744' }}>📦 Promo Grosir</strong>
+                      {orderQty >= selectedProduct.grosir_min_qty ? (
+                        <span 
+                          style={{
+                            backgroundColor: '#22c55e',
+                            color: '#fff',
+                            fontSize: '0.7rem',
+                            fontWeight: '700',
+                            padding: '2px 8px',
+                            borderRadius: '6px'
+                          }}
+                        >
+                          Harga Grosir Aktif
+                        </span>
+                      ) : (
+                        <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>
+                          Kurang {selectedProduct.grosir_min_qty - orderQty} pcs
+                        </span>
+                      )}
                     </div>
-                    {orderQty >= selectedProduct.grosir_min_qty ? (
-                      <span className="badge bg-success py-1 px-2 text-white">🎉 Aktif</span>
-                    ) : (
-                      <span className="badge bg-secondary py-1 px-2 text-white">Kurang {selectedProduct.grosir_min_qty - orderQty} pcs</span>
-                    )}
+                    <div style={{ color: '#cbd5e1' }}>
+                      Beli min {selectedProduct.grosir_min_qty} pcs: <strong style={{ color: '#d8a744' }}>Rp {parseInt(selectedProduct.grosir_price_per_unit, 10).toLocaleString('id-ID')}</strong>/pcs
+                    </div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+                      Harga Satuan Normal: Rp {parseInt(selectedProduct.base_price, 10).toLocaleString('id-ID')}/pcs
+                    </div>
                   </div>
                 )}
                 
+                {/* Opsi Varian Tambahan */}
                 {productVariants.filter(v => v.product_id === selectedProduct.id).length > 0 && (
                   <div className="mb-3">
-                    <label className="fw-bold mb-2">Opsi Tambahan:</label>
-                    {productVariants
-                      .filter(v => v.product_id === selectedProduct.id)
-                      .map(v => (
-                        <div key={v.id} className="form-check">
-                          <input 
-                            className="form-check-input" 
-                            type="checkbox" 
-                            id={`var-${v.id}`}
-                            checked={selectedVariants.some(sv => sv.id === v.id)}
-                            onChange={() => handleVariantToggle(v)}
-                          />
-                          <label className="form-check-label d-flex justify-content-between" htmlFor={`var-${v.id}`}>
-                            <span>{v.name}</span>
-                            <span className="text-muted">+Rp {parseInt(v.extra_price).toLocaleString('id-ID')}</span>
-                          </label>
-                        </div>
-                    ))}
+                    <label style={{ color: '#cbd5e1', fontWeight: '600', fontSize: '0.85rem', marginBottom: '8px', display: 'block' }}>
+                      Opsi Tambahan:
+                    </label>
+                    <div className="d-flex flex-column gap-2">
+                      {productVariants
+                        .filter(v => v.product_id === selectedProduct.id)
+                        .map(v => (
+                          <div 
+                            key={v.id} 
+                            className="form-check d-flex justify-content-between align-items-center p-2 rounded"
+                            style={{ backgroundColor: '#1c1d27', border: '1px solid #282a36' }}
+                          >
+                            <div className="d-flex align-items-center gap-2">
+                              <input 
+                                className="form-check-input ms-0" 
+                                type="checkbox" 
+                                id={`var-${v.id}`}
+                                checked={selectedVariants.some(sv => sv.id === v.id)}
+                                onChange={() => handleVariantToggle(v)}
+                                style={{ cursor: 'pointer', backgroundColor: '#161720', borderColor: '#475569' }}
+                              />
+                              <label 
+                                className="form-check-label mb-0" 
+                                htmlFor={`var-${v.id}`}
+                                style={{ color: '#f1f5f9', fontSize: '0.85rem', cursor: 'pointer' }}
+                              >
+                                {v.name}
+                              </label>
+                            </div>
+                            <span style={{ color: '#d8a744', fontSize: '0.8rem', fontWeight: '600' }}>
+                              +Rp {parseInt(v.extra_price, 10).toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
+                {/* Catatan Khusus */}
                 <div className="mb-3">
-                  <label className="fw-bold mb-1">Catatan Khusus</label>
+                  <label style={{ color: '#cbd5e1', fontWeight: '600', fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>
+                    Catatan Khusus
+                  </label>
                   <input 
-                    type="text" className="form-control" 
-                    placeholder="Contoh: Jangan pakai bawang"
+                    type="text" 
+                    className="form-control"
+                    placeholder="Contoh: Jangan terlalu manis, tanpa es batu"
                     value={orderNotes}
                     onChange={e => setOrderNotes(e.target.value)}
+                    style={{
+                      backgroundColor: '#1c1d27',
+                      border: '1px solid #282a36',
+                      color: '#f1f5f9',
+                      fontSize: '0.85rem',
+                      borderRadius: '8px',
+                      padding: '10px 12px'
+                    }}
                   />
                 </div>
 
-                <div className="d-flex align-items-center justify-content-center gap-3 mt-4">
-                  <button className="btn btn-outline-secondary rounded-circle" 
-                    onClick={() => setOrderQty(Math.max(1, orderQty - 1))} style={{width:40, height:40}}>-</button>
-                  <span className="fs-4 fw-bold">{orderQty}</span>
-                  <button className="btn btn-outline-secondary rounded-circle" 
-                    onClick={() => setOrderQty(orderQty + 1)} style={{width:40, height:40}}>+</button>
+                {/* Counter Jumlah */}
+                <div className="d-flex align-items-center justify-content-center gap-4 my-3">
+                  <button 
+                    className="border-0 rounded-circle d-flex align-items-center justify-content-center"
+                    onClick={() => setOrderQty(Math.max(1, orderQty - 1))}
+                    style={{
+                      width: 38,
+                      height: 38,
+                      backgroundColor: '#222433',
+                      border: '1px solid #2c2f40',
+                      color: '#f1f5f9',
+                      fontSize: '1.2rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    -
+                  </button>
+                  <span style={{ fontSize: '1.3rem', fontWeight: '700', color: '#f1f5f9' }}>
+                    {orderQty}
+                  </span>
+                  <button 
+                    className="border-0 rounded-circle d-flex align-items-center justify-content-center"
+                    onClick={() => setOrderQty(orderQty + 1)}
+                    style={{
+                      width: 38,
+                      height: 38,
+                      backgroundColor: '#222433',
+                      border: '1px solid #2c2f40',
+                      color: '#f1f5f9',
+                      fontSize: '1.2rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    +
+                  </button>
                 </div>
               </div>
-              <div className="modal-footer border-0">
-                <button className="btn btn-warning w-100 fw-bold py-2" onClick={addToCart}>
-                  Tambah ke Pesanan - Rp {((getProductUnitPrice(selectedProduct, orderQty) + selectedVariants.reduce((t,v)=>t+parseFloat(v.extra_price),0)) * orderQty).toLocaleString('id-ID')}
+
+              {/* Tombol Simpan ke Keranjang */}
+              <div className="modal-footer border-0 p-4 pt-2">
+                <button 
+                  className="w-100 border-0 fw-bold py-3 transition-all"
+                  style={{
+                    backgroundColor: '#d8a744',
+                    color: '#101116',
+                    borderRadius: '12px',
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(216, 167, 68, 0.35)'
+                  }}
+                  onClick={addToCart}
+                >
+                  Tambah ke Pesanan • Rp {((getProductUnitPrice(selectedProduct, orderQty) + selectedVariants.reduce((t,v)=>t+parseFloat(v.extra_price),0)) * orderQty).toLocaleString('id-ID')}
                 </button>
               </div>
             </div>
@@ -398,60 +687,75 @@ const Menu = () => {
         </div>
       )}
 
-      {/* Modal Pilihan Tipe Pesanan (Dine In / Take Away) */}
+      {/* 6. Modal Pilihan Tipe Pesanan (Dine In / Take Away) */}
       {showDiningModal && (
-        <div className="modal show d-block animate-fade-in" style={{backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1060, backdropFilter: 'blur(10px)'}}>
-          <div className="modal-dialog modal-dialog-centered" style={{maxWidth: '450px'}}>
-            <div className="modal-content border-0 shadow-lg text-dark mx-3" style={{borderRadius: '1.5rem', overflow: 'hidden'}}>
+        <div 
+          className="modal show d-block" 
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.85)',
+            zIndex: 1060,
+            backdropFilter: 'blur(8px)'
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '420px' }}>
+            <div 
+              className="modal-content border-0 shadow-lg mx-3"
+              style={{
+                backgroundColor: '#161720',
+                border: '1px solid #23253a',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                color: '#f1f5f9'
+              }}
+            >
               <div className="modal-body p-4 text-center">
-                <div className="mb-2" style={{fontSize: '3rem'}}>☕</div>
-                <h4 className="fw-bold mb-1">Selamat Datang di Billion Cafe</h4>
-                <p className="text-muted small mb-4">Silakan pilih metode pelayanan untuk pesanan Anda:</p>
+                <h5 className="fw-bold mb-1" style={{ color: '#f1f5f9' }}>
+                  Selamat Datang di Billion Cafe
+                </h5>
+                <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: '20px' }}>
+                  Silakan pilih metode pelayanan untuk pesanan Anda:
+                </p>
                 
                 <div className="d-grid gap-3">
-                  {/* Card Dine In */}
+                  {/* Pilihan Dine In */}
                   <div 
-                    className="card border-2 p-3 text-start transition-all"
+                    className="p-3 text-start transition-all"
                     style={{
-                      borderRadius: '1rem',
-                      borderColor: diningMethod === 'dine-in' ? '#ffc107' : '#f1f3f5',
-                      backgroundColor: diningMethod === 'dine-in' ? '#fffbe6' : '#f8f9fa',
-                      cursor: 'pointer',
-                      borderStyle: 'solid'
+                      borderRadius: '14px',
+                      border: diningMethod === 'dine-in' ? '1.5px solid #d8a744' : '1px solid #282a36',
+                      backgroundColor: diningMethod === 'dine-in' ? 'rgba(216, 167, 68, 0.12)' : '#1c1d27',
+                      cursor: 'pointer'
                     }}
                     onClick={() => handleSelectDiningMethod('dine-in')}
                   >
-                    <div className="d-flex align-items-center gap-3">
-                      <div className="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{width: 48, height: 48}}>
-                        <i className="bi bi-shop fs-4"></i>
-                      </div>
-                      <div>
-                        <h6 className="fw-bold mb-0">Makan di Sini (Dine In)</h6>
-                        <small className="text-muted" style={{fontSize: '0.75rem'}}>Disajikan di piring hangat di meja Anda</small>
-                      </div>
+                    <div>
+                      <h6 className="fw-bold mb-1" style={{ color: '#f1f5f9', fontSize: '0.95rem' }}>
+                        Makan di Sini
+                      </h6>
+                      <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+                        Disajikan langsung di Meja {tableNumber}
+                      </small>
                     </div>
                   </div>
 
-                  {/* Card Take Away */}
+                  {/* Pilihan Take Away */}
                   <div 
-                    className="card border-2 p-3 text-start transition-all"
+                    className="p-3 text-start transition-all"
                     style={{
-                      borderRadius: '1rem',
-                      borderColor: diningMethod === 'takeaway' ? '#ffc107' : '#f1f3f5',
-                      backgroundColor: diningMethod === 'takeaway' ? '#fffbe6' : '#f8f9fa',
-                      cursor: 'pointer',
-                      borderStyle: 'solid'
+                      borderRadius: '14px',
+                      border: diningMethod === 'takeaway' ? '1.5px solid #d8a744' : '1px solid #282a36',
+                      backgroundColor: diningMethod === 'takeaway' ? 'rgba(216, 167, 68, 0.12)' : '#1c1d27',
+                      cursor: 'pointer'
                     }}
                     onClick={() => handleSelectDiningMethod('takeaway')}
                   >
-                    <div className="d-flex align-items-center gap-3">
-                      <div className="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{width: 48, height: 48}}>
-                        <i className="bi bi-bag-check-fill fs-4"></i>
-                      </div>
-                      <div>
-                        <h6 className="fw-bold mb-0">Bawa Pulang (Take Away)</h6>
-                        <small className="text-muted" style={{fontSize: '0.75rem'}}>Dibungkus rapi, praktis dibawa pulang</small>
-                      </div>
+                    <div>
+                      <h6 className="fw-bold mb-1" style={{ color: '#f1f5f9', fontSize: '0.95rem' }}>
+                        Bawa Pulang
+                      </h6>
+                      <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+                        Dibungkus rapi untuk dibawa pulang
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -461,23 +765,50 @@ const Menu = () => {
         </div>
       )}
 
-      {/* --- Modal Riwayat Pesanan --- */}
+      {/* 7. Modal Riwayat Pesanan */}
       {showHistoryModal && (
-        <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1050, backdropFilter: 'blur(5px)'}}>
-          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable" style={{maxWidth: '450px'}}>
-            <div className="modal-content border-0 shadow-lg text-dark" style={{borderRadius: '1.5rem'}}>
-              <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold fs-4">📜 Riwayat Pesanan</h5>
-                <button className="btn-close" onClick={() => setShowHistoryModal(false)}></button>
+        <div 
+          className="modal show d-block" 
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.75)',
+            zIndex: 1050,
+            backdropFilter: 'blur(6px)'
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: '440px' }}>
+            <div 
+              className="modal-content border-0 shadow-lg"
+              style={{
+                backgroundColor: '#161720',
+                border: '1px solid #23253a',
+                borderRadius: '20px',
+                color: '#f1f5f9'
+              }}
+            >
+              <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 className="modal-title fw-bold" style={{ color: '#f1f5f9', fontSize: '1.2rem' }}>
+                  📜 Riwayat Pesanan
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close btn-close-white" 
+                  onClick={() => setShowHistoryModal(false)}
+                />
               </div>
+
               <div className="modal-body p-4">
                 {orderHistory.length > 0 ? (
                   <div className="d-flex flex-column gap-3">
                     {orderHistory.slice().reverse().map((item) => (
                       <div 
                         key={item.orderId} 
-                        className="card border-0 bg-light p-3 shadow-sm rounded-3 hover-fade"
-                        style={{ cursor: 'pointer' }}
+                        className="p-3 transition-all"
+                        style={{
+                          backgroundColor: '#1c1d27',
+                          border: '1px solid #282a36',
+                          borderRadius: '12px',
+                          cursor: 'pointer'
+                        }}
                         onClick={() => {
                           setShowHistoryModal(false);
                           navigate('/customer/status', { 
@@ -491,10 +822,32 @@ const Menu = () => {
                       >
                         <div className="d-flex justify-content-between align-items-start mb-2">
                           <div>
-                            <span className="badge bg-warning text-dark fw-bold me-2">ID: #{item.orderId}</span>
-                            <span className="badge bg-secondary text-white">Meja {item.tableNumber}</span>
+                            <span 
+                              style={{
+                                backgroundColor: 'rgba(216, 167, 68, 0.2)',
+                                color: '#d8a744',
+                                fontSize: '0.75rem',
+                                fontWeight: '700',
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                marginRight: '6px'
+                              }}
+                            >
+                              #{item.orderId}
+                            </span>
+                            <span 
+                              style={{
+                                backgroundColor: '#222433',
+                                color: '#94a3b8',
+                                fontSize: '0.72rem',
+                                padding: '3px 8px',
+                                borderRadius: '6px'
+                              }}
+                            >
+                              Meja {item.tableNumber}
+                            </span>
                           </div>
-                          <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                          <small style={{ color: '#64748b', fontSize: '0.75rem' }}>
                             {new Date(item.date).toLocaleDateString('id-ID', {
                               day: 'numeric',
                               month: 'short',
@@ -503,12 +856,26 @@ const Menu = () => {
                             })}
                           </small>
                         </div>
-                        <div className="d-flex justify-content-between align-items-center mt-2">
+                        <div className="d-flex justify-content-between align-items-center mt-3">
                           <div>
-                            <span className="text-secondary small d-block">Total Pembayaran</span>
-                            <span className="fw-bold text-dark">Rp {parseInt(item.totalAmount || 0).toLocaleString('id-ID')}</span>
+                            <span style={{ color: '#94a3b8', fontSize: '0.72rem', display: 'block' }}>
+                              Total Pembayaran
+                            </span>
+                            <span style={{ color: '#f1f5f9', fontWeight: '700', fontSize: '0.95rem' }}>
+                              Rp {parseInt(item.totalAmount || 0, 10).toLocaleString('id-ID')}
+                            </span>
                           </div>
-                          <span className="btn btn-sm btn-dark rounded-pill px-3 py-1 fw-bold" style={{ fontSize: '0.75rem' }}>
+                          <span 
+                            style={{
+                              backgroundColor: '#282a36',
+                              color: '#cbd5e1',
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              padding: '5px 12px',
+                              borderRadius: '20px',
+                              border: '1px solid #333647'
+                            }}
+                          >
                             Lacak Status ⚡
                           </span>
                         </div>
@@ -516,14 +883,25 @@ const Menu = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-4 text-muted">
-                    <div className="fs-1 mb-2">📭</div>
+                  <div className="text-center py-4" style={{ color: '#64748b' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📭</div>
                     <p className="mb-0 small">Belum ada riwayat pesanan dari perangkat ini.</p>
                   </div>
                 )}
               </div>
-              <div className="modal-footer border-0">
-                <button className="btn btn-secondary w-100 fw-bold py-2" style={{ borderRadius: '0.75rem' }} onClick={() => setShowHistoryModal(false)}>
+
+              <div className="modal-footer border-0 p-4 pt-0">
+                <button 
+                  className="w-100 border-0 fw-bold py-2" 
+                  style={{
+                    backgroundColor: '#282a36',
+                    color: '#cbd5e1',
+                    borderRadius: '10px',
+                    fontSize: '0.88rem',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setShowHistoryModal(false)}
+                >
                   Tutup
                 </button>
               </div>
@@ -531,6 +909,7 @@ const Menu = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

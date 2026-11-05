@@ -2,6 +2,7 @@ import db from '../config/database.js';
 import * as settingsModel from '../models/settingsModel.js';
 import * as feedbackModel from '../models/feedbackModel.js';
 import baseLogger from '../utils/logger.js';
+import os from 'os';
 
 const logger = baseLogger.child({ context: 'SettingsController' });
 
@@ -77,5 +78,23 @@ export const getAllFeedbacks = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {
         if (conn) conn.release();
+    }
+};
+
+export const getServerInfo = (req, res) => {
+    try {
+        const interfaces = os.networkInterfaces();
+        const ips = [];
+        for (const name of Object.keys(interfaces)) {
+            for (const iface of interfaces[name]) {
+                if (iface.family === 'IPv4' && !iface.internal && !iface.address.startsWith('169.254')) {
+                    ips.push({ name, address: iface.address });
+                }
+            }
+        }
+        res.status(200).json({ ips, primaryIp: ips[0]?.address || 'localhost' });
+    } catch (error) {
+        logger.error(`Error getting server info: ${error.message}`);
+        res.status(500).json({ error: 'Failed to get server info' });
     }
 };

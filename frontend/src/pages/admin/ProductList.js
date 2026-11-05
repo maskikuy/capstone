@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { Link } from 'react-router-dom';
 import { notifyError, notifySuccess, confirmAction } from '../../utils/notify';
+import { Search, Plus, SquarePen, Trash2 } from 'lucide-react';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
-
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchProducts();
@@ -15,20 +16,22 @@ const ProductList = () => {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const res = await api.get('/product');
       setProducts(res.data);
       setFilteredProducts(res.data);
     } catch (err) {
-      console.error("Gagal ambil produk", err);
+      console.error('Gagal ambil produk', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
     const isConfirmed = await confirmAction(
-      'Hapus Menu?', 
+      'Hapus Menu?',
       'Yakin ingin menghapus menu ini? Data tidak bisa dikembalikan.'
     );
-
     if (isConfirmed) {
       try {
         await api.delete(`/product/${id}`);
@@ -40,170 +43,353 @@ const ProductList = () => {
     }
   };
 
-  // --- FITUR BARU: Toggle Status ---
   const handleToggleStatus = async (product) => {
-    const newStatus = !product.is_available; 
-
-    // Siapkan FormData
-    const payload = { 
-      is_available: newStatus ? 1 : 0 
-    };
-
-    // Optimistic Update
+    const newStatus = !product.is_available;
+    const payload = { is_available: newStatus ? 1 : 0 };
     const originalProducts = [...products];
-    const updatedProducts = products.map(p => 
-      p.id === product.id ? { ...p, is_available: newStatus } : p
-    );
-    setProducts(updatedProducts);
-
+    setProducts(products.map(p => p.id === product.id ? { ...p, is_available: newStatus } : p));
     try {
-      // PERBAIKAN DI SINI:
-      // Hapus object { headers: ... }
-      // Biarkan Axios mengatur header otomatis karena kita mengirim instance FormData
       await api.put(`/product/${product.id}/availability`, payload);
-      
       notifySuccess(`Status menu "${product.name}" diperbarui!`);
     } catch (err) {
       setProducts(originalProducts);
       notifyError('Gagal update status. Silakan coba lagi.');
-      console.error(err);
     }
   };
 
   useEffect(() => {
     if (!searchQuery) {
-      // Jika search kosong, tampilkan semua produk
       setFilteredProducts(products);
     } else {
-      const lowerQuery = searchQuery.toLowerCase();
-      
-      const results = products.filter(item => {
-        // Ambil nama (aman dari null)
+      const q = searchQuery.toLowerCase();
+      setFilteredProducts(products.filter(item => {
         const name = (item.product_name || item.name || '').toLowerCase();
-        
-        // Ambil kategori (opsional, jika ingin cari berdasarkan kategori juga)
-        const category = (item.category || '').toLowerCase();
-        
-        // Cek kecocokan
-        return name.includes(lowerQuery) || category.includes(lowerQuery);
-      });
-
-      setFilteredProducts(results);
+        const cat  = (item.category || '').toLowerCase();
+        return name.includes(q) || cat.includes(q);
+      }));
     }
   }, [searchQuery, products]);
 
   return (
-    <div className="container">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Daftar Menu</h2>
-        <Link to="/admin/product/new" className="btn btn-primary">+ Tambah Menu</Link>
+    <div style={{ backgroundColor: '#0d0d12', color: '#f8fafc', minHeight: '100vh', padding: '24px 28px 48px' }}>
+
+      {/* ── Title ── */}
+      <h3 style={{ color: '#f1f5f9', fontWeight: '700', fontSize: '1.45rem', margin: '0 0 20px' }}>
+        Daftar Menu Management Dark Mode
+      </h3>
+
+      {/* ── Action Bar ── */}
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        {/* Search */}
+        <div style={{
+          backgroundColor: '#161720',
+          border: '1px solid #282a36',
+          borderRadius: '8px',
+          padding: '9px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          width: '100%',
+          maxWidth: '340px'
+        }}>
+          <Search size={16} color="#64748b" />
+          <input
+            type="text"
+            placeholder="Cari nama menu (contoh: Nasi Goreng)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: '#f1f5f9',
+              fontSize: '13px',
+              width: '100%'
+            }}
+          />
+          {searchQuery && (
+            <button type="button" onClick={() => setSearchQuery('')}
+              style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 0 }}>
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* + Tambah Menu */}
+        <Link
+          to="/admin/product/new"
+          style={{
+            backgroundColor: '#c9973b',
+            color: '#fff',
+            fontWeight: '600',
+            fontSize: '13px',
+            padding: '9px 22px',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '7px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.35)'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d8a744'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9973b'; }}
+        >
+          <Plus size={16} strokeWidth={2.5} />
+          <span>+ Tambah Menu</span>
+        </Link>
       </div>
 
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <div className="input-group">
-            <span className="input-group-text bg-white border-end-0">
-              <i className="bi bi-search text-muted"></i>
-            </span>
-            <input 
-              type="text" 
-              className="form-control border-start-0 ps-0" 
-              placeholder="Cari nama menu (contoh: Nasi Goreng)..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {/* Tombol Clear Search (Opsional) */}
-            {searchQuery && (
-               <button 
-                 className="btn btn-outline-secondary border-start-0 border-top-1 border-bottom-1"
-                 onClick={() => setSearchQuery('')}
-               >
-                 <i className="bi bi-x-lg"></i>
-               </button>
-            )}
-          </div>
-          
-          <div className="mt-2 small text-muted">
-            Menampilkan <strong>{filteredProducts.length}</strong> menu
-          </div>
+      {/* ── Table Card ── */}
+      <div style={{
+        backgroundColor: '#161720',
+        border: '1px solid #23253a',
+        borderRadius: '14px',
+        overflow: 'hidden'
+      }}>
+        <div className="table-responsive" style={{ margin: 0 }}>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            backgroundColor: '#161720',
+            color: '#cbd5e1'
+          }}>
+            {/* ── HEAD ── */}
+            <thead>
+              <tr style={{ borderBottom: '1px solid #23253a' }}>
+                <th style={thStyle({ width: '54px', textAlign: 'center' })}>No</th>
+                <th style={thStyle({ width: '88px' })}>Foto</th>
+                <th style={thStyle({})}>Nama</th>
+                <th style={thStyle({ width: '150px' })}>Harga Dasar</th>
+                <th style={thStyle({ width: '150px', textAlign: 'center' })}>Status</th>
+                <th style={thStyle({ width: '175px', textAlign: 'center' })}>Aksi</th>
+              </tr>
+            </thead>
+
+            {/* ── BODY ── */}
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '48px', color: '#94a3b8' }}>
+                    <div className="spinner-border spinner-border-sm me-2" style={{ color: '#d8a744' }} role="status" />
+                    Memuat daftar menu...
+                  </td>
+                </tr>
+              ) : filteredProducts.length > 0 ? (
+                filteredProducts.map((product, index) => (
+                  <tr key={product.id} style={{ borderBottom: '1px solid #1e2030' }}
+                    onMouseEnter={(e) => { [...e.currentTarget.cells].forEach(c => c.style.backgroundColor = '#1b1d2b'); }}
+                    onMouseLeave={(e) => { [...e.currentTarget.cells].forEach(c => c.style.backgroundColor = '#161720'); }}>
+
+                    {/* No */}
+                    <td style={tdStyle({ textAlign: 'center', color: '#94a3b8' })}>{index + 1}</td>
+
+                    {/* Foto */}
+                    <td style={tdStyle({})}>
+                      <div style={{
+                        width: '62px', height: '62px',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        backgroundColor: '#262835',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.35)'
+                      }}>
+                        {product.image_url
+                          ? <img src={`${API_IMAGE_URL}/${product.image_url}`} alt={product.name}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <span style={{ fontSize: '10px', color: '#64748b' }}>No Img</span>
+                        }
+                      </div>
+                    </td>
+
+                    {/* Nama */}
+                    <td style={tdStyle({ color: '#f1f5f9', fontWeight: '600', fontSize: '14px' })}>
+                      <div className="d-flex align-items-center gap-2">
+                        <span>{product.name}</span>
+                        {product.inventory_id && (
+                          <span 
+                            title="Produk ini terhubung langsung dengan data Inventori" 
+                            style={{ 
+                              fontSize: '10.5px', 
+                              backgroundColor: 'rgba(59, 130, 246, 0.15)', 
+                              color: '#60a5fa', 
+                              border: '1px solid rgba(59, 130, 246, 0.3)',
+                              borderRadius: '4px',
+                              padding: '1px 6px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            Inventori
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Harga Dasar */}
+                    <td style={tdStyle({ color: '#cbd5e1', fontSize: '14px' })}>
+                      Rp {parseInt(product.base_price).toLocaleString('id-ID')}
+                    </td>
+
+                    {/* Status */}
+                    <td style={tdStyle({ textAlign: 'center' })}>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStatus(product)}
+                        title="Klik untuk ubah status"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '7px',
+                          backgroundColor: product.is_available ? '#0e3a27' : '#3b1414',
+                          border: `1px solid ${product.is_available ? '#166534' : '#7f1d1d'}`,
+                          borderRadius: '9999px',
+                          padding: '4px 10px 4px 12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          minWidth: '96px',
+                          justifyContent: 'space-between'
+                        }}
+                      >
+                        <span style={{
+                          color: product.is_available ? '#4ade80' : '#f87171',
+                          fontSize: '11.5px',
+                          fontWeight: '600',
+                          letterSpacing: '0.2px'
+                        }}>
+                          {product.is_available ? 'Tersedia' : 'Habis'}
+                        </span>
+                        {/* toggle dot */}
+                        <span style={{
+                          width: '16px', height: '16px',
+                          borderRadius: '50%',
+                          backgroundColor: product.is_available ? '#22c55e' : '#ef4444',
+                          display: 'inline-block',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+                          flexShrink: 0
+                        }} />
+                      </button>
+                    </td>
+
+                    {/* Aksi */}
+                    <td style={tdStyle({ textAlign: 'center' })}>
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        {/* Edit — outlined amber */}
+                        <Link
+                          to={`/admin/product/edit/${product.id}`}
+                          style={{
+                            backgroundColor: 'transparent',
+                            color: '#c9973b',
+                            border: '1.5px solid #c9973b',
+                            borderRadius: '7px',
+                            padding: '5px 14px',
+                            fontSize: '12.5px',
+                            fontWeight: '600',
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#c9973b';
+                            e.currentTarget.style.color = '#fff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = '#c9973b';
+                          }}
+                        >
+                          <SquarePen size={13} />
+                          <span>Edit</span>
+                        </Link>
+
+                        {/* Hapus — filled dark-red */}
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(product.id)}
+                          style={{
+                            backgroundColor: '#7f1d1d',
+                            color: '#fca5a5',
+                            border: 'none',
+                            borderRadius: '7px',
+                            padding: '5px 14px',
+                            fontSize: '12.5px',
+                            fontWeight: '600',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#991b1b'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#7f1d1d'; }}
+                        >
+                          <Trash2 size={13} />
+                          <span>Hapus</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                    Menu "{searchQuery}" tidak ditemukan.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div className="table-responsive">
-        <table className="table table-striped table-hover shadow-sm">
-          <thead className="table-dark">
-            <tr>
-              <th>No</th>
-              <th>Foto</th>
-              <th>Nama</th>
-              <th>Harga Dasar</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* --- PERUBAHAN DI SINI: Gunakan filteredProducts --- */}
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product, index) => (
-                <tr key={product.id}>
-                  <td>{index + 1}</td>
-                  <td>
-                    {product.image_url ? (
-                      <img 
-                        src={`${API_IMAGE_URL}/${product.image_url}`} 
-                        alt={product.name} 
-                        style={{ width: '50px', height: '50px', objectFit: 'cover' }} 
-                      />
-                    ) : (
-                      <span className="text-muted small">No Image</span>
-                    )}
-                  </td>
-                  
-                  {/* Highlight nama jika sedang dicari (Opsional, tapi bagus UX-nya) */}
-                  <td className="fw-bold">{product.name}</td>
-                  
-                  <td>Rp {parseInt(product.base_price).toLocaleString('id-ID')}</td>
-                  <td>
-                      {/* ... (Kode Toggle Switch Anda Tetap Sama) ... */}
-                      <div className="form-check form-switch">
-                        <input 
-                          className="form-check-input" 
-                          type="checkbox" 
-                          role="switch" 
-                          id={`switch-${product.id}`}
-                          checked={!!product.is_available} 
-                          onChange={() => handleToggleStatus(product)}
-                          style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
-                        />
-                        <label 
-                          className={`form-check-label small ms-2 fw-bold ${product.is_available ? 'text-success' : 'text-danger'}`} 
-                          htmlFor={`switch-${product.id}`}
-                          style={{cursor: 'pointer'}}
-                        >
-                          {product.is_available ? 'Tersedia' : 'Habis'}
-                        </label>
-                      </div>
-                  </td>
-                  <td>
-                    <Link to={`/admin/product/edit/${product.id}`} className="btn btn-sm btn-warning me-2">Edit</Link>
-                    <button onClick={() => handleDelete(product.id)} className="btn btn-sm btn-danger">Hapus</button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              // --- TAMPILAN JIKA TIDAK ADA HASIL ---
-              <tr>
-                <td colSpan="6" className="text-center py-4 text-muted">
-                  <i className="bi bi-search fs-3 d-block mb-2"></i>
-                  Menu "{searchQuery}" tidak ditemukan.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* ── Pagination ── */}
+      {filteredProducts.length > 0 && (
+        <div className="d-flex justify-content-center align-items-center gap-2 mt-4">
+          <button type="button" style={pageBtnStyle(false)} disabled>❮</button>
+          <button type="button" style={pageBtnStyle(true)}>1</button>
+          <button type="button" style={pageBtnStyle(false)} disabled>❯</button>
+        </div>
+      )}
     </div>
   );
 };
+
+/* ── helper style fns ── */
+const thStyle = (extra = {}) => ({
+  backgroundColor: '#161720',
+  color: '#94a3b8',
+  fontSize: '13px',
+  fontWeight: '600',
+  padding: '16px 18px',
+  textAlign: 'left',
+  borderTop: 'none',
+  borderLeft: 'none',
+  borderRight: 'none',
+  ...extra
+});
+
+const tdStyle = (extra = {}) => ({
+  backgroundColor: '#161720',
+  color: '#cbd5e1',
+  fontSize: '13.5px',
+  padding: '18px 18px',
+  verticalAlign: 'middle',
+  borderTop: 'none',
+  borderLeft: 'none',
+  borderRight: 'none',
+  transition: 'background-color 0.15s',
+  ...extra
+});
+
+const pageBtnStyle = (active) => ({
+  backgroundColor: active ? '#c9973b' : '#161720',
+  border: active ? 'none' : '1px solid #282a36',
+  color: active ? '#fff' : '#64748b',
+  fontWeight: active ? '700' : '400',
+  borderRadius: '6px',
+  padding: '5px 12px',
+  fontSize: '12px',
+  cursor: active ? 'pointer' : 'default'
+});
 
 export default ProductList;

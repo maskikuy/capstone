@@ -8,7 +8,7 @@ export const getAllProductVariants = async (conn) => {
     const [result] = await conn.execute(sql);
     Logger.info(`Fetched ${result.length} product variants`);
     return result;
-}
+};
 
 export const getProductVariantById = async (conn, variantId) => {
     Logger.debug(`Fetching product variant with ID: ${variantId}`);
@@ -20,27 +20,29 @@ export const getProductVariantById = async (conn, variantId) => {
     }
     Logger.info(`Product variant found: ${JSON.stringify(result[0])}`);
     return result[0];
-}
+};
 
 export const createProductVariant = async (conn, variantData) => {
     Logger.debug(`Creating new product variant with data: ${JSON.stringify(variantData)}`);
+    const extraPrice = Number(variantData.extra_price) || 0;
     const sql = 'INSERT INTO product_variants (product_id, name, extra_price) VALUES (?, ?, ?)';
-    const [result] = await conn.execute(sql, [variantData.product_id, variantData.name, variantData.extra_price]);
+    const [result] = await conn.execute(sql, [variantData.product_id, variantData.name, extraPrice]);
     Logger.info(`Product variant created with ID: ${result.insertId}`);
     return result.insertId;
-}
+};
 
 export const updateProductVariant = async (conn, variantId, variantData) => {
     Logger.debug(`Updating product variant with ID: ${variantId} with data: ${JSON.stringify(variantData)}`);
+    const extraPrice = Number(variantData.extra_price) || 0;
     const sql = 'UPDATE product_variants SET product_id = ?, name = ?, extra_price = ? WHERE id = ?';
-    const [result] = await conn.execute(sql, [variantData.product_id, variantData.name, variantData.extra_price, variantId]);
+    const [result] = await conn.execute(sql, [variantData.product_id, variantData.name, extraPrice, variantId]);
     if (result.affectedRows === 0) {
         Logger.warn(`No product variant found to update with ID: ${variantId}`);
         return false;
     }
     Logger.info(`Product variant with ID: ${variantId} updated successfully`);
     return true;
-}
+};
 
 export const deleteProductVariant = async (conn, variantId) => {
     Logger.debug(`Deleting product variant with ID: ${variantId}`);
@@ -52,4 +54,4 @@ export const deleteProductVariant = async (conn, variantId) => {
     }
     Logger.info(`Product variant with ID: ${variantId} deleted successfully`);
     return true;
-}
+};
