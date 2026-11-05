@@ -14,7 +14,10 @@ router.delete('/order/:id', verifyToken, orderController.deleteOrder);
 router.put('/order/:id/status', verifyToken, orderController.updateOrderStatus);
 router.put('/order/:id/updatePayment', verifyToken, orderController.updatePaymentStatus);
 router.get('/order/:id/getStatus', orderController.getOrderStatus);
+router.get('/order/:id/payment-status', orderController.checkPaymentStatus);
 router.get('/order/:id/midtrans-status', orderController.checkMidtransPaymentStatus);
+router.post('/sumopod/webhook', orderController.handleSumopodWebhook);
+router.post('/sumopod/notification', orderController.handleSumopodWebhook);
 router.post('/midtrans/notification', orderController.handleMidtransNotification);
 
 export default router;

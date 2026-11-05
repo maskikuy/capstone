@@ -7,7 +7,7 @@ const PaymentQris = () => {
   const navigate = useNavigate();
   
   // Ambil data dari halaman checkout
-  const { orderId, totalAmount, qris_image, customerName, tableNumber } = location.state || {};
+  const { orderId, totalAmount, qris_image, payment_link_url, customerName, tableNumber } = location.state || {};
 
   // Timer hitung mundur (15 menit)
   const [timeLeft, setTimeLeft] = useState(900);
@@ -28,7 +28,8 @@ const PaymentQris = () => {
     // Auto-polling setiap 3 detik untuk cek status pembayaran
     pollingRef.current = setInterval(async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/order/${orderId}/midtrans-status`);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const response = await fetch(`${apiUrl}/api/order/${orderId}/payment-status`);
         if (!response.ok) return;
         const data = await response.json();
         if (data.payment_status === 'paid') {
@@ -205,6 +206,25 @@ const PaymentQris = () => {
 
       {/* 3. TOMBOL AKSI */}
       <div className="w-100 d-flex flex-column gap-2" style={{ maxWidth: '420px' }}>
+        {payment_link_url && (
+          <a 
+            href={payment_link_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-100 py-3 fw-bold text-decoration-none text-center d-flex align-items-center justify-content-center shadow-sm"
+            style={{
+              backgroundColor: '#3b82f6',
+              color: '#ffffff',
+              borderRadius: '14px',
+              fontSize: '1rem',
+              cursor: 'pointer'
+            }}
+          >
+            <i className="bi bi-box-arrow-up-right me-2"></i>
+            Buka Halaman Pembayaran SumoPod
+          </a>
+        )}
+
         {qris_image && (
           <button 
             className="w-100 py-3 fw-bold border-0 transition-all shadow-sm"
