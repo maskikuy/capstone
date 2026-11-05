@@ -220,6 +220,14 @@ export const saveMidtransInfo = async (conn, orderId, midtransOrderId, midtransT
     logger.info(`Midtrans info saved for order ID: ${orderId}`);
 };
 
+export const saveSumopodInfo = async (conn, orderId, sumopodPaymentId, qrisImage, paymentLinkUrl) => {
+    logger.debug(`Saving SumoPod payment info for order ID: ${orderId}`);
+    // Also save sumopodPaymentId into midtrans_order_id as fallback so legacy queries still work
+    const sql = 'UPDATE orders SET sumopod_payment_id = ?, midtrans_order_id = ?, qris_image = ?, payment_link_url = ? WHERE id = ?';
+    await conn.execute(sql, [sumopodPaymentId || null, sumopodPaymentId || null, qrisImage || null, paymentLinkUrl || null, orderId]);
+    logger.info(`SumoPod payment info saved for order ID: ${orderId}`);
+};
+
 export const getOrderStatus = async (conn, orderId) => {
     logger.debug(`Fetching order status for ID: ${orderId}`);
     const sql = 'SELECT order_status, payment_status FROM orders WHERE id = ?';

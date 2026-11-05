@@ -4,6 +4,7 @@ import * as orderItemModel from '../models/orderItemModel.js';
 import * as orderItemVariantModel from '../models/orderItemVariantModel.js';
 import baseLogger from '../utils/logger.js';
 import { createQrisCharge, checkMidtransStatus, verifyMidtransSignature } from '../utils/midtransHelper.js';
+import { createSumopodPayment, verifySumopodWebhook } from '../utils/sumopodHelper.js';
 import * as productRecipeModel from '../models/productRecipeModel.js';
 
 const logger = baseLogger.child({ context: 'OrderController' });
@@ -82,21 +83,46 @@ export const createOrder = async (req, res) => {
         await conn.commit();
 
         let qrisImage = '';
+        let paymentLinkUrl = '';
         if (orderInfo.payment_method === 'qris') {
-            const midtransOrderId = `order-${orderId}`;
-            logger.info(`Calling Midtrans QRIS for order ID: ${orderId}`);
-            const qrisData = await createQrisCharge({
-                orderId: midtransOrderId,
-                grossAmount: orderInfo.total_amount,
-                customerName: orderInfo.customer_name || 'Customer'
-            });
-            qrisImage = qrisData.qr_image;
-            await orderModel.saveMidtransInfo(conn, orderId, midtransOrderId, qrisData.transaction_id, qrisImage);
-            logger.info(`Midtrans QRIS generated for order ID: ${orderId}`);
+            const sumopodOrderId = `order-${orderId}-${Date.now()}`;
+            logger.info(`Calling SumoPod QRIS for order ID: ${orderId}`);
+            try {
+                const sumopodData = await createSumopodPayment({
+                    orderId: sumopodOrderId,
+                    amount: orderInfo.total_amount,
+                    paymentMethod: 'QRIS',
+                    customerName: orderInfo.customer_name || 'Customer'
+                });
+                qrisImage = sumopodData.qr_image;
+                paymentLinkUrl = sumopodData.payment_link_url;
+                await orderModel.saveSumopodInfo(
+                    conn, 
+                    orderId, 
+                    sumopodData.payment_id || sumopodOrderId, 
+                    qrisImage, 
+                    paymentLinkUrl
+                );
+                logger.info(`SumoPod QRIS generated for order ID: ${orderId}`);
+            } catch (spErr) {
+                logger.error(`SumoPod payment error: ${spErr.message}. Fallback to Midtrans.`);
+                try {
+                    const midtransOrderId = `order-${orderId}`;
+                    const qrisData = await createQrisCharge({
+                        orderId: midtransOrderId,
+                        grossAmount: orderInfo.total_amount,
+                        customerName: orderInfo.customer_name || 'Customer'
+                    });
+                    qrisImage = qrisData.qr_image;
+                    await orderModel.saveMidtransInfo(conn, orderId, midtransOrderId, qrisData.transaction_id, qrisImage);
+                } catch (mtErr) {
+                    logger.error(`Fallback to Midtrans also failed: ${mtErr.message}`);
+                }
+            }
         }
 
         logger.debug(`Order created with ID: ${orderId}`);
-        res.status(201).json({ id: orderId, qris_image: qrisImage });
+        res.status(201).json({ id: orderId, qris_image: qrisImage, payment_link_url: paymentLinkUrl });
     } catch (error) {
         await conn.rollback();
         logger.error(`Error creating order: ${error.message}`);
@@ -261,40 +287,96 @@ export const getOrderStatus = async (req, res) => {
     }
 };
 
-// Polling endpoint: cek status pembayaran Midtrans secara langsung
-export const checkMidtransPaymentStatus = async (req, res) => {
+// Polling endpoint: cek status pembayaran (SumoPod / Midtrans)
+export const checkPaymentStatus = async (req, res) => {
     const orderId = req.params.id;
     const conn = await db.getConnection();
     try {
         const [rows] = await conn.execute(
-            'SELECT midtrans_order_id, payment_status FROM orders WHERE id = ?',
+            'SELECT midtrans_order_id, sumopod_payment_id, payment_status FROM orders WHERE id = ?',
             [orderId]
         );
         if (!rows.length) return res.status(404).json({ error: 'Order Not Found' });
 
-        const { midtrans_order_id, payment_status } = rows[0];
+        const { midtrans_order_id, sumopod_payment_id, payment_status } = rows[0];
 
         // Kalau sudah paid di DB, langsung return
         if (payment_status === 'paid') return res.json({ payment_status: 'paid' });
 
-        // Kalau belum ada midtrans_order_id, berarti bukan order QRIS
-        if (!midtrans_order_id) return res.json({ payment_status: 'pending' });
+        // Kalau order QRIS lama menggunakan Midtrans murni tanpa sumopod
+        if (midtrans_order_id && !sumopod_payment_id && !midtrans_order_id.includes('-17')) {
+            try {
+                const mtStatus = await checkMidtransStatus(midtrans_order_id);
+                logger.info(`Midtrans status for ${midtrans_order_id}: ${mtStatus.transaction_status}`);
 
-        // Cek ke Midtrans
-        const mtStatus = await checkMidtransStatus(midtrans_order_id);
-        logger.info(`Midtrans status for ${midtrans_order_id}: ${mtStatus.transaction_status}`);
-
-        if (mtStatus.transaction_status === 'settlement' || mtStatus.transaction_status === 'capture') {
-            await orderModel.updatePaymentStatus(conn, orderId, 'paid');
-            return res.json({ payment_status: 'paid' });
+                if (mtStatus.transaction_status === 'settlement' || mtStatus.transaction_status === 'capture') {
+                    await orderModel.updatePaymentStatus(conn, orderId, 'paid');
+                    return res.json({ payment_status: 'paid' });
+                }
+            } catch (err) {
+                logger.warn(`Could not check Midtrans status: ${err.message}`);
+            }
         }
 
-        res.json({ payment_status: 'pending', midtrans_status: mtStatus.transaction_status });
+        res.json({ payment_status: payment_status || 'pending' });
     } catch (error) {
-        logger.error(`Error checking Midtrans payment status for order ${orderId}: ${error.message}`);
+        logger.error(`Error checking payment status for order ${orderId}: ${error.message}`);
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {
         if (conn) conn.release();
+    }
+};
+
+// Alias untuk backward compatibility dengan frontend
+export const checkMidtransPaymentStatus = checkPaymentStatus;
+
+// Webhook: SumoPod notification handler
+export const handleSumopodWebhook = async (req, res) => {
+    try {
+        const headers = req.headers;
+        const body = req.body;
+        logger.info(`SumoPod webhook received: ${JSON.stringify(body)}`);
+
+        const isValid = verifySumopodWebhook(headers, body);
+        if (!isValid) {
+            logger.warn('Invalid SumoPod webhook verification');
+            return res.status(403).json({ error: 'Invalid webhook token / signature' });
+        }
+
+        // SumoPod payload could be { event: 'payment.completed', data: { order_id, status } }
+        // or direct fields { order_id, status, event }
+        const payloadData = body.data || body;
+        const eventType = body.event || payloadData.event || '';
+        const orderIdRaw = payloadData.order_id || body.order_id || '';
+        const status = (payloadData.status || body.status || '').toUpperCase();
+
+        logger.info(`SumoPod webhook event: ${eventType}, order: ${orderIdRaw}, status: ${status}`);
+
+        const isSuccess = 
+            eventType === 'payment.completed' ||
+            status === 'COMPLETED' ||
+            status === 'PAID' ||
+            status === 'SETTLED' ||
+            status === 'SUCCESS';
+
+        if (isSuccess && orderIdRaw) {
+            // Extract dbOrderId from order-123 or order-123-173000...
+            const match = orderIdRaw.match(/order-(\d+)/);
+            const dbOrderId = match ? match[1] : orderIdRaw;
+
+            const conn = await db.getConnection();
+            try {
+                await orderModel.updatePaymentStatus(conn, dbOrderId, 'paid');
+                logger.info(`Payment confirmed via SumoPod webhook for order ID: ${dbOrderId}`);
+            } finally {
+                conn.release();
+            }
+        }
+
+        return res.status(200).json({ received: true });
+    } catch (error) {
+        logger.error(`Error handling SumoPod webhook: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 

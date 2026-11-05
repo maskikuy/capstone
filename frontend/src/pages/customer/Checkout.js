@@ -248,6 +248,7 @@ const Checkout = () => {
                 orderId: newOrderId, 
                 totalAmount: payload.total_amount,
                 qris_image: res.data.qris_image,
+                payment_link_url: res.data.payment_link_url,
                 customerName, 
                 tableNumber 
             } 

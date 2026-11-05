@@ -68,11 +68,17 @@ export const ensureInventoryTable = async () => {
             logger.info('Added inventory_id column to products table');
         }
 
-        // Ensure columns in orders table for Midtrans QRIS
+        // Ensure columns in orders table for Payment Gateway (Midtrans & SumoPod QRIS)
         const [orderCols] = await conn.query("SHOW COLUMNS FROM orders LIKE 'midtrans_order_id'");
         if (!orderCols || orderCols.length === 0) {
             await conn.query("ALTER TABLE orders ADD COLUMN midtrans_order_id VARCHAR(100) NULL, ADD COLUMN midtrans_transaction_id VARCHAR(100) NULL, ADD COLUMN qris_image LONGTEXT NULL");
             logger.info('Added midtrans columns to orders table');
+        }
+
+        const [sumopodCols] = await conn.query("SHOW COLUMNS FROM orders LIKE 'sumopod_payment_id'");
+        if (!sumopodCols || sumopodCols.length === 0) {
+            await conn.query("ALTER TABLE orders ADD COLUMN sumopod_payment_id VARCHAR(100) NULL, ADD COLUMN payment_link_url TEXT NULL");
+            logger.info('Added SumoPod columns to orders table');
         }
 
         await conn.query(createSql);
