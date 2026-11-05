@@ -1,54 +1,19 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../utils/api';
-import { notifySuccess, notifyError, confirmAction } from '../../utils/notify';
-import { QrCode, Star, Upload, Trash2, Link as LinkIcon, CheckCircle2, AlertCircle } from 'lucide-react';
+import { notifySuccess, notifyError } from '../../utils/notify';
 
 const QrisSettings = () => {
-  const [activeTab, setActiveTab] = useState('qris');
   const [loading, setLoading] = useState(true);
-  
-  // QRIS states
-  const [qrisExists, setQrisExists] = useState(false);
-  const [qrisImageUrl, setQrisImageUrl] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [isDragActive, setIsDragActive] = useState(false);
-  
-  // Google Review states
   const [googleReviewUrl, setGoogleReviewUrl] = useState('');
-  const [reviewThreshold, setReviewThreshold] = useState('4');
   const [savingSettings, setSavingSettings] = useState(false);
-
-  const getBaseServerUrl = () => {
-    return api.defaults.baseURL.replace('/api', '');
-  };
-
-  const fetchQrisStatus = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/qris-static');
-      if (res.data.exists) {
-        setQrisExists(true);
-        const serverUrl = getBaseServerUrl();
-        setQrisImageUrl(`${serverUrl}/${res.data.qris_image}`);
-      } else {
-        setQrisExists(false);
-        setQrisImageUrl('');
-      }
-    } catch (err) {
-      console.error('Gagal mengambil status QRIS:', err);
-      notifyError('Gagal memuat status QRIS');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const fetchGoogleSettings = useCallback(async () => {
     setLoading(true);
+
     try {
       const res = await api.get('/settings');
       setGoogleReviewUrl(res.data.google_review_url || '');
-      setReviewThreshold(res.data.review_threshold || '4');
     } catch (err) {
       console.error('Gagal mengambil pengaturan Google:', err);
       notifyError('Gagal memuat pengaturan Google Review');
@@ -58,566 +23,324 @@ const QrisSettings = () => {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'qris') {
-      fetchQrisStatus();
-    } else {
-      fetchGoogleSettings();
-    }
-  }, [activeTab, fetchQrisStatus, fetchGoogleSettings]);
-
-  // Cleanup preview URL
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      processFile(file);
-    }
-  };
-
-  const processFile = (file) => {
-    if (!file.type.match('image.*')) {
-      notifyError('Hanya file gambar yang diperbolehkan!');
-      return;
-    }
-    setSelectedFile(file);
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-  };
-
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setIsDragActive(true);
-    } else if (e.type === "dragleave") {
-      setIsDragActive(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!selectedFile) return;
-
-    const formData = new FormData();
-    formData.append('image', selectedFile);
-
-    try {
-      setLoading(true);
-      await api.post('/qris-static', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      notifySuccess('Gambar QRIS Statis berhasil diunggah!');
-      setSelectedFile(null);
-      setPreviewUrl('');
-      fetchQrisStatus();
-    } catch (err) {
-      console.error(err);
-      notifyError(err.response?.data?.error || 'Gagal mengunggah QRIS Statis');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    const isConfirmed = await confirmAction(
-      'Hapus QRIS Statis?',
-      'Apakah Anda yakin ingin menghapus gambar QRIS statis? Sistem akan kembali ke mode QRIS Dinamis otomatis.'
-    );
-
-    if (isConfirmed) {
-      try {
-        setLoading(true);
-        await api.delete('/qris-static');
-        notifySuccess('Gambar QRIS Statis berhasil dihapus!');
-        fetchQrisStatus();
-      } catch (err) {
-        console.error(err);
-        notifyError(err.response?.data?.error || 'Gagal menghapus QRIS Statis');
-        setLoading(false);
-      }
-    }
-  };
+    fetchGoogleSettings();
+  }, [fetchGoogleSettings]);
 
   const handleSaveGoogleSettings = async (e) => {
     e.preventDefault();
+
+    if (!googleReviewUrl.trim()) {
+      notifyError('Link Google Review wajib diisi');
+      return;
+    }
+
     setSavingSettings(true);
+
     try {
       await api.put('/settings', {
-        google_review_url: googleReviewUrl,
-        review_threshold: reviewThreshold
+        google_review_url: googleReviewUrl.trim()
       });
-      notifySuccess('Pengaturan Google Review berhasil disimpan!');
+
+      notifySuccess('Link Google Review berhasil disimpan!');
     } catch (err) {
-      console.error(err);
-      notifyError('Gagal menyimpan pengaturan Google Review');
+      console.error('Gagal menyimpan pengaturan:', err);
+      notifyError('Gagal menyimpan Link Google Review');
     } finally {
       setSavingSettings(false);
     }
   };
 
   return (
-    <div style={{ backgroundColor: '#101116', color: '#f8fafc', minHeight: '100vh', padding: '24px 28px 60px' }}>
-      
-      {/* Title */}
-      <div className="mb-4">
-        <h3 style={{ color: '#f1f5f9', fontWeight: '700', fontSize: '1.45rem', margin: '0 0 6px' }}>
-          Pengaturan Aplikasi
-        </h3>
-        <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>
-          Kelola pembayaran QRIS statis dan integrasi Google Review kafe
-        </p>
-      </div>
+    <div
+      style={{
+        backgroundColor: '#101116',
+        color: '#f1f5f9',
+        minHeight: 'calc(100vh - 70px)',
+        padding: '40px 20px 60px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
 
-      {/* Tabs */}
-      <div className="d-flex align-items-center gap-3 mb-4" style={{ borderBottom: '1px solid #23253a', paddingBottom: '2px' }}>
-        <button 
-          type="button"
-          onClick={() => setActiveTab('qris')}
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '760px',
+          margin: '0 auto'
+        }}
+      >
+
+        {/* Page Heading */}
+        <div
+          className="text-center"
           style={{
-            backgroundColor: 'transparent',
-            border: 'none',
-            color: activeTab === 'qris' ? '#d8a744' : '#94a3b8',
-            fontWeight: activeTab === 'qris' ? '700' : '500',
-            fontSize: '14px',
-            padding: '10px 16px',
-            cursor: 'pointer',
-            borderBottom: activeTab === 'qris' ? '2.5px solid #d8a744' : '2.5px solid transparent',
-            marginBottom: '-2px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.15s ease'
+            marginBottom: '35px'
           }}
         >
-          <QrCode size={16} />
-          <span>QRIS Pembayaran</span>
-        </button>
-
-        <button 
-          type="button"
-          onClick={() => setActiveTab('google')}
-          style={{
-            backgroundColor: 'transparent',
-            border: 'none',
-            color: activeTab === 'google' ? '#d8a744' : '#94a3b8',
-            fontWeight: activeTab === 'google' ? '700' : '500',
-            fontSize: '14px',
-            padding: '10px 16px',
-            cursor: 'pointer',
-            borderBottom: activeTab === 'google' ? '2.5px solid #d8a744' : '2.5px solid transparent',
-            marginBottom: '-2px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          <Star size={16} />
-          <span>Google Review & Filter Rating</span>
-        </button>
-      </div>
-
-      {loading && !previewUrl && !savingSettings && (
-        <div className="d-flex justify-content-center align-items-center py-5">
-          <div className="spinner-border" style={{ color: '#d8a744' }} role="status"></div>
-        </div>
-      )}
-
-      {/* Tab 1: QRIS */}
-      {!loading && activeTab === 'qris' && (
-        <>
-          {/* Status banner */}
-          <div 
+          <div
             style={{
-              backgroundColor: '#161720',
-              border: '1px solid #23253a',
-              borderRadius: '14px',
-              padding: '20px 24px',
-              marginBottom: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '16px'
+              width: '42px',
+              height: '3px',
+              backgroundColor: '#d8a744',
+              borderRadius: '10px',
+              margin: '0 auto 18px'
+            }}
+          />
+
+          <span
+            style={{
+              display: 'block',
+              color: '#d8a744',
+              fontSize: '10px',
+              fontWeight: '700',
+              letterSpacing: '2.5px',
+              marginBottom: '12px'
             }}
           >
-            <div>
-              <h5 style={{ margin: '0 0 6px', fontSize: '15px', fontWeight: '600', color: '#f1f5f9' }}>
-                Status QRIS Aktif
-              </h5>
-              <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>
-                {qrisExists 
-                  ? 'Sistem saat ini menampilkan gambar QRIS statis yang diunggah oleh kasir/admin.' 
-                  : 'Belum ada gambar QRIS statis. Sistem otomatis fallback ke QRIS Dinamis.'}
+            BILLION CAFE
+          </span>
+
+          <h2
+            style={{
+              color: '#f1f5f9',
+              fontWeight: '750',
+              fontSize: 'clamp(25px, 4vw, 32px)',
+              letterSpacing: '-0.8px',
+              marginBottom: '12px'
+            }}
+          >
+            Google Review
+          </h2>
+
+          <p
+            style={{
+              color: '#94a3b8',
+              fontSize: '13px',
+              lineHeight: '1.8',
+              maxWidth: '450px',
+              margin: '0 auto'
+            }}
+          >
+            Kelola tautan ulasan Google untuk memudahkan pelanggan
+            memberikan penilaian dan pengalaman mereka terhadap Billion Cafe.
+          </p>
+        </div>
+
+        {/* Loading */}
+        {loading && (
+          <div
+            className="d-flex justify-content-center align-items-center py-5"
+          >
+            <div
+              className="spinner-border"
+              style={{
+                color: '#d8a744',
+                width: '30px',
+                height: '30px'
+              }}
+              role="status"
+            />
+          </div>
+        )}
+
+        {/* Google Review Card */}
+        {!loading && (
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '620px',
+              margin: '0 auto',
+              background: 'linear-gradient(145deg, #191a25 0%, #151620 100%)',
+              border: '1px solid #2a2d40',
+              borderRadius: '20px',
+              padding: 'clamp(22px, 5vw, 36px)',
+              boxShadow: '0 15px 45px rgba(0,0,0,0.25)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+
+            {/* Gold Accent */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: '36px',
+                width: '65px',
+                height: '3px',
+                backgroundColor: '#d8a744',
+                borderRadius: '0 0 5px 5px'
+              }}
+            />
+
+            {/* Card Heading */}
+            <div
+              style={{
+                marginBottom: '30px',
+                paddingTop: '8px'
+              }}
+            >
+              <h4
+                style={{
+                  color: '#f1f5f9',
+                  fontSize: '19px',
+                  fontWeight: '700',
+                  marginBottom: '9px'
+                }}
+              >
+                Pengaturan Link Ulasan
+              </h4>
+
+              <p
+                style={{
+                  color: '#94a3b8',
+                  fontSize: '12.5px',
+                  lineHeight: '1.7',
+                  margin: 0
+                }}
+              >
+                Masukkan tautan Google Review resmi Billion Cafe
+                yang akan digunakan oleh pelanggan.
               </p>
             </div>
-            <div>
-              {qrisExists ? (
-                <span 
+
+            <form onSubmit={handleSaveGoogleSettings}>
+
+              {/* URL Input */}
+              <div style={{ marginBottom: '24px' }}>
+
+                <label
+                  htmlFor="googleReviewUrl"
                   style={{
-                    backgroundColor: 'rgba(34, 197, 94, 0.12)',
-                    border: '1px solid #166534',
-                    color: '#4ade80',
-                    fontSize: '12px',
+                    display: 'block',
+                    color: '#cbd5e1',
+                    fontSize: '12.5px',
                     fontWeight: '600',
-                    padding: '6px 14px',
-                    borderRadius: '9999px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
+                    marginBottom: '11px'
                   }}
                 >
-                  <CheckCircle2 size={14} />
-                  QRIS Statis (Aktif)
-                </span>
-              ) : (
-                <span 
-                  style={{
-                    backgroundColor: 'rgba(216, 167, 68, 0.12)',
-                    border: '1px solid #785a28',
-                    color: '#d8a744',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    padding: '6px 14px',
-                    borderRadius: '9999px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <AlertCircle size={14} />
-                  QRIS Dinamis (Fallback)
-                </span>
-              )}
-            </div>
-          </div>
+                  Link Google Review
+                </label>
 
-          <div className="row g-4">
-            {/* Upload Area */}
-            <div className="col-md-6">
-              <div 
-                style={{
-                  backgroundColor: '#161720',
-                  border: '1px solid #23253a',
-                  borderRadius: '14px',
-                  padding: '24px',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <div>
-                  <h6 style={{ fontSize: '12px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase', color: '#94a3b8', marginBottom: '16px' }}>
-                    Upload Gambar QRIS Baru
-                  </h6>
-
-                  <form onSubmit={handleUpload}>
-                    <div 
-                      onDragEnter={handleDrag}
-                      onDragLeave={handleDrag}
-                      onDragOver={handleDrag}
-                      onDrop={handleDrop}
-                      style={{
-                        border: isDragActive ? '2px dashed #d8a744' : '2px dashed #2d3045',
-                        backgroundColor: isDragActive ? 'rgba(216, 167, 68, 0.05)' : '#0d0e17',
-                        borderRadius: '12px',
-                        padding: '30px 20px',
-                        textAlign: 'center',
-                        position: 'relative',
-                        cursor: 'pointer',
-                        marginBottom: '16px',
-                        transition: 'all 0.2s ease',
-                        minHeight: '180px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <input 
-                        type="file" 
-                        style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0, cursor: 'pointer', top: 0, left: 0 }}
-                        onChange={handleFileChange}
-                        accept="image/*"
-                      />
-                      <Upload size={32} color="#c9973b" style={{ marginBottom: '10px' }} />
-                      <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: '600', color: '#f1f5f9' }}>
-                        Pilih gambar atau seret file ke sini
-                      </p>
-                      <p style={{ margin: 0, fontSize: '11.5px', color: '#64748b' }}>
-                        Mendukung format PNG, JPG, JPEG
-                      </p>
-                    </div>
-
-                    {previewUrl && (
-                      <div className="mb-3 text-center">
-                        <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>Preview Gambar Baru:</p>
-                        <div style={{ padding: '8px', backgroundColor: '#fff', borderRadius: '10px', display: 'inline-block' }}>
-                          <img 
-                            src={previewUrl} 
-                            alt="Preview Upload" 
-                            style={{ maxWidth: '100%', maxHeight: '180px', borderRadius: '6px' }} 
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedFile && (
-                      <button 
-                        type="submit" 
-                        disabled={loading}
-                        style={{
-                          backgroundColor: '#c9973b',
-                          color: '#101116',
-                          border: 'none',
-                          borderRadius: '8px',
-                          padding: '10px',
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          width: '100%',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.15s ease'
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d8a744'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9973b'; }}
-                      >
-                        {loading ? 'Mengunggah...' : '✓ Simpan QRIS Statis'}
-                      </button>
-                    )}
-                  </form>
-                </div>
-
-                {selectedFile && (
-                  <button 
-                    onClick={() => { setSelectedFile(null); setPreviewUrl(''); }}
-                    disabled={loading}
-                    style={{
-                      backgroundColor: 'transparent',
-                      border: '1px solid #2d3045',
-                      color: '#94a3b8',
-                      borderRadius: '8px',
-                      padding: '9px',
-                      fontSize: '12.5px',
-                      width: '100%',
-                      marginTop: '10px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Batal
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Current QRIS Preview */}
-            <div className="col-md-6">
-              <div 
-                style={{
-                  backgroundColor: '#161720',
-                  border: '1px solid #23253a',
-                  borderRadius: '14px',
-                  padding: '24px',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <div style={{ width: '100%' }}>
-                  <h6 style={{ fontSize: '12px', fontWeight: '700', letterSpacing: '0.6px', textTransform: 'uppercase', color: '#94a3b8', marginBottom: '16px' }}>
-                    Tampilan QRIS Saat Ini
-                  </h6>
-                </div>
-
-                <div className="my-auto text-center py-3">
-                  {qrisExists && qrisImageUrl ? (
-                    <div style={{ padding: '16px', backgroundColor: '#ffffff', borderRadius: '12px', display: 'inline-block', boxShadow: '0 4px 14px rgba(0,0,0,0.3)' }}>
-                      <img 
-                        src={qrisImageUrl} 
-                        alt="Current QRIS" 
-                        style={{ maxWidth: '190px', maxHeight: '190px', objectFit: 'contain' }}
-                      />
-                    </div>
-                  ) : (
-                    <div 
-                      style={{
-                        width: '190px',
-                        height: '190px',
-                        border: '2px dashed #2d3045',
-                        backgroundColor: '#0d0e17',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#64748b'
-                      }}
-                    >
-                      <QrCode size={38} color="#3b4252" style={{ marginBottom: '8px' }} />
-                      <span style={{ fontSize: '12px', textAlign: 'center', padding: '0 12px' }}>
-                        Menggunakan QRIS Dinamis Otomatis
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {qrisExists && (
-                  <button 
-                    onClick={handleDelete}
-                    disabled={loading}
-                    style={{
-                      backgroundColor: '#7f1d1d',
-                      border: 'none',
-                      color: '#fca5a5',
-                      borderRadius: '8px',
-                      padding: '10px',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      width: '100%',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      marginTop: '16px',
-                      transition: 'background-color 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#991b1b'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#7f1d1d'; }}
-                  >
-                    <Trash2 size={14} />
-                    <span>Hapus Gambar QRIS Statis</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Tab 2: Google Review */}
-      {!loading && activeTab === 'google' && (
-        <div 
-          style={{
-            backgroundColor: '#161720',
-            border: '1px solid #23253a',
-            borderRadius: '14px',
-            padding: '28px',
-            maxWidth: '800px',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.25)'
-          }}
-        >
-          <div className="mb-4">
-            <h5 style={{ color: '#f1f5f9', fontWeight: '700', fontSize: '16px', margin: '0 0 8px' }}>
-              Pengaturan Google Review & Filter Rating Bintang
-            </h5>
-            <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: '1.6', margin: 0 }}>
-              Konfigurasikan tautan Google Review kafe Anda. Sistem filter cerdas akan mengarahkan kepuasan pelanggan (bintang tinggi) langsung ke profil Google Maps bisnis Anda, sedangkan keluhan (bintang rendah) ditampung secara internal untuk perbaikan tim.
-            </p>
-          </div>
-
-          <form onSubmit={handleSaveGoogleSettings}>
-            {/* Google Review URL */}
-            <div className="mb-4">
-              <label style={{ display: 'block', fontSize: '12.5px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px' }}>
-                Link Profil Google Review Restoran
-              </label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>
-                  <LinkIcon size={16} />
-                </span>
-                <input 
-                  type="url" 
-                  placeholder="https://search.google.com/local/writereview?placeid=..." 
+                <input
+                  id="googleReviewUrl"
+                  type="url"
+                  placeholder="https://g.page/r/..."
                   value={googleReviewUrl}
                   onChange={(e) => setGoogleReviewUrl(e.target.value)}
                   required
-                  style={{ ...inputStyle, paddingLeft: '40px' }}
+                  autoComplete="off"
+                  style={{
+                    width: '100%',
+                    height: '49px',
+                    backgroundColor: '#0d0e17',
+                    border: '1px solid #303348',
+                    borderRadius: '10px',
+                    color: '#f1f5f9',
+                    fontSize: '13px',
+                    padding: '0 15px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    transition: 'border-color 0.2s ease',
+                    minWidth: 0
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#d8a744';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#303348';
+                  }}
                 />
-              </div>
-              <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '6px' }}>
-                Masukkan URL langsung menu &quot;Write a review&quot; dari Google Business Profile.
-              </div>
-            </div>
 
-            {/* Review Threshold */}
-            <div className="mb-4">
-              <label style={{ display: 'block', fontSize: '12.5px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px' }}>
-                Ambang Batas Filter Bintang
-              </label>
-              <select 
-                value={reviewThreshold}
-                onChange={(e) => setReviewThreshold(e.target.value)}
-                style={inputStyle}
+                <p
+                  style={{
+                    color: '#64748b',
+                    fontSize: '11px',
+                    lineHeight: '1.7',
+                    marginTop: '10px',
+                    marginBottom: 0
+                  }}
+                >
+                  Gunakan link yang langsung mengarahkan pelanggan
+                  ke halaman pemberian ulasan Billion Cafe di Google.
+                </p>
+              </div>
+
+              {/* Divider */}
+              <div
+                style={{
+                  height: '1px',
+                  backgroundColor: '#2a2d40',
+                  marginBottom: '22px'
+                }}
+              />
+
+              {/* Save Button */}
+              <button
+                type="submit"
+                disabled={savingSettings || !googleReviewUrl.trim()}
+                style={{
+                  width: '100%',
+                  height: '47px',
+                  backgroundColor: '#d8a744',
+                  color: '#15151b',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  letterSpacing: '0.2px',
+                  cursor: savingSettings || !googleReviewUrl.trim()
+                    ? 'not-allowed'
+                    : 'pointer',
+                  opacity: savingSettings || !googleReviewUrl.trim()
+                    ? 0.65
+                    : 1,
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (!savingSettings && googleReviewUrl.trim()) {
+                    e.currentTarget.style.backgroundColor = '#e6b957';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#d8a744';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
               >
-                <option value="5">⭐⭐⭐⭐⭐ — Bintang 5 Saja (Paling Ketat)</option>
-                <option value="4">⭐⭐⭐⭐ — Bintang 4 & 5 (Rekomendasi Standar)</option>
-                <option value="3">⭐⭐⭐ — Bintang 3 ke atas</option>
-              </select>
-              <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '6px' }}>
-                Rating sama atau di atas ambang batas diarahkan ke Google Review. Rating di bawahnya akan ditampung di kotak kritik internal.
-              </div>
-            </div>
+                {savingSettings ? 'Menyimpan...' : 'Simpan Pengaturan'}
+              </button>
 
-            {/* Submit */}
-            <button 
-              type="submit" 
-              disabled={savingSettings}
+            </form>
+
+          </div>
+        )}
+
+        {/* Footer Note */}
+        {!loading && (
+          <div
+            className="text-center"
+            style={{
+              marginTop: '24px'
+            }}
+          >
+            <p
               style={{
-                backgroundColor: '#c9973b',
-                color: '#101116',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '10px 24px',
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                transition: 'background-color 0.15s ease'
+                color: '#64748b',
+                fontSize: '11px',
+                lineHeight: '1.7',
+                margin: 0
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d8a744'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9973b'; }}
             >
-              {savingSettings ? 'Menyimpan...' : '💾 Simpan Pengaturan'}
-            </button>
-          </form>
-        </div>
-      )}
+              BILLION CAFE · APPLICATION SETTINGS
+            </p>
+          </div>
+        )}
+
+      </div>
     </div>
   );
-};
-
-const inputStyle = {
-  backgroundColor: '#0d0e17',
-  border: '1px solid #2a2d45',
-  borderRadius: '8px',
-  color: '#f1f5f9',
-  fontSize: '13px',
-  padding: '10px 14px',
-  width: '100%',
-  outline: 'none',
-  transition: 'border-color 0.15s ease'
 };
 
 export default QrisSettings;
