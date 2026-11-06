@@ -9,6 +9,8 @@ const logger = baseLogger.child({ module: 'OrderRoute' });
 router.get('/order', orderController.getAllOrders);
 router.get('/order/:id', orderController.getOrderById);
 router.post('/order', orderController.createOrder);
+router.post('/order/:id/complete-transaction', orderController.completeTransaction);
+router.put('/order/:id/complete-transaction', orderController.completeTransaction);
 router.put('/order/:id', verifyToken, orderController.updateOrder);
 router.delete('/order/:id', verifyToken, orderController.deleteOrder);
 router.put('/order/:id/status', verifyToken, orderController.updateOrderStatus);

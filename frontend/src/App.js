@@ -19,6 +19,7 @@ import QRCodeGenerator from './pages/admin/QRCodeGenerator';
 import PaymentQris from './pages/customer/PaymentQris';
 import CustomerAbout from './pages/customer/About';
 import NotFound from './pages/NotFound';
+import KasirPOS from './pages/kasir/POS';
 
 const DashboardLayout = () => (
   <div style={{ minHeight: '100vh', backgroundColor: '#101116', color: '#f8fafc' }}>
@@ -76,6 +77,7 @@ function App() {
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="kasir"><DashboardLayout /></ProtectedRoute>}>
+          <Route path="/kasir/pos" element={<KasirPOS />} />
           <Route path="/kasir/dashboard" element={<KitchenDashboard />} />
           <Route path="/kitchen/dashboard" element={<KitchenDashboard />} />
           <Route path="/kasir/history" element={<OrderHistory />} />
