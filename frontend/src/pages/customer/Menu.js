@@ -13,7 +13,7 @@ const Menu = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
-  
+
   // State Keranjang & Modal
   const [cart, setCart] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -26,9 +26,11 @@ const Menu = () => {
   const [diningMethod, setDiningMethod] = useState(() => {
     return localStorage.getItem('wow_location') || null;
   });
+
   const [showDiningModal, setShowDiningModal] = useState(() => {
     return !localStorage.getItem('wow_location');
   });
+
   const [showAboutModal, setShowAboutModal] = useState(false);
 
   // Tutup popup About dengan tombol Escape
@@ -57,14 +59,11 @@ const Menu = () => {
   useEffect(() => {
     fetchData();
 
-    // Setup polling: Auto refresh menu data every 5 seconds
     const interval = setInterval(fetchData, 5000);
 
-    // Load keranjang lama jika ada
     const savedCart = localStorage.getItem('wow_cart');
     if (savedCart) setCart(JSON.parse(savedCart));
 
-    // Simpan nomor meja ke localStorage
     if (tableNumber !== '0') {
       localStorage.setItem('wow_table', tableNumber);
     }
@@ -85,21 +84,21 @@ const Menu = () => {
         api.get('/categories?type=menu'),
         api.get('/product-variant')
       ]);
-      setProducts(prodRes.data || []); 
+
+      setProducts(prodRes.data || []);
       setCategories(catRes.data || []);
       setProductVariants(varRes.data || []);
     } catch (err) {
-      console.error("Gagal memuat menu", err);
+      console.error('Gagal memuat menu', err);
     }
   };
 
   // Filter Produk berdasarkan Kategori
-  const filteredProducts = activeCategory === 'all' 
-    ? products 
+  const filteredProducts = activeCategory === 'all'
+    ? products
     : products.filter(p => p.category_id === parseInt(activeCategory));
 
-  // --- Logic Tambah ke Keranjang ---
-
+  // Logic Tambah ke Keranjang
   const openProductModal = (product) => {
     if (!product.is_available) return;
 
@@ -111,6 +110,7 @@ const Menu = () => {
 
   const handleVariantToggle = (variant) => {
     const isSelected = selectedVariants.some(v => v.id === variant.id);
+
     if (isSelected) {
       setSelectedVariants(selectedVariants.filter(v => v.id !== variant.id));
     } else {
@@ -122,6 +122,7 @@ const Menu = () => {
     if (product.price_type === 'grosir' && qty >= product.grosir_min_qty) {
       return parseFloat(product.grosir_price_per_unit);
     }
+
     return parseFloat(product.base_price);
   };
 
@@ -131,9 +132,12 @@ const Menu = () => {
     const areVariantsEqual = (varList1, varList2) => {
       const v1 = varList1 || [];
       const v2 = varList2 || [];
+
       if (v1.length !== v2.length) return false;
+
       const ids1 = v1.map(v => v.id).sort();
       const ids2 = v2.map(v => v.id).sort();
+
       return ids1.every((id, idx) => id === ids2[idx]);
     };
 
@@ -141,18 +145,19 @@ const Menu = () => {
       return (note1 || '').trim().toLowerCase() === (note2 || '').trim().toLowerCase();
     };
 
-    const existingIndex = cart.findIndex(item => 
+    const existingIndex = cart.findIndex(item =>
       item.product.id === selectedProduct.id &&
       areVariantsEqual(item.variants, selectedVariants) &&
       areNotesEqual(item.notes, orderNotes)
     );
 
     let updatedCart;
+
     if (existingIndex > -1) {
       updatedCart = [...cart];
       const existingItem = updatedCart[existingIndex];
       const newQty = existingItem.quantity + orderQty;
-      
+
       const activeUnitPrice = getProductUnitPrice(selectedProduct, newQty);
       const variantsPrice = selectedVariants.reduce((total, v) => total + parseFloat(v.extra_price), 0);
       const finalPrice = (activeUnitPrice + variantsPrice) * newQty;
@@ -177,6 +182,7 @@ const Menu = () => {
         totalPrice: finalPrice,
         unitPrice: activeUnitPrice
       };
+
       updatedCart = [...cart, newItem];
     }
 
@@ -190,9 +196,9 @@ const Menu = () => {
 
   return (
     <div style={{ backgroundColor: '#101116', minHeight: '100vh', color: '#f1f5f9', paddingBottom: '90px' }}>
-      
-      {/* 1. Header Info Meja & Menu (Dark Theme) */}
-      <div 
+
+      {/* 1. Header Info Meja & Menu */}
+      <div
         className="d-flex justify-content-between align-items-center p-3 sticky-top"
         style={{
           backgroundColor: '#161720',
@@ -206,8 +212,9 @@ const Menu = () => {
           <h5 className="mb-0 fw-bold" style={{ color: '#f1f5f9', fontSize: '1.2rem', letterSpacing: '0.2px' }}>
             Billion Cafe Menu
           </h5>
+
           <div className="d-flex align-items-center gap-2 mt-2">
-            <span 
+            <span
               style={{
                 fontSize: '0.72rem',
                 fontWeight: '600',
@@ -222,8 +229,9 @@ const Menu = () => {
             >
               Meja {tableNumber}
             </span>
+
             {diningMethod && (
-              <span 
+              <span
                 style={{
                   fontSize: '0.72rem',
                   fontWeight: '600',
@@ -246,7 +254,6 @@ const Menu = () => {
           </div>
         </div>
 
-        {/* Hamburger Dropdown */}
         <MenuDropdown
           onHistoryClick={() => setShowHistoryModal(true)}
           onAboutClick={() => {
@@ -256,8 +263,8 @@ const Menu = () => {
         />
       </div>
 
-      {/* 2. Kategori Filter (Pills Bar) */}
-      <div 
+      {/* 2. Kategori Filter */}
+      <div
         className="d-flex overflow-auto p-3 gap-2 hide-scrollbar sticky-top"
         style={{
           whiteSpace: 'nowrap',
@@ -267,7 +274,7 @@ const Menu = () => {
           borderBottom: '1px solid #1c1d27'
         }}
       >
-        <button 
+        <button
           className="border-0 transition-all"
           style={{
             borderRadius: '20px',
@@ -284,11 +291,13 @@ const Menu = () => {
         >
           Semua
         </button>
+
         {categories.map(cat => {
           const isActive = activeCategory === cat.id;
+
           return (
-            <button 
-              key={cat.id} 
+            <button
+              key={cat.id}
               className="border-0 transition-all"
               style={{
                 borderRadius: '20px',
@@ -317,13 +326,13 @@ const Menu = () => {
             const hasGrosir = product.price_type === 'grosir';
 
             return (
-              <div 
-                key={product.id} 
+              <div
+                key={product.id}
                 className="col-6 col-md-4 col-lg-3"
                 onClick={() => isAvailable && openProductModal(product)}
                 style={{ cursor: isAvailable ? 'pointer' : 'default' }}
               >
-                <div 
+                <div
                   className="h-100 d-flex flex-column justify-content-between transition-all"
                   style={{
                     backgroundColor: '#161720',
@@ -334,9 +343,8 @@ const Menu = () => {
                     padding: '10px'
                   }}
                 >
-                  {/* Foto Produk */}
                   <div>
-                    <div 
+                    <div
                       style={{
                         height: '135px',
                         overflow: 'hidden',
@@ -346,13 +354,13 @@ const Menu = () => {
                       }}
                     >
                       {product.image_url ? (
-                        <img 
-                          src={`${API_IMAGE_URL}/${product.image_url}`} 
+                        <img
+                          src={`${API_IMAGE_URL}/${product.image_url}`}
                           className="w-100 h-100"
                           style={{
                             objectFit: 'cover',
                             filter: !isAvailable ? 'grayscale(100%)' : 'none'
-                          }} 
+                          }}
                           alt={product.name}
                         />
                       ) : (
@@ -361,13 +369,12 @@ const Menu = () => {
                         </div>
                       )}
 
-                      {/* Badge HABIS */}
                       {!isAvailable && (
-                        <div 
-                          className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
+                        <div
+                          className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
                           style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
                         >
-                          <span 
+                          <span
                             className="badge"
                             style={{
                               backgroundColor: '#ef4444',
@@ -385,10 +392,9 @@ const Menu = () => {
                       )}
                     </div>
 
-                    {/* Informasi Produk */}
                     <div className="pt-2 px-1">
-                      <h6 
-                        className="mb-1 fw-bold text-truncate" 
+                      <h6
+                        className="mb-1 fw-bold text-truncate"
                         style={{
                           fontSize: '0.92rem',
                           color: isAvailable ? '#f1f5f9' : '#94a3b8',
@@ -398,7 +404,8 @@ const Menu = () => {
                       >
                         {product.name}
                       </h6>
-                      <div 
+
+                      <div
                         style={{
                           color: '#d8a744',
                           fontWeight: '700',
@@ -408,10 +415,9 @@ const Menu = () => {
                       >
                         Rp {parseInt(product.base_price, 10).toLocaleString('id-ID')}
                       </div>
-                      
-                      {/* Sub-keterangan Grosir jika ada */}
+
                       {hasGrosir && (
-                        <div 
+                        <div
                           style={{
                             fontSize: '0.72rem',
                             color: '#94a3b8',
@@ -425,9 +431,8 @@ const Menu = () => {
                     </div>
                   </div>
 
-                  {/* Tombol Tambah */}
                   <div className="pt-2">
-                    <button 
+                    <button
                       className="w-100 border-0 fw-bold transition-all"
                       style={{
                         backgroundColor: isAvailable ? '#d8a744' : '#282a36',
@@ -451,12 +456,12 @@ const Menu = () => {
 
       {/* 4. Floating Cart Button */}
       {cart.length > 0 && (
-        <div 
+        <div
           className="fixed-bottom p-3 d-flex justify-content-center"
           style={{ zIndex: 1040 }}
         >
           <div style={{ width: '100%', maxWidth: '500px' }}>
-            <button 
+            <button
               className="w-100 border-0 d-flex justify-content-between align-items-center shadow-lg transition-all"
               style={{
                 backgroundColor: '#d8a744',
@@ -472,6 +477,7 @@ const Menu = () => {
               <span className="d-flex align-items-center gap-2" style={{ fontSize: '0.95rem' }}>
                 {cartCount} Item
               </span>
+
               <span style={{ fontSize: '1.05rem', fontWeight: '800' }}>
                 Rp {cartTotal.toLocaleString('id-ID')}
               </span>
@@ -480,10 +486,10 @@ const Menu = () => {
         </div>
       )}
 
-      {/* 5. Modal Detail Produk (Dark Theme) */}
+      {/* 5. Modal Detail Produk */}
       {selectedProduct && (
-        <div 
-          className="modal show d-block" 
+        <div
+          className="modal show d-block"
           style={{
             backgroundColor: 'rgba(0,0,0,0.75)',
             zIndex: 1050,
@@ -491,7 +497,7 @@ const Menu = () => {
           }}
         >
           <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: '440px' }}>
-            <div 
+            <div
               className="modal-content border-0 shadow-lg"
               style={{
                 backgroundColor: '#161720',
@@ -505,32 +511,32 @@ const Menu = () => {
                 <h5 className="modal-title fw-bold" style={{ color: '#f1f5f9', fontSize: '1.2rem' }}>
                   {selectedProduct.name}
                 </h5>
-                <button 
-                  type="button" 
-                  className="btn-close btn-close-white" 
+
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
                   onClick={() => setSelectedProduct(null)}
                 />
               </div>
 
               <div className="modal-body px-4 pt-3 pb-2">
                 {selectedProduct.image_url && (
-                  <img 
-                    src={`${API_IMAGE_URL}/${selectedProduct.image_url}`} 
-                    className="w-100 rounded mb-3" 
-                    style={{ maxHeight: '190px', objectFit: 'cover', borderRadius: '12px' }} 
+                  <img
+                    src={`${API_IMAGE_URL}/${selectedProduct.image_url}`}
+                    className="w-100 rounded mb-3"
+                    style={{ maxHeight: '190px', objectFit: 'cover', borderRadius: '12px' }}
                     alt="detail"
                   />
                 )}
-                
+
                 {selectedProduct.description && (
                   <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '16px' }}>
                     {selectedProduct.description}
                   </p>
                 )}
-                
-                {/* Informasi Promo Grosir */}
+
                 {selectedProduct.price_type === 'grosir' && (
-                  <div 
+                  <div
                     style={{
                       backgroundColor: 'rgba(216, 167, 68, 0.1)',
                       border: '1px solid rgba(216, 167, 68, 0.3)',
@@ -542,8 +548,9 @@ const Menu = () => {
                   >
                     <div className="d-flex justify-content-between align-items-center mb-1">
                       <strong style={{ color: '#d8a744' }}>📦 Promo Grosir</strong>
+
                       {orderQty >= selectedProduct.grosir_min_qty ? (
-                        <span 
+                        <span
                           style={{
                             backgroundColor: '#22c55e',
                             color: '#fff',
@@ -561,63 +568,70 @@ const Menu = () => {
                         </span>
                       )}
                     </div>
+
                     <div style={{ color: '#cbd5e1' }}>
-                      Beli min {selectedProduct.grosir_min_qty} pcs: <strong style={{ color: '#d8a744' }}>Rp {parseInt(selectedProduct.grosir_price_per_unit, 10).toLocaleString('id-ID')}</strong>/pcs
+                      Beli min {selectedProduct.grosir_min_qty} pcs:{' '}
+                      <strong style={{ color: '#d8a744' }}>
+                        Rp {parseInt(selectedProduct.grosir_price_per_unit, 10).toLocaleString('id-ID')}
+                      </strong>/pcs
                     </div>
+
                     <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
                       Harga Satuan Normal: Rp {parseInt(selectedProduct.base_price, 10).toLocaleString('id-ID')}/pcs
                     </div>
                   </div>
                 )}
-                
-                {/* Opsi Varian Tambahan */}
+
                 {productVariants.filter(v => v.product_id === selectedProduct.id).length > 0 && (
                   <div className="mb-3">
                     <label style={{ color: '#cbd5e1', fontWeight: '600', fontSize: '0.85rem', marginBottom: '8px', display: 'block' }}>
                       Opsi Tambahan:
                     </label>
+
                     <div className="d-flex flex-column gap-2">
                       {productVariants
                         .filter(v => v.product_id === selectedProduct.id)
                         .map(v => (
-                          <div 
-                            key={v.id} 
+                          <div
+                            key={v.id}
                             className="form-check d-flex justify-content-between align-items-center p-2 rounded"
                             style={{ backgroundColor: '#1c1d27', border: '1px solid #282a36' }}
                           >
                             <div className="d-flex align-items-center gap-2">
-                              <input 
-                                className="form-check-input ms-0" 
-                                type="checkbox" 
+                              <input
+                                className="form-check-input ms-0"
+                                type="checkbox"
                                 id={`var-${v.id}`}
                                 checked={selectedVariants.some(sv => sv.id === v.id)}
                                 onChange={() => handleVariantToggle(v)}
                                 style={{ cursor: 'pointer', backgroundColor: '#161720', borderColor: '#475569' }}
                               />
-                              <label 
-                                className="form-check-label mb-0" 
+
+                              <label
+                                className="form-check-label mb-0"
                                 htmlFor={`var-${v.id}`}
                                 style={{ color: '#f1f5f9', fontSize: '0.85rem', cursor: 'pointer' }}
                               >
                                 {v.name}
                               </label>
                             </div>
+
                             <span style={{ color: '#d8a744', fontSize: '0.8rem', fontWeight: '600' }}>
                               +Rp {parseInt(v.extra_price, 10).toLocaleString('id-ID')}
                             </span>
                           </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 )}
 
-                {/* Catatan Khusus */}
                 <div className="mb-3">
                   <label style={{ color: '#cbd5e1', fontWeight: '600', fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>
                     Catatan Khusus
                   </label>
-                  <input 
-                    type="text" 
+
+                  <input
+                    type="text"
                     className="form-control"
                     placeholder="Contoh: Jangan terlalu manis, tanpa es batu"
                     value={orderNotes}
@@ -633,9 +647,8 @@ const Menu = () => {
                   />
                 </div>
 
-                {/* Counter Jumlah */}
                 <div className="d-flex align-items-center justify-content-center gap-4 my-3">
-                  <button 
+                  <button
                     className="border-0 rounded-circle d-flex align-items-center justify-content-center"
                     onClick={() => setOrderQty(Math.max(1, orderQty - 1))}
                     style={{
@@ -650,10 +663,12 @@ const Menu = () => {
                   >
                     -
                   </button>
+
                   <span style={{ fontSize: '1.3rem', fontWeight: '700', color: '#f1f5f9' }}>
                     {orderQty}
                   </span>
-                  <button 
+
+                  <button
                     className="border-0 rounded-circle d-flex align-items-center justify-content-center"
                     onClick={() => setOrderQty(orderQty + 1)}
                     style={{
@@ -671,9 +686,8 @@ const Menu = () => {
                 </div>
               </div>
 
-              {/* Tombol Simpan ke Keranjang */}
               <div className="modal-footer border-0 p-4 pt-2">
-                <button 
+                <button
                   className="w-100 border-0 fw-bold py-3 transition-all"
                   style={{
                     backgroundColor: '#d8a744',
@@ -685,7 +699,7 @@ const Menu = () => {
                   }}
                   onClick={addToCart}
                 >
-                  Tambah ke Pesanan • Rp {((getProductUnitPrice(selectedProduct, orderQty) + selectedVariants.reduce((t,v)=>t+parseFloat(v.extra_price),0)) * orderQty).toLocaleString('id-ID')}
+                  Tambah ke Pesanan • Rp {((getProductUnitPrice(selectedProduct, orderQty) + selectedVariants.reduce((t, v) => t + parseFloat(v.extra_price), 0)) * orderQty).toLocaleString('id-ID')}
                 </button>
               </div>
             </div>
@@ -693,7 +707,7 @@ const Menu = () => {
         </div>
       )}
 
-      {/* 6. Modal Pilihan Tipe Pesanan (Dine In / Take Away) */}
+      {/* 6. Modal Pilihan Tipe Pesanan */}
       {showDiningModal && (
         <div
           className="modal show d-block dining-modal-overlay"
@@ -743,7 +757,6 @@ const Menu = () => {
                 </p>
 
                 <div className="dining-choice-list">
-                  {/* Makan di Sini */}
                   <button
                     type="button"
                     className={`dining-choice-card ${diningMethod === 'dine-in' ? 'selected' : ''}`}
@@ -769,7 +782,6 @@ const Menu = () => {
                     <span className="dining-choice-accent" />
                   </button>
 
-                  {/* Bawa Pulang */}
                   <button
                     type="button"
                     className={`dining-choice-card ${diningMethod === 'takeaway' ? 'selected' : ''}`}
@@ -796,7 +808,7 @@ const Menu = () => {
                   </button>
                 </div>
 
-                {/* Tombol Tentang Kami di bawah pilihan layanan */}
+                {/* Tombol Tentang Kami */}
                 <button
                   type="button"
                   className="dining-about-trigger"
@@ -1070,7 +1082,7 @@ const Menu = () => {
         </div>
       )}
 
-      {/* 7. Modal Tentang Kami: tampil di atas popup pilihan layanan */}
+      {/* 7. Modal Tentang Kami */}
       {showAboutModal && (
         <div
           className="about-modal-overlay"
@@ -1090,6 +1102,7 @@ const Menu = () => {
                 <span className="about-modal-header-icon">
                   <Coffee size={18} />
                 </span>
+
                 <div>
                   <h5 id="aboutModalTitle">Tentang Kami</h5>
                   <p>Billion Cafe · Capstone Project</p>
@@ -1220,6 +1233,7 @@ const Menu = () => {
           </div>
 
           <style>{`
+            /* OVERLAY: background tetap terlihat samar dan blur */
             .about-modal-overlay {
               position: fixed;
               inset: 0;
@@ -1227,24 +1241,29 @@ const Menu = () => {
               display: flex;
               align-items: center;
               justify-content: center;
-              padding: 14px;
-              background: rgba(0,0,0,0.84);
-              backdrop-filter: blur(9px);
-              -webkit-backdrop-filter: blur(9px);
+              padding: 26px 18px;
+              overflow-y: auto;
+              background: rgba(5,6,10,0.58);
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
             }
 
+            /* POPUP: ukuran lebih kecil dan benar-benar mengambang */
             .about-modal-dialog {
               display: flex;
               flex-direction: column;
               width: 100%;
-              max-width: 760px;
-              max-height: 91vh;
+              max-width: 680px;
+              max-height: 84vh;
+              max-height: 84dvh;
+              min-height: 0;
+              margin: auto;
               overflow: hidden;
               background: #101116;
-              border: 1px solid rgba(216,167,68,0.38);
-              border-radius: 18px;
-              box-shadow: 0 24px 75px rgba(0,0,0,0.65);
-              animation: aboutModalEnter 0.2s ease-out;
+              border: 1px solid rgba(216,167,68,0.48);
+              border-radius: 22px;
+              box-shadow: 0 28px 90px rgba(0,0,0,0.72), 0 0 35px rgba(216,167,68,0.09);
+              animation: aboutModalEnter 0.24s ease-out;
             }
 
             @keyframes aboutModalEnter {
@@ -1325,6 +1344,7 @@ const Menu = () => {
             }
 
             .about-modal-body {
+              min-height: 0;
               overflow-y: auto;
               overscroll-behavior: contain;
               padding: 20px;
@@ -1566,12 +1586,15 @@ const Menu = () => {
 
             @media (max-width: 520px) {
               .about-modal-overlay {
-                padding: 8px;
+                align-items: center;
+                padding: 24px 17px;
               }
 
               .about-modal-dialog {
-                max-height: 94vh;
-                border-radius: 15px;
+                width: 100%;
+                max-height: 80vh;
+                max-height: 80dvh;
+                border-radius: 19px;
               }
 
               .about-modal-body {
@@ -1611,8 +1634,8 @@ const Menu = () => {
 
       {/* 8. Modal Riwayat Pesanan */}
       {showHistoryModal && (
-        <div 
-          className="modal show d-block" 
+        <div
+          className="modal show d-block"
           style={{
             backgroundColor: 'rgba(0,0,0,0.75)',
             zIndex: 1050,
@@ -1620,7 +1643,7 @@ const Menu = () => {
           }}
         >
           <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: '440px' }}>
-            <div 
+            <div
               className="modal-content border-0 shadow-lg"
               style={{
                 backgroundColor: '#161720',
@@ -1633,9 +1656,10 @@ const Menu = () => {
                 <h5 className="modal-title fw-bold" style={{ color: '#f1f5f9', fontSize: '1.2rem' }}>
                   📜 Riwayat Pesanan
                 </h5>
-                <button 
-                  type="button" 
-                  className="btn-close btn-close-white" 
+
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
                   onClick={() => setShowHistoryModal(false)}
                 />
               </div>
@@ -1644,8 +1668,8 @@ const Menu = () => {
                 {orderHistory.length > 0 ? (
                   <div className="d-flex flex-column gap-3">
                     {orderHistory.slice().reverse().map((item) => (
-                      <div 
-                        key={item.orderId} 
+                      <div
+                        key={item.orderId}
                         className="p-3 transition-all"
                         style={{
                           backgroundColor: '#1c1d27',
@@ -1655,18 +1679,18 @@ const Menu = () => {
                         }}
                         onClick={() => {
                           setShowHistoryModal(false);
-                          navigate('/customer/status', { 
-                            state: { 
-                              orderId: item.orderId, 
-                              customerName: item.customerName, 
-                              tableNumber: item.tableNumber 
-                            } 
+                          navigate('/customer/status', {
+                            state: {
+                              orderId: item.orderId,
+                              customerName: item.customerName,
+                              tableNumber: item.tableNumber
+                            }
                           });
                         }}
                       >
                         <div className="d-flex justify-content-between align-items-start mb-2">
                           <div>
-                            <span 
+                            <span
                               style={{
                                 backgroundColor: 'rgba(216, 167, 68, 0.2)',
                                 color: '#d8a744',
@@ -1679,7 +1703,8 @@ const Menu = () => {
                             >
                               #{item.orderId}
                             </span>
-                            <span 
+
+                            <span
                               style={{
                                 backgroundColor: '#222433',
                                 color: '#94a3b8',
@@ -1691,6 +1716,7 @@ const Menu = () => {
                               Meja {item.tableNumber}
                             </span>
                           </div>
+
                           <small style={{ color: '#64748b', fontSize: '0.75rem' }}>
                             {new Date(item.date).toLocaleDateString('id-ID', {
                               day: 'numeric',
@@ -1700,16 +1726,19 @@ const Menu = () => {
                             })}
                           </small>
                         </div>
+
                         <div className="d-flex justify-content-between align-items-center mt-3">
                           <div>
                             <span style={{ color: '#94a3b8', fontSize: '0.72rem', display: 'block' }}>
                               Total Pembayaran
                             </span>
+
                             <span style={{ color: '#f1f5f9', fontWeight: '700', fontSize: '0.95rem' }}>
                               Rp {parseInt(item.totalAmount || 0, 10).toLocaleString('id-ID')}
                             </span>
                           </div>
-                          <span 
+
+                          <span
                             style={{
                               backgroundColor: '#282a36',
                               color: '#cbd5e1',
@@ -1735,8 +1764,8 @@ const Menu = () => {
               </div>
 
               <div className="modal-footer border-0 p-4 pt-0">
-                <button 
-                  className="w-100 border-0 fw-bold py-2" 
+                <button
+                  className="w-100 border-0 fw-bold py-2"
                   style={{
                     backgroundColor: '#282a36',
                     color: '#cbd5e1',
