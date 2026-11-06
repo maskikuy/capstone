@@ -246,10 +246,6 @@ const QRCodeGenerator = () => {
                     {/* BRAND HEADER */}
                     <div className="poster-header">
 
-                      <div className="poster-logo">
-                        B
-                      </div>
-
                       <div className="poster-brand-row">
 
                         <Coffee className="poster-brand-cup" />
