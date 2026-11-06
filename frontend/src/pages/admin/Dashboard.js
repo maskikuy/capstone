@@ -380,13 +380,6 @@ const Dashboard = () => {
           }}>
             Dashboard Admin
           </h3>
-
-          <small style={{
-            color: '#94a3b8',
-            fontSize: '0.82rem'
-          }}>
-            Pantau dan sesuaikan laporan omzet penjualan restoran
-          </small>
         </div>
 
         {/* Filter Periode */}
