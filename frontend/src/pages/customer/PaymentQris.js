@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { showAlert } from '../../utils/notify';
+import api from '../../utils/api';
+import { showAlert, notifyError } from '../../utils/notify';
 
 const PaymentQris = () => {
   const location = useLocation();
@@ -11,6 +12,7 @@ const PaymentQris = () => {
 
   // Timer hitung mundur (15 menit)
   const [timeLeft, setTimeLeft] = useState(900);
+  const [isCompleting, setIsCompleting] = useState(false);
   const pollingRef = useRef(null);
 
   useEffect(() => {
@@ -25,22 +27,19 @@ const PaymentQris = () => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
-    // Auto-polling setiap 3 detik untuk cek status pembayaran
+    // Auto-polling setiap 3 detik untuk cek status pembayaran otomatis
     pollingRef.current = setInterval(async () => {
       try {
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-        const response = await fetch(`${apiUrl}/api/order/${orderId}/payment-status`);
-        if (!response.ok) return;
-        const data = await response.json();
-        if (data.payment_status === 'paid') {
+        const response = await api.get(`/order/${orderId}/payment-status`);
+        if (response.data && response.data.payment_status === 'paid') {
           clearInterval(pollingRef.current);
-          showAlert('Pembayaran berhasil! Pesanan Anda sedang diproses.');
+          showAlert('Pembayaran berhasil! Pesanan Anda telah diteruskan ke kasir & dapur.');
           navigate('/customer/status', {
             state: { orderId, customerName, tableNumber }
           });
         }
       } catch (err) {
-        // Abaikan error jaringan sementara
+        // Abaikan error jaringan sementara saat polling
       }
     }, 3000);
 
@@ -57,12 +56,30 @@ const PaymentQris = () => {
     return `${min}:${sec < 10 ? '0' : ''}${sec}`;
   };
 
-  // Fungsi saat tombol "Saya Sudah Bayar" diklik (fallback manual)
-  const handleConfirmPayment = () => {
-    showAlert("Terima kasih! Mohon tunggu konfirmasi dari kasir kami.");
-    navigate('/customer/status', { 
-        state: { orderId, customerName, tableNumber } 
-    });
+  // Fungsi saat tombol "Selesaikan Transaksi" diklik oleh customer
+  const handleConfirmPayment = async () => {
+    if (isCompleting) return;
+    setIsCompleting(true);
+    try {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      
+      // Selesaikan transaksi di server agar pesanan resmi masuk ke kasir & dapur
+      await api.post(`/order/${orderId}/complete-transaction`);
+      
+      showAlert("Transaksi Selesai! Pesanan Anda telah masuk ke sistem kasir dan siap disiapkan.");
+      navigate('/customer/status', { 
+          state: { orderId, customerName, tableNumber } 
+      });
+    } catch (err) {
+      console.error('Gagal menyelesaikan transaksi:', err);
+      // Fallback tetap arahkan ke status
+      showAlert("Transaksi dikonfirmasi. Mohon tunggu pesanan Anda.");
+      navigate('/customer/status', { 
+          state: { orderId, customerName, tableNumber } 
+      });
+    } finally {
+      setIsCompleting(false);
+    }
   };
 
   // Helper Copy Nominal
@@ -123,7 +140,7 @@ const PaymentQris = () => {
             Menerima GoPay, OVO, DANA, ShopeePay, BCA & Semua Bank
           </p>
           
-          {/* Tampilan QR Code (Background Putih untuk kontras scan) */}
+          {/* Tampilan QR Code */}
           <div 
             className="p-3 d-inline-block rounded-3 mb-3 shadow"
             style={{ backgroundColor: '#ffffff', borderRadius: '16px' }}
@@ -141,7 +158,7 @@ const PaymentQris = () => {
           <div className="d-flex align-items-center justify-content-center gap-2 mb-3">
             <span className="spinner-grow spinner-grow-sm text-warning" role="status"></span>
             <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
-              Menunggu konfirmasi pembayaran otomatis...
+              Menunggu Anda menyelesaikan pembayaran QRIS...
             </small>
           </div>
 
@@ -192,13 +209,12 @@ const PaymentQris = () => {
             }}
           >
             <small className="d-block fw-bold mb-1" style={{ color: '#d8a744', fontSize: '0.78rem' }}>
-              💡 Tips Bayar via HP:
+              💡 Petunjuk Pembayaran:
             </small>
             <small style={{ color: '#cbd5e1', fontSize: '0.72rem', lineHeight: '1.4', display: 'block' }}>
-              1. Klik tombol <strong>Simpan QR ke Galeri</strong>.<br />
-              2. Buka aplikasi e-wallet Anda (GoPay, DANA, OVO, BCA, dll).<br />
-              3. Pilih <strong>Scan/Bayar</strong>, lalu pilih ikon <strong>Galeri</strong> untuk scan QR tadi.<br />
-              4. Nominal pembayaran akan terisi secara otomatis!
+              1. Buka aplikasi e-wallet / mobile banking Anda (GoPay, DANA, OVO, BCA, dll).<br />
+              2. Scan kode QRIS di atas.<br />
+              3. Setelah berhasil membayar, klik tombol <strong>Selesaikan Transaksi</strong> di bawah agar pesanan langsung masuk ke kasir & dapur!
             </small>
           </div>
         </div>
@@ -233,7 +249,7 @@ const PaymentQris = () => {
               border: '1px solid #2c2f40',
               color: '#f1f5f9',
               borderRadius: '14px',
-              fontSize: '1rem',
+              fontSize: '0.95rem',
               cursor: 'pointer'
             }}
             onClick={downloadQR}
@@ -243,6 +259,7 @@ const PaymentQris = () => {
           </button>
         )}
 
+        {/* Tombol Selesaikan Transaksi */}
         <button 
           className="w-100 py-3 fw-bold border-0 transition-all shadow-sm"
           style={{
@@ -250,12 +267,15 @@ const PaymentQris = () => {
             color: '#101116',
             borderRadius: '14px',
             fontSize: '1.05rem',
-            cursor: 'pointer'
+            cursor: isCompleting ? 'not-allowed' : 'pointer',
+            opacity: isCompleting ? 0.7 : 1,
+            boxShadow: '0 4px 16px rgba(216, 167, 68, 0.4)'
           }}
+          disabled={isCompleting}
           onClick={handleConfirmPayment}
         >
           <i className="bi bi-check-circle-fill me-2"></i>
-          Saya Sudah Bayar
+          {isCompleting ? 'Memproses Transaksi...' : 'Selesaikan Transaksi'}
         </button>
 
         <button 
@@ -263,7 +283,7 @@ const PaymentQris = () => {
           style={{ color: '#94a3b8', fontSize: '0.88rem', cursor: 'pointer' }}
           onClick={() => navigate('/customer/status', { state: { orderId } })}
         >
-          Cek Status Nanti Saja
+          Lihat Status Pesanan
         </button>
       </div>
 

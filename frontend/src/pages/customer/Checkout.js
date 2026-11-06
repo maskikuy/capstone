@@ -254,6 +254,7 @@ const Checkout = () => {
             } 
         });
       } else {
+        showAlert('Pesanan Berhasil Dibuat! Silakan lakukan pembayaran tunai di kasir.');
         navigate('/customer/status', { 
           state: { 
             orderId: newOrderId,
@@ -486,7 +487,9 @@ const Checkout = () => {
             onClick={handleSubmitOrder}
             disabled={isSubmitting || cart.length === 0}
           >
-            {isSubmitting ? 'Memproses...' : 'Pesan Sekarang'}
+            {isSubmitting 
+              ? 'Memproses...' 
+              : (paymentMethod === 'qris' ? 'Lanjut ke Pembayaran QRIS' : 'Selesaikan Transaksi (Bayar Tunai)')}
           </button>
           <button 
             className="w-100 border-0 fw-bold py-3" 

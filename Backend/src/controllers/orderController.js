@@ -84,7 +84,7 @@ export const createOrder = async (req, res) => {
 
         let qrisImage = '';
         let paymentLinkUrl = '';
-        if (orderInfo.payment_method === 'qris') {
+        if (orderInfo.payment_method === 'qris' && orderInfo.payment_status !== 'paid') {
             const sumopodOrderId = `order-${orderId}-${Date.now()}`;
             logger.info(`Calling SumoPod QRIS for order ID: ${orderId}`);
             try {
@@ -256,6 +256,28 @@ export const updatePaymentStatus = async (req, res) => {
         res.status(200).json({ message: 'Payment status updated successfully' });
     } catch (error) {
         logger.error(`Error updating payment status for ID ${orderId}: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (conn) conn.release();
+        logger.debug('Database connection released');
+    }
+};
+
+export const completeTransaction = async (req, res) => {
+    const orderId = req.params.id;
+    const conn = await db.getConnection();
+    logger.debug('Database connection established for completeTransaction');
+    try {
+        const [orders] = await conn.execute('SELECT id, payment_status, order_status FROM orders WHERE id = ?', [orderId]);
+        if (!orders.length) {
+            return res.status(404).json({ error: 'Order Not Found' });
+        }
+
+        await conn.execute("UPDATE orders SET payment_status = 'paid' WHERE id = ?", [orderId]);
+        logger.info(`Customer completed transaction for order ID: ${orderId}`);
+        res.status(200).json({ message: 'Transaction completed successfully', payment_status: 'paid' });
+    } catch (error) {
+        logger.error(`Error completing transaction for ID ${orderId}: ${error.message}`);
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {
         if (conn) conn.release();

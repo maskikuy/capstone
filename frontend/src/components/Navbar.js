@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { confirmAction } from '../utils/notify';
@@ -128,8 +127,14 @@ const Navbar = () => {
             {(role === 'kasir' || role === 'kitchen') && (
               <>
                 <li className="nav-item">
+                  <NavLink to="/kasir/pos" style={navLinkStyle}>
+                    Kasir (POS)
+                  </NavLink>
+                </li>
+
+                <li className="nav-item">
                   <NavLink to="/kasir/dashboard" style={navLinkStyle}>
-                    Dashboard Kasir
+                    Dashboard Pesanan
                   </NavLink>
                 </li>
 
