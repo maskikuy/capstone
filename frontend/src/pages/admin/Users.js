@@ -196,16 +196,6 @@ const Users = () => {
         >
           Kelola Pengguna
         </h3>
-
-        <p
-          style={{
-            color: '#94a3b8',
-            fontSize: '13px',
-            margin: 0
-          }}
-        >
-          Kelola akun staf kasir Billion Cafe.
-        </p>
       </div>
 
       {/* Form Card */}
