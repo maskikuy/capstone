@@ -18,6 +18,7 @@ import { ensureInventoryTable } from './src/utils/initDb.js';
 import qrisRoute from './src/routes/qrisRoute.js';
 import settingsRoute from './src/routes/settingsRoute.js';
 import productRecipeRoute from './src/routes/productRecipeRoute.js';
+import discountRoute from './src/routes/discountRoute.js';
 
 dotenv.config();
 
@@ -44,17 +45,19 @@ app.use('/api', inventoryRoute);
 app.use('/api', qrisRoute);
 app.use('/api', settingsRoute);
 app.use('/api', productRecipeRoute);
+app.use('/api', discountRoute);
 app.use((req, res) => {
     logger.warn(`404 Not Found - ${req.originalUrl}`);
     res.status(404).send("404 Not Found");
 });
 
 // Ensure DB tables then start server
-ensureInventoryTable().then(() => {
-    app.listen(PORT, () => {
-        logger.info(`Server is running on http://localhost:${PORT}`);
+ensureInventoryTable()
+    .catch((err) => {
+        logger.error(`Database initialization warning: ${err.message}`);
+    })
+    .finally(() => {
+        app.listen(PORT, () => {
+            logger.info(`Server is running on http://localhost:${PORT}`);
+        });
     });
-}).catch((err) => {
-    logger.error(`Failed to initialize DB: ${err.message}`);
-    process.exit(1);
-});

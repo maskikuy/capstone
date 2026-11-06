@@ -7,6 +7,10 @@ echo.
 echo Pastikan Laragon (MySQL) sudah dalam status "Start All".
 echo.
 
+echo Menutup proses Node.js lama jika ada...
+taskkill /F /IM node.exe >nul 2>&1
+timeout /t 1 /nobreak >nul
+
 echo [1/2] Menjalankan Backend (Port 5000)...
 start "Capstone - Backend" cmd /k "cd /d %~dp0Backend && npm start"
 

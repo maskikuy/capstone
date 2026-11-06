@@ -99,6 +99,12 @@ const Navbar = () => {
                 </li>
 
                 <li className="nav-item">
+                  <NavLink to="/admin/discounts" style={navLinkStyle}>
+                    Diskon
+                  </NavLink>
+                </li>
+
+                <li className="nav-item">
                   <NavLink to="/admin/inventory" style={navLinkStyle}>
                     Inventori
                   </NavLink>

@@ -102,7 +102,17 @@ export const printReceipt = (order, type = 'customer') => {
 
         ${!isKitchen ? `
           <div class="total">
-            <div style="font-weight: bold; font-size: 14px;">
+            ${parseFloat(order.discount_amount || 0) > 0 ? `
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                <span>Subtotal:</span>
+                <span>Rp ${formatRp(order.subtotal || order.total_amount)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #16a34a;">
+                <span>Diskon (${order.discount_name || 'Promo'}):</span>
+                <span>- Rp ${formatRp(order.discount_amount)}</span>
+              </div>
+            ` : ''}
+            <div style="font-weight: bold; font-size: 14px; border-top: ${parseFloat(order.discount_amount || 0) > 0 ? '1px dashed #64748b' : 'none'}; padding-top: 2px;">
               Total: Rp ${formatRp(order.total_amount)}
             </div>
             <div>Status: ${order.payment_status}</div>

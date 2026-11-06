@@ -578,6 +578,19 @@ const OrderHistory = () => {
                 })}
               </div>
 
+              {parseFloat(selectedOrder.discount_amount || 0) > 0 && (
+                <div style={{ marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>
+                    <span>Subtotal:</span>
+                    <span>Rp {parseInt(selectedOrder.subtotal || selectedOrder.total_amount).toLocaleString('id-ID')}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#22c55e', fontWeight: '600' }}>
+                    <span>Diskon ({selectedOrder.discount_name || 'Promo'}):</span>
+                    <span>- Rp {parseInt(selectedOrder.discount_amount).toLocaleString('id-ID')}</span>
+                  </div>
+                </div>
+              )}
+
               <div 
                 style={{
                   display: 'flex',

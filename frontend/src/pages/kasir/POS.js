@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { notifyError, notifySuccess, showAlert } from '../../utils/notify';
 import { 
   Search, ShoppingCart, Trash2, Plus, Minus, X, User, MapPin, 
-  CreditCard, Banknote, QrCode, Printer, SlidersHorizontal, RefreshCw 
+  CreditCard, Banknote, QrCode, Printer, SlidersHorizontal, RefreshCw,
+  Tag, Percent, Coins, CheckCircle2, Gift
 } from 'lucide-react';
 
 const KasirPOS = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [productVariants, setProductVariants] = useState([]);
+  const [discounts, setDiscounts] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -19,6 +21,10 @@ const KasirPOS = () => {
   const [orderQty, setOrderQty] = useState(1);
   const [orderNotes, setOrderNotes] = useState('');
   const [selectedVariants, setSelectedVariants] = useState([]);
+
+  // Discount State
+  const [selectedDiscount, setSelectedDiscount] = useState(null);
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
 
   // Form checkout state
   const [customerName, setCustomerName] = useState('');
@@ -53,16 +59,18 @@ const KasirPOS = () => {
 
   const fetchData = async () => {
     try {
-      const [prodRes, catRes, varRes] = await Promise.all([
+      const [prodRes, catRes, varRes, discRes] = await Promise.all([
         api.get('/product'),
         api.get('/categories?type=menu'),
-        api.get('/product-variant')
+        api.get('/product-variant'),
+        api.get('/discounts?active=true')
       ]);
       setProducts(prodRes.data || []);
       setCategories(catRes.data || []);
       setProductVariants(varRes.data || []);
+      setDiscounts(discRes.data || []);
     } catch (err) {
-      console.error('Gagal memuat data menu', err);
+      console.error('Gagal memuat data menu / diskon', err);
     }
   };
 
@@ -223,9 +231,25 @@ const KasirPOS = () => {
     setCart([]);
     setCustomerName('');
     setCashReceived('');
+    setSelectedDiscount(null);
   };
 
-  const cartTotal = cart.reduce((s, i) => s + i.totalPrice, 0);
+  const cartSubtotal = cart.reduce((s, i) => s + i.totalPrice, 0);
+
+  // Perhitungan nominal diskon yang didapat (langsung dipotong tanpa syarat minimal)
+  const calculateDiscountAmount = (discount, subtotal) => {
+    if (!discount || subtotal <= 0) return 0;
+    let amount = 0;
+    if (discount.type === 'percentage') {
+      amount = (subtotal * parseFloat(discount.value)) / 100;
+    } else {
+      amount = parseFloat(discount.value) || 0;
+    }
+    return Math.min(amount, subtotal);
+  };
+
+  const discountAmount = calculateDiscountAmount(selectedDiscount, cartSubtotal);
+  const cartTotal = Math.max(0, cartSubtotal - discountAmount);
 
   // Cash change calculation
   const numericCashReceived = parseFloat(cashReceived) || 0;
@@ -261,6 +285,10 @@ const KasirPOS = () => {
         table_number: parseInt(tableNumber) || 0,
         customer_name: customerName.trim() || 'Pelanggan Kasir',
         location: diningMethod,
+        subtotal: cartSubtotal,
+        discount_id: selectedDiscount ? selectedDiscount.id : null,
+        discount_name: selectedDiscount ? selectedDiscount.name : null,
+        discount_amount: discountAmount,
         total_amount: cartTotal,
         payment_method: paymentMethod,
         payment_status: 'paid', // Langsung lunas agar pesanan bisa langsung dieksekusi di dapur!
@@ -279,6 +307,9 @@ const KasirPOS = () => {
         paymentMethod,
         paymentStatus: 'paid',
         items: [...cart],
+        subtotal: cartSubtotal,
+        discountName: selectedDiscount ? selectedDiscount.name : null,
+        discountAmount: discountAmount,
         totalAmount: cartTotal,
         cashReceived: paymentMethod === 'cash' ? numericCashReceived : cartTotal,
         cashChange: paymentMethod === 'cash' ? cashChange : 0,
@@ -288,10 +319,11 @@ const KasirPOS = () => {
       notifySuccess(`Transaksi #${newOrderId} berhasil & lunas! Pesanan langsung masuk ke antrean dapur.`);
       setCompletedOrder(orderSummary);
 
-      // Reset cart
+      // Reset cart & discount
       setCart([]);
       setCustomerName('');
       setCashReceived('');
+      setSelectedDiscount(null);
       fetchData(); // refresh stock numbers
     } catch (err) {
       console.error(err);
@@ -712,6 +744,108 @@ const KasirPOS = () => {
                 </div>
               </div>
 
+              {/* Diskon / Promo Langsung Pencet */}
+              <div className="mb-2">
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <div className="d-flex align-items-center gap-1">
+                    <Tag size={12} style={{ color: goldColor }} />
+                    <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: '600' }}>Pilih Diskon / Promo:</span>
+                  </div>
+                  {selectedDiscount && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDiscount(null)}
+                      className="btn btn-sm p-0"
+                      style={{ fontSize: '0.7rem', color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}
+                    >
+                      Batal Diskon
+                    </button>
+                  )}
+                </div>
+
+                {/* Tombol-tombol Diskon Siap Pencet */}
+                {discounts.length > 0 ? (
+                  <div className="d-flex flex-wrap gap-1 mb-1">
+                    {discounts.map(disc => {
+                      const isSelected = selectedDiscount?.id === disc.id;
+                      const isPercent = disc.type === 'percentage';
+                      const badgeLabel = isPercent ? `${parseFloat(disc.value)}%` : `Rp ${parseFloat(disc.value).toLocaleString('id-ID')}`;
+
+                      return (
+                        <button
+                          key={disc.id}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedDiscount(null);
+                            } else {
+                              setSelectedDiscount(disc);
+                            }
+                          }}
+                          className="btn btn-sm py-1 px-2 d-inline-flex align-items-center gap-1"
+                          style={{
+                            fontSize: '0.75rem',
+                            borderRadius: '8px',
+                            fontWeight: isSelected ? '700' : '500',
+                            backgroundColor: isSelected ? 'rgba(216, 167, 68, 0.22)' : '#1c1d27',
+                            border: isSelected ? `1.5px solid ${goldColor}` : `1px solid ${borderColor}`,
+                            color: isSelected ? goldColor : '#cbd5e1',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {isSelected && <CheckCircle2 size={12} style={{ color: goldColor }} />}
+                          <span>{disc.name}</span>
+                          <span style={{ 
+                            fontSize: '0.68rem', 
+                            padding: '1px 5px', 
+                            borderRadius: '4px',
+                            backgroundColor: isSelected ? goldColor : '#222433',
+                            color: isSelected ? '#101116' : '#94a3b8',
+                            fontWeight: '700'
+                          }}>
+                            {badgeLabel}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '0.72rem', color: '#64748b', fontStyle: 'italic' }}>
+                    Belum ada diskon aktif. Tambah di Admin &gt; Diskon.
+                  </div>
+                )}
+
+                {/* Banner Promo Terpilih */}
+                {selectedDiscount && (
+                  <div 
+                    className="p-2 mt-1 rounded d-flex justify-content-between align-items-center"
+                    style={{
+                      backgroundColor: 'rgba(34, 197, 94, 0.12)',
+                      border: '1px solid rgba(34, 197, 94, 0.35)',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    <div>
+                      <div className="fw-bold d-flex align-items-center gap-1" style={{ fontSize: '0.8rem', color: '#22c55e' }}>
+                        <Tag size={13} /> {selectedDiscount.name} Aktif
+                      </div>
+                      <small style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                        Potongan: {selectedDiscount.type === 'percentage' 
+                          ? `${parseFloat(selectedDiscount.value)}%` 
+                          : `Rp ${parseFloat(selectedDiscount.value).toLocaleString('id-ID')}`}
+                      </small>
+                    </div>
+
+                    <div className="text-end">
+                      <div className="fw-bold" style={{ color: '#22c55e', fontSize: '0.92rem' }}>
+                        - Rp {discountAmount.toLocaleString('id-ID')}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Payment Method Selector (Di kasir: Tunai & QRIS Mesin EDC / Statis) */}
               <div className="mb-2">
                 <div className="d-flex align-items-center gap-1 mb-1">
@@ -798,12 +932,32 @@ const KasirPOS = () => {
                 </div>
               )}
 
-              {/* Total Tagihan */}
-              <div className="d-flex justify-content-between align-items-center mb-2 pt-1">
-                <span style={{ color: '#cbd5e1', fontWeight: '600', fontSize: '0.85rem' }}>Total Tagihan:</span>
-                <span style={{ color: goldColor, fontWeight: '800', fontSize: '1.25rem' }}>
-                  Rp {cartTotal.toLocaleString('id-ID')}
-                </span>
+              {/* Rincian Subtotal, Diskon & Total Tagihan */}
+              <div className="mb-2 pt-1" style={{ borderTop: `1px solid ${borderColor}` }}>
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>Subtotal Belanja:</span>
+                  <span style={{ color: '#cbd5e1', fontWeight: '600', fontSize: '0.82rem' }}>
+                    Rp {cartSubtotal.toLocaleString('id-ID')}
+                  </span>
+                </div>
+
+                {discountAmount > 0 && (
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <span style={{ color: '#22c55e', fontSize: '0.78rem' }}>
+                      Diskon ({selectedDiscount?.name}):
+                    </span>
+                    <span style={{ color: '#22c55e', fontWeight: '700', fontSize: '0.82rem' }}>
+                      - Rp {discountAmount.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                )}
+
+                <div className="d-flex justify-content-between align-items-center pt-1" style={{ borderTop: `1px dashed ${borderColor}` }}>
+                  <span style={{ color: '#cbd5e1', fontWeight: '700', fontSize: '0.88rem' }}>Total Tagihan:</span>
+                  <span style={{ color: goldColor, fontWeight: '800', fontSize: '1.25rem' }}>
+                    Rp {cartTotal.toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
 
               {/* Submit Button: Bayar & Selesaikan Transaksi */}
@@ -963,6 +1117,146 @@ const KasirPOS = () => {
         </div>
       )}
 
+      {/* ===== MODAL PILIH DISKON / PROMO ===== */}
+      {showDiscountModal && (
+        <div 
+          className="modal show d-block"
+          style={{ backgroundColor: 'rgba(0,0,0,0.78)', zIndex: 1060, backdropFilter: 'blur(5px)' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDiscountModal(false);
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '460px' }}>
+            <div 
+              className="modal-content border-0 shadow-lg"
+              style={{ backgroundColor: cardBg, border: `1px solid ${borderColor}`, borderRadius: '16px', color: '#f1f5f9' }}
+            >
+              <div className="modal-header border-0 pb-0 pt-3 px-4 d-flex justify-content-between align-items-center">
+                <div className="d-flex align-items-center gap-2">
+                  <span 
+                    style={{
+                      width: '32px', height: '32px', borderRadius: '8px',
+                      backgroundColor: 'rgba(216, 167, 68, 0.15)', color: goldColor,
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                    }}
+                  >
+                    <Tag size={16} />
+                  </span>
+                  <div>
+                    <h6 className="modal-title fw-bold mb-0" style={{ color: '#f1f5f9', fontSize: '1rem' }}>
+                      Pilih Diskon / Promo
+                    </h6>
+                    <small style={{ color: '#94a3b8', fontSize: '0.72rem' }}>
+                      Pilih diskon untuk memotong tagihan transaksi kasir
+                    </small>
+                  </div>
+                </div>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowDiscountModal(false)} />
+              </div>
+
+              <div className="modal-body px-4 pt-3 pb-3">
+                <div 
+                  className="p-2 mb-3 rounded d-flex justify-content-between align-items-center"
+                  style={{ backgroundColor: '#141520', border: `1px solid ${borderColor}` }}
+                >
+                  <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>Subtotal Keranjang:</span>
+                  <span style={{ color: '#f1f5f9', fontWeight: '800', fontSize: '0.95rem' }}>
+                    Rp {cartSubtotal.toLocaleString('id-ID')}
+                  </span>
+                </div>
+
+                {discounts.length === 0 ? (
+                  <div className="text-center py-4" style={{ color: '#64748b' }}>
+                    <Tag size={32} style={{ opacity: 0.3, display: 'block', margin: '0 auto 8px' }} />
+                    <p className="mb-1" style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Belum ada promo diskon aktif.</p>
+                    <small style={{ fontSize: '0.75rem' }}>Tambahkan promo terlebih dahulu di menu Admin &gt; Diskon.</small>
+                  </div>
+                ) : (
+                  <div className="d-flex flex-column gap-2" style={{ maxHeight: '340px', overflowY: 'auto', paddingRight: '2px' }}>
+                    {discounts.map((disc) => {
+                      const isPercent = disc.type === 'percentage';
+                      const isSelected = selectedDiscount?.id === disc.id;
+                      const estimatedPotongan = calculateDiscountAmount(disc, cartSubtotal);
+
+                      return (
+                        <div
+                          key={disc.id}
+                          onClick={() => {
+                            setSelectedDiscount(disc);
+                            setShowDiscountModal(false);
+                            notifySuccess(`Promo "${disc.name}" berhasil diterapkan`);
+                          }}
+                          style={{
+                            padding: '12px 14px',
+                            borderRadius: '12px',
+                            backgroundColor: isSelected ? 'rgba(216, 167, 68, 0.18)' : '#1c1d27',
+                            border: isSelected ? `1.5px solid ${goldColor}` : `1px solid ${borderColor}`,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <div className="d-flex justify-content-between align-items-start mb-1">
+                            <div className="fw-bold d-flex align-items-center gap-1" style={{ fontSize: '0.88rem', color: isSelected ? goldColor : '#f1f5f9' }}>
+                              {disc.name}
+                            </div>
+                            <span 
+                              style={{
+                                padding: '2px 8px',
+                                borderRadius: '6px',
+                                fontSize: '0.72rem',
+                                fontWeight: '700',
+                                backgroundColor: isPercent ? 'rgba(56, 189, 248, 0.15)' : 'rgba(216, 167, 68, 0.15)',
+                                color: isPercent ? '#38bdf8' : goldColor
+                              }}
+                            >
+                              {isPercent ? `${parseFloat(disc.value)}%` : `Rp ${parseFloat(disc.value).toLocaleString('id-ID')}`}
+                            </span>
+                          </div>
+
+                          <div className="d-flex justify-content-between align-items-center pt-1" style={{ fontSize: '0.75rem' }}>
+                            <span style={{ color: '#94a3b8' }}>
+                              Potongan: {isPercent ? `${parseFloat(disc.value)}%` : `Rp ${parseFloat(disc.value).toLocaleString('id-ID')}`}
+                            </span>
+                            <span style={{ color: '#22c55e', fontWeight: '700' }}>
+                              Hemat Rp {estimatedPotongan.toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-footer border-0 pt-0 px-4 pb-3 d-flex justify-content-between">
+                {selectedDiscount && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedDiscount(null);
+                      setShowDiscountModal(false);
+                      notifySuccess('Diskon dibatalkan');
+                    }}
+                    className="btn btn-sm btn-outline-danger"
+                    style={{ fontSize: '0.78rem', borderRadius: '8px' }}
+                  >
+                    Batal Pakai Diskon
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowDiscountModal(false)}
+                  className="btn btn-sm ms-auto"
+                  style={{ backgroundColor: '#222433', border: `1px solid ${borderColor}`, color: '#cbd5e1', borderRadius: '8px', fontSize: '0.78rem' }}
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ===== MODAL STRUK BUKTI TRANSAKSI KASIR ===== */}
       {completedOrder && (
         <div className="modal show d-block"
@@ -1005,7 +1299,19 @@ const KasirPOS = () => {
 
               {/* Total & Change */}
               <div className="pt-2 mb-3" style={{ fontSize: '0.85rem' }}>
-                <div className="d-flex justify-content-between fw-bold">
+                {completedOrder.discountAmount > 0 && (
+                  <>
+                    <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.8rem' }}>
+                      <span>Subtotal:</span>
+                      <span>Rp {completedOrder.subtotal.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="d-flex justify-content-between text-success" style={{ fontSize: '0.8rem', fontWeight: '600' }}>
+                      <span>Diskon ({completedOrder.discountName}):</span>
+                      <span>- Rp {completedOrder.discountAmount.toLocaleString('id-ID')}</span>
+                    </div>
+                  </>
+                )}
+                <div className="d-flex justify-content-between fw-bold pt-1" style={{ fontSize: '0.9rem', borderTop: completedOrder.discountAmount > 0 ? '1px dashed #cbd5e1' : 'none' }}>
                   <span>TOTAL:</span>
                   <span>Rp {completedOrder.totalAmount.toLocaleString('id-ID')}</span>
                 </div>

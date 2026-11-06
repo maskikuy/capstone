@@ -3,6 +3,28 @@ import baseLogger from './logger.js';
 
 const logger = baseLogger.child({ module: 'InitDB' });
 
+const safeQuery = async (conn, sql, params = []) => {
+    try {
+        return await conn.query(sql, params);
+    } catch (err) {
+        if (
+            err.code === 'ER_DUP_FIELDNAME' ||
+            err.errno === 1060 ||
+            err.code === 'ER_FK_DUP_NAME' ||
+            err.errno === 1826 ||
+            err.code === 'ER_CANT_DROP_FIELD_OR_KEY' ||
+            err.errno === 1091 ||
+            err.message?.includes('Duplicate column') ||
+            err.message?.includes('already exists')
+        ) {
+            logger.warn(`Notice during DB init: ${err.message}`);
+            return null;
+        }
+        logger.error(`Error during DB init query: ${err.message}`);
+        return null;
+    }
+};
+
 export const ensureInventoryTable = async () => {
     const createSql = `CREATE TABLE IF NOT EXISTS inventories (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -27,7 +49,12 @@ export const ensureInventoryTable = async () => {
 
     const conn = await db.getConnection();
     try {
-        // Create settings table
+        // 1. Create inventories table first
+        await conn.query(createSql);
+        await conn.query("ALTER TABLE inventories MODIFY COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'bahan_baku'");
+        logger.info('Ensured inventories table exists');
+
+        // 2. Create settings table
         await conn.query(`CREATE TABLE IF NOT EXISTS settings (
             setting_key VARCHAR(100) PRIMARY KEY,
             setting_value TEXT NOT NULL
@@ -53,37 +80,38 @@ export const ensureInventoryTable = async () => {
         logger.info('Ensured feedbacks table exists');
 
         // Ensure columns in products table
-        const [prodCols] = await conn.query("SHOW COLUMNS FROM products LIKE 'price_type'");
-        if (!prodCols || prodCols.length === 0) {
-            await conn.query("ALTER TABLE products ADD COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'retail', ADD COLUMN grosir_price_per_unit DECIMAL(10,2) DEFAULT 0.00, ADD COLUMN grosir_min_qty INT DEFAULT 0");
-            logger.info('Added missing grosir/retail columns to products table');
-        } else {
-            await conn.query("ALTER TABLE products MODIFY COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'retail'");
-        }
+        await safeQuery(conn, "ALTER TABLE products ADD COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'retail'");
+        await safeQuery(conn, "ALTER TABLE products ADD COLUMN grosir_price_per_unit DECIMAL(10,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE products ADD COLUMN grosir_min_qty INT DEFAULT 0");
+        await safeQuery(conn, "ALTER TABLE products MODIFY COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'retail'");
+        await safeQuery(conn, "ALTER TABLE products ADD COLUMN inventory_id INT NULL");
+        await safeQuery(conn, "ALTER TABLE products ADD CONSTRAINT fk_products_inventory FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE");
 
-        const [prodInvCols] = await conn.query("SHOW COLUMNS FROM products LIKE 'inventory_id'");
-        if (!prodInvCols || prodInvCols.length === 0) {
-            await conn.query("ALTER TABLE products ADD COLUMN inventory_id INT NULL");
-            await conn.query("ALTER TABLE products ADD CONSTRAINT fk_products_inventory FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE");
-            logger.info('Added inventory_id column to products table');
-        }
+        // Ensure columns in orders table for Payment Gateway (Midtrans & SumoPod QRIS) & Discounts
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN midtrans_order_id VARCHAR(100) NULL");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN midtrans_transaction_id VARCHAR(100) NULL");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN qris_image LONGTEXT NULL");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN sumopod_payment_id VARCHAR(100) NULL");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN payment_link_url TEXT NULL");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN discount_id INT NULL");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN discount_name VARCHAR(100) NULL");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN discount_amount DECIMAL(10,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN subtotal DECIMAL(10,2) NULL");
+        logger.info('Ensured orders columns exist');
 
-        // Ensure columns in orders table for Payment Gateway (Midtrans & SumoPod QRIS)
-        const [orderCols] = await conn.query("SHOW COLUMNS FROM orders LIKE 'midtrans_order_id'");
-        if (!orderCols || orderCols.length === 0) {
-            await conn.query("ALTER TABLE orders ADD COLUMN midtrans_order_id VARCHAR(100) NULL, ADD COLUMN midtrans_transaction_id VARCHAR(100) NULL, ADD COLUMN qris_image LONGTEXT NULL");
-            logger.info('Added midtrans columns to orders table');
-        }
-
-        const [sumopodCols] = await conn.query("SHOW COLUMNS FROM orders LIKE 'sumopod_payment_id'");
-        if (!sumopodCols || sumopodCols.length === 0) {
-            await conn.query("ALTER TABLE orders ADD COLUMN sumopod_payment_id VARCHAR(100) NULL, ADD COLUMN payment_link_url TEXT NULL");
-            logger.info('Added SumoPod columns to orders table');
-        }
-
-        await conn.query(createSql);
-        await conn.query("ALTER TABLE inventories MODIFY COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'bahan_baku'");
-        logger.info('Ensured inventories table exists');
+        // Create discounts table
+        await safeQuery(conn, `CREATE TABLE IF NOT EXISTS discounts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            type ENUM('percentage', 'fixed') NOT NULL DEFAULT 'percentage',
+            value DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+            min_order DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+            max_discount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB;`);
+        logger.info('Ensured discounts table exists');
 
         // Create product_recipes table
         await conn.query(`CREATE TABLE IF NOT EXISTS product_recipes (

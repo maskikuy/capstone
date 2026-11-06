@@ -7,6 +7,7 @@ import ProductList from './pages/admin/ProductList';
 import ProductForm from './pages/admin/ProductForm';
 import Inventory from './pages/admin/Inventory';
 import Categories from './pages/admin/Categories';
+import Discounts from './pages/admin/Discounts';
 import Users from './pages/admin/Users';
 import OrderHistory from './pages/admin/OrderHistory';
 import Dashboard from './pages/admin/Dashboard';
@@ -20,6 +21,7 @@ import PaymentQris from './pages/customer/PaymentQris';
 import CustomerAbout from './pages/customer/About';
 import NotFound from './pages/NotFound';
 import KasirPOS from './pages/kasir/POS';
+import Welcome from './pages/Welcome';
 
 const DashboardLayout = () => (
   <div style={{ minHeight: '100vh', backgroundColor: '#101116', color: '#f8fafc' }}>
@@ -56,7 +58,8 @@ function App() {
         }}
       />
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Welcome />} />
+        <Route path="/login" element={<Login />} />
 
         <Route path="/customer/menu" element={<CustomerMenu />} />
         <Route path="/customer/about" element={<CustomerAbout />} />
@@ -70,6 +73,7 @@ function App() {
           <Route path="/admin/product/new" element={<ProductForm />} />
           <Route path="/admin/product/edit/:id" element={<ProductForm />} />
           <Route path="/admin/categories" element={<Categories />} />
+          <Route path="/admin/discounts" element={<Discounts />} />
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/qr-codes" element={<QRCodeGenerator />} />
           <Route path="/admin/inventory" element={<Inventory />} />

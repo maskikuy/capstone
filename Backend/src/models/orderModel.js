@@ -10,6 +10,10 @@ export const getAllOrders = async (conn) => {
             o.table_number, 
             o.customer_name, 
             o.location, 
+            o.subtotal,
+            o.discount_id,
+            o.discount_name,
+            o.discount_amount,
             o.total_amount, 
             o.payment_method, 
             o.payment_status, 
@@ -39,6 +43,10 @@ export const getAllOrders = async (conn) => {
                 table_number: row.table_number,
                 customer_name: row.customer_name,
                 location: row.location,
+                subtotal: row.subtotal || row.total_amount,
+                discount_id: row.discount_id,
+                discount_name: row.discount_name,
+                discount_amount: parseFloat(row.discount_amount) || 0,
                 total_amount: row.total_amount,
                 payment_method: row.payment_method,
                 payment_status: row.payment_status,
@@ -88,6 +96,10 @@ export const getOrderById = async (conn, orderId) => {
             o.table_number, 
             o.customer_name, 
             o.location, 
+            o.subtotal,
+            o.discount_id,
+            o.discount_name,
+            o.discount_amount,
             o.total_amount, 
             o.payment_method, 
             o.payment_status, 
@@ -117,6 +129,10 @@ export const getOrderById = async (conn, orderId) => {
                 table_number: row.table_number,
                 customer_name: row.customer_name,
                 location: row.location,
+                subtotal: row.subtotal || row.total_amount,
+                discount_id: row.discount_id,
+                discount_name: row.discount_name,
+                discount_amount: parseFloat(row.discount_amount) || 0,
                 total_amount: row.total_amount,
                 payment_method: row.payment_method,
                 payment_status: row.payment_status,
@@ -159,8 +175,31 @@ export const getOrderById = async (conn, orderId) => {
 
 export const createOrder = async (conn, orderData) => {
     logger.debug(`Creating new order with data: ${JSON.stringify(orderData)}`);
-    const sql = 'INSERT INTO orders (table_number, customer_name, location, total_amount, payment_method, payment_status, order_status) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    const [result] = await conn.execute(sql, [orderData.table_number, orderData.customer_name, orderData.location, orderData.total_amount, orderData.payment_method, orderData.payment_status, orderData.order_status]);
+    const sql = `
+        INSERT INTO orders (
+            table_number, customer_name, location, 
+            subtotal, discount_id, discount_name, discount_amount, total_amount, 
+            payment_method, payment_status, order_status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const subtotal = orderData.subtotal !== undefined && orderData.subtotal !== null ? orderData.subtotal : orderData.total_amount;
+    const discountId = orderData.discount_id || null;
+    const discountName = orderData.discount_name || null;
+    const discountAmount = parseFloat(orderData.discount_amount) || 0;
+
+    const [result] = await conn.execute(sql, [
+        orderData.table_number, 
+        orderData.customer_name, 
+        orderData.location, 
+        subtotal,
+        discountId,
+        discountName,
+        discountAmount,
+        orderData.total_amount, 
+        orderData.payment_method, 
+        orderData.payment_status, 
+        orderData.order_status
+    ]);
     logger.info(`Order created with ID: ${result.insertId}`);
     return result.insertId;
 }
