@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import MenuDropdown from './MenuDropdown';
+import { Coffee, Utensils, ShoppingBag, Check } from 'lucide-react';
 
 const Menu = () => {
   const [searchParams] = useSearchParams();
@@ -681,79 +682,325 @@ const Menu = () => {
 
       {/* 6. Modal Pilihan Tipe Pesanan (Dine In / Take Away) */}
       {showDiningModal && (
-        <div 
-          className="modal show d-block" 
+        <div
+          className="modal show d-block dining-modal-overlay"
+          role="presentation"
           style={{
-            backgroundColor: 'rgba(0,0,0,0.85)',
+            backgroundColor: 'rgba(0,0,0,0.82)',
             zIndex: 1060,
-            backdropFilter: 'blur(8px)'
+            backdropFilter: 'blur(9px)',
+            overflowY: 'auto'
           }}
         >
-          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '420px' }}>
-            <div 
-              className="modal-content border-0 shadow-lg mx-3"
+          <div
+            className="modal-dialog modal-dialog-centered dining-modal-dialog"
+            style={{ maxWidth: '490px', minHeight: '100%', display: 'flex', alignItems: 'center' }}
+          >
+            <div
+              className="modal-content dining-modal-content border-0 shadow-lg mx-3"
               style={{
-                backgroundColor: '#161720',
-                border: '1px solid #23253a',
-                borderRadius: '20px',
+                background: 'radial-gradient(ellipse at top, rgba(216,167,68,0.10), transparent 48%), #161720',
+                border: '1px solid rgba(216,167,68,0.45)',
+                borderRadius: '22px',
                 overflow: 'hidden',
-                color: '#f1f5f9'
+                color: '#f1f5f9',
+                boxShadow: '0 22px 70px rgba(0,0,0,0.55), 0 0 30px rgba(216,167,68,0.08)'
               }}
             >
-              <div className="modal-body p-4 text-center">
-                <h5 className="fw-bold mb-1" style={{ color: '#f1f5f9' }}>
-                  Selamat Datang di Billion Cafe
-                </h5>
-                <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: '20px' }}>
-                  Silakan pilih metode pelayanan untuk pesanan Anda:
-                </p>
-                
-                <div className="d-grid gap-3">
-                  {/* Pilihan Dine In */}
-                  <div 
-                    className="p-3 text-start transition-all"
-                    style={{
-                      borderRadius: '14px',
-                      border: diningMethod === 'dine-in' ? '1.5px solid #d8a744' : '1px solid #282a36',
-                      backgroundColor: diningMethod === 'dine-in' ? 'rgba(216, 167, 68, 0.12)' : '#1c1d27',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => handleSelectDiningMethod('dine-in')}
-                  >
-                    <div>
-                      <h6 className="fw-bold mb-1" style={{ color: '#f1f5f9', fontSize: '0.95rem' }}>
-                        Makan di Sini
-                      </h6>
-                      <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
-                        Disajikan langsung di Meja {tableNumber}
-                      </small>
-                    </div>
-                  </div>
+              <div className="modal-body dining-modal-body">
 
-                  {/* Pilihan Take Away */}
-                  <div 
-                    className="p-3 text-start transition-all"
-                    style={{
-                      borderRadius: '14px',
-                      border: diningMethod === 'takeaway' ? '1.5px solid #d8a744' : '1px solid #282a36',
-                      backgroundColor: diningMethod === 'takeaway' ? 'rgba(216, 167, 68, 0.12)' : '#1c1d27',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => handleSelectDiningMethod('takeaway')}
-                  >
-                    <div>
-                      <h6 className="fw-bold mb-1" style={{ color: '#f1f5f9', fontSize: '0.95rem' }}>
-                        Bawa Pulang
-                      </h6>
-                      <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
-                        Dibungkus rapi untuk dibawa pulang
-                      </small>
-                    </div>
-                  </div>
+                <div className="dining-modal-brand-icon">
+                  <Coffee size={25} strokeWidth={1.6} />
                 </div>
+
+                <p className="dining-eyebrow">WELCOME TO</p>
+
+                <h5 className="dining-modal-title">
+                  Billion Cafe
+                </h5>
+
+                <div className="dining-title-divider">
+                  <span />
+                  <span className="dining-divider-dot" />
+                  <span />
+                </div>
+
+                <p className="dining-modal-subtitle">
+                  Silakan pilih metode pelayanan untuk pesanan Anda
+                </p>
+
+                <div className="dining-choice-list">
+                  {/* Makan di Sini */}
+                  <button
+                    type="button"
+                    className={`dining-choice-card ${diningMethod === 'dine-in' ? 'selected' : ''}`}
+                    onClick={() => handleSelectDiningMethod('dine-in')}
+                    aria-pressed={diningMethod === 'dine-in'}
+                  >
+                    <span className="dining-choice-check">
+                      {diningMethod === 'dine-in' && <Check size={13} strokeWidth={3} />}
+                    </span>
+
+                    <span className="dining-choice-icon">
+                      <Utensils size={26} strokeWidth={1.7} />
+                    </span>
+
+                    <span className="dining-choice-title">
+                      Makan di Sini
+                    </span>
+
+                    <span className="dining-choice-description">
+                      Disajikan langsung di Meja {tableNumber}
+                    </span>
+
+                    <span className="dining-choice-accent" />
+                  </button>
+
+                  {/* Bawa Pulang */}
+                  <button
+                    type="button"
+                    className={`dining-choice-card ${diningMethod === 'takeaway' ? 'selected' : ''}`}
+                    onClick={() => handleSelectDiningMethod('takeaway')}
+                    aria-pressed={diningMethod === 'takeaway'}
+                  >
+                    <span className="dining-choice-check">
+                      {diningMethod === 'takeaway' && <Check size={13} strokeWidth={3} />}
+                    </span>
+
+                    <span className="dining-choice-icon">
+                      <ShoppingBag size={26} strokeWidth={1.7} />
+                    </span>
+
+                    <span className="dining-choice-title">
+                      Bawa Pulang
+                    </span>
+
+                    <span className="dining-choice-description">
+                      Dibungkus untuk dibawa pulang
+                    </span>
+
+                    <span className="dining-choice-accent" />
+                  </button>
+                </div>
+
+                <p className="dining-modal-footer">
+                  Pilihan ini dapat diubah kembali melalui menu pesanan.
+                </p>
               </div>
             </div>
           </div>
+
+          <style>{`
+            .dining-modal-dialog {
+              width: 100%;
+              margin: 0 auto;
+              padding-top: 18px;
+              padding-bottom: 18px;
+            }
+
+            .dining-modal-body {
+              padding: 29px 30px 23px;
+              text-align: center;
+            }
+
+            .dining-modal-brand-icon {
+              width: 52px;
+              height: 52px;
+              margin: 0 auto 12px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border: 1px solid rgba(216,167,68,0.42);
+              border-radius: 50%;
+              color: #e3bd69;
+              background: radial-gradient(circle, rgba(216,167,68,0.17), rgba(216,167,68,0.04));
+            }
+
+            .dining-eyebrow {
+              margin: 0 0 3px;
+              color: #c9973b;
+              font-size: 10px;
+              font-weight: 800;
+              letter-spacing: 2.4px;
+            }
+
+            .dining-modal-title {
+              margin: 0;
+              color: #f8e4b0;
+              font-family: Georgia, 'Times New Roman', serif;
+              font-size: 27px;
+              font-weight: 700;
+              letter-spacing: 0.2px;
+            }
+
+            .dining-title-divider {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+              width: 70%;
+              margin: 15px auto 13px;
+            }
+
+            .dining-title-divider > span:not(.dining-divider-dot) {
+              height: 1px;
+              flex: 1;
+              background: linear-gradient(90deg, transparent, #c9973b);
+            }
+
+            .dining-title-divider > span:last-child {
+              background: linear-gradient(90deg, #c9973b, transparent);
+            }
+
+            .dining-divider-dot {
+              width: 6px;
+              height: 6px;
+              border-radius: 50%;
+              background: #e5bd65;
+              box-shadow: 0 0 8px rgba(229,189,101,0.4);
+            }
+
+            .dining-modal-subtitle {
+              margin: 0 0 22px;
+              color: #aab1c0;
+              font-size: 12.5px;
+              line-height: 1.5;
+            }
+
+            .dining-choice-list {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 13px;
+            }
+
+            .dining-choice-card {
+              position: relative;
+              width: 100%;
+              min-height: 176px;
+              padding: 20px 12px 18px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+              border: 1px solid #343444;
+              border-radius: 16px;
+              background: linear-gradient(145deg, #20212c, #191a24 75%);
+              color: #f1f5f9;
+              cursor: pointer;
+              transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+              overflow: hidden;
+            }
+
+            .dining-choice-card:hover {
+              border-color: rgba(216,167,68,0.72);
+              background: linear-gradient(145deg, #292638, #1b1c26 75%);
+              transform: translateY(-2px);
+              box-shadow: 0 8px 23px rgba(0,0,0,0.22);
+            }
+
+            .dining-choice-card.selected {
+              border: 1.5px solid #d8a744;
+              background: linear-gradient(145deg, rgba(216,167,68,0.16), #1c1d27 78%);
+              box-shadow: inset 0 0 0 1px rgba(216,167,68,0.08), 0 0 20px rgba(216,167,68,0.08);
+            }
+
+            .dining-choice-card:focus-visible {
+              outline: 2px solid #f0cf7a;
+              outline-offset: 3px;
+            }
+
+            .dining-choice-check {
+              position: absolute;
+              top: 10px;
+              right: 10px;
+              width: 21px;
+              height: 21px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border: 1px solid rgba(216,167,68,0.4);
+              border-radius: 50%;
+              color: #171717;
+              background: transparent;
+            }
+
+            .dining-choice-card.selected .dining-choice-check {
+              background: #d8a744;
+            }
+
+            .dining-choice-icon {
+              width: 54px;
+              height: 54px;
+              margin-bottom: 13px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border: 1px solid rgba(216,167,68,0.35);
+              border-radius: 15px;
+              color: #e0b65d;
+              background: rgba(216,167,68,0.09);
+            }
+
+            .dining-choice-title {
+              display: block;
+              margin-bottom: 7px;
+              color: #f6e5bd;
+              font-size: 15px;
+              font-weight: 800;
+              line-height: 1.25;
+            }
+
+            .dining-choice-description {
+              display: block;
+              max-width: 190px;
+              margin: 0 auto;
+              color: #aeb4c1;
+              font-size: 11.5px;
+              font-weight: 400;
+              line-height: 1.5;
+            }
+
+            .dining-choice-accent {
+              position: absolute;
+              bottom: 0;
+              left: 25%;
+              width: 50%;
+              height: 2px;
+              border-radius: 99px;
+              background: linear-gradient(90deg, transparent, #d8a744, transparent);
+              opacity: 0.7;
+            }
+
+            .dining-modal-footer {
+              margin: 19px 0 0;
+              color: #737d90;
+              font-size: 10.5px;
+              line-height: 1.5;
+            }
+
+            @media (max-width: 420px) {
+              .dining-modal-body {
+                padding: 25px 19px 20px;
+              }
+
+              .dining-choice-list {
+                grid-template-columns: 1fr;
+                gap: 11px;
+              }
+
+              .dining-choice-card {
+                min-height: 145px;
+                padding: 16px 12px;
+              }
+
+              .dining-choice-icon {
+                width: 47px;
+                height: 47px;
+                margin-bottom: 9px;
+              }
+            }
+          `}</style>
         </div>
       )}
 
