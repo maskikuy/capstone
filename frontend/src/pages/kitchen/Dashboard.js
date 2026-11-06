@@ -1,23 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import { ChefHat, CheckCircle2 } from 'lucide-react';
+import { ChefHat, CheckCircle2, Banknote } from 'lucide-react';
+import { notifySuccess, notifyError } from '../../utils/notify';
 
 const KitchenDashboard = () => {
   const [orders, setOrders] = useState([]);
 
-  // Setup Polling
+  // Setup Polling setiap 4 detik
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 5000);
+    const interval = setInterval(fetchOrders, 4000);
     return () => clearInterval(interval);
   }, []);
 
   const fetchOrders = async () => {
     try {
       const res = await api.get('/order');
-      const activeOrders = res.data.filter(o => 
-        o.order_status === 'pending' || o.order_status === 'processing'
-      );
+      // Filter: Pesanan hanya masuk jika transaksi sudah diselesaikan oleh customer!
+      // Jika pembayaran QRIS belum diselesaikan (belum paid), pesanan JANGAN masuk ke dashboard kasir
+      const activeOrders = res.data.filter(o => {
+        const isActive = o.order_status === 'pending' || o.order_status === 'processing';
+        if (!isActive) return false;
+
+        // QRIS: sebelum customer menyelesaikan transaksi/pembayaran, sembunyikan dari kasir
+        if (o.payment_method === 'qris' && o.payment_status !== 'paid') {
+          return false;
+        }
+
+        return true;
+      });
+
       activeOrders.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       setOrders(activeOrders);
     } catch (err) {
@@ -30,7 +42,18 @@ const KitchenDashboard = () => {
       await api.put(`/order/${id}/status`, { order_status: newStatus });
       fetchOrders();
     } catch (err) {
-      alert("Gagal update status pesanan.");
+      notifyError("Gagal update status pesanan.");
+    }
+  };
+
+  const handleConfirmPayment = async (id) => {
+    try {
+      await api.post(`/order/${id}/complete-transaction`);
+      notifySuccess(`Pembayaran pesanan #${id} berhasil dikonfirmasi!`);
+      fetchOrders();
+    } catch (err) {
+      console.error('Error konfirmasi kasir:', err);
+      notifyError("Gagal konfirmasi pembayaran kasir.");
     }
   };
 
@@ -63,7 +86,7 @@ const KitchenDashboard = () => {
             }}
           >
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }} />
-            Live Sync: 5s
+            Live Sync: 4s
           </span>
         </div>
       </div>
@@ -87,7 +110,7 @@ const KitchenDashboard = () => {
                 Semua Pesanan Selesai
               </h5>
               <p style={{ color: '#94a3b8', fontSize: '13.5px', margin: 0 }}>
-                Belum ada pesanan aktif saat ini. Santai dulu sejenak ☕
+                Belum ada pesanan aktif saat ini. Menunggu pesanan dari customer ☕
               </p>
             </div>
           </div>
@@ -163,7 +186,7 @@ const KitchenDashboard = () => {
                       {order.customer_name}
                     </span>
                     <span style={{ fontSize: '11px', color: '#94a3b8', backgroundColor: '#0d0e17', padding: '2px 8px', borderRadius: '4px' }}>
-                      {order.location || 'Dine-In'}
+                      {order.location || 'Dine-In'} • {order.payment_method === 'qris' ? 'QRIS' : 'Tunai'}
                     </span>
                   </div>
 
@@ -220,30 +243,59 @@ const KitchenDashboard = () => {
                 {/* Footer Action */}
                 <div style={{ padding: '12px 16px', borderTop: '1px solid #23253a', backgroundColor: '#13141d' }}>
                   {order.order_status === 'pending' && (
-                    <button 
-                      onClick={() => updateOrderStatus(order.id, 'processing')}
-                      style={{
-                        backgroundColor: '#c9973b',
-                        color: '#101116',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '10px',
-                        width: '100%',
-                        fontWeight: '700',
-                        fontSize: '13px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        transition: 'background-color 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d8a744'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9973b'; }}
-                    >
-                      <ChefHat size={16} />
-                      <span>Mulai Masak</span>
-                    </button>
+                    <>
+                      {isPaid ? (
+                        <button 
+                          onClick={() => updateOrderStatus(order.id, 'processing')}
+                          style={{
+                            backgroundColor: '#c9973b',
+                            color: '#101116',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '10px',
+                            width: '100%',
+                            fontWeight: '700',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            transition: 'background-color 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d8a744'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9973b'; }}
+                        >
+                          <ChefHat size={16} />
+                          <span>Mulai Masak</span>
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleConfirmPayment(order.id)}
+                          style={{
+                            backgroundColor: '#0284c7',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '10px',
+                            width: '100%',
+                            fontWeight: '700',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            transition: 'background-color 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#0369a1'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#0284c7'; }}
+                        >
+                          <Banknote size={16} />
+                          <span>Terima Tunai & Siap Masak</span>
+                        </button>
+                      )}
+                    </>
                   )}
 
                   {order.order_status === 'processing' && (
