@@ -809,17 +809,26 @@ const Menu = () => {
                 </div>
 
                 {/* Tombol Tentang Kami */}
-                <button
-                  type="button"
-                  className="dining-about-trigger"
-                  onClick={() => setShowAboutModal(true)}
-                >
-                  <span className="dining-about-trigger-icon">
-                    <Info size={17} />
-                  </span>
-                  <span>Tentang Kami</span>
-                  <span className="dining-about-trigger-arrow">Lihat profil tim</span>
-                </button>
+                  <button
+                    type="button"
+                    className="dining-about-trigger"
+                    onClick={() => setShowAboutModal(true)}
+                    aria-label="Buka informasi tentang tim Billion Cafe"
+                  >
+                    <span className="dining-about-trigger-icon">
+                      <Info size={20} strokeWidth={1.8} />
+                    </span>
+
+                    <span className="dining-about-trigger-content">
+                      <span className="dining-about-trigger-title">
+                        Tentang Kami
+                      </span>
+                    </span>
+
+                    <span className="dining-about-trigger-arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </button>
 
                 <p className="dining-modal-footer">
                   Pilihan ini dapat diubah kembali melalui menu pesanan.
