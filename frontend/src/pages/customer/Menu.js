@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import MenuDropdown from './MenuDropdown';
-import { Coffee, Utensils, ShoppingBag, Check } from 'lucide-react';
+import { Coffee, Utensils, ShoppingBag, Check, X, Mail, HeartHandshake, Info } from 'lucide-react';
 
 const Menu = () => {
   const [searchParams] = useSearchParams();
@@ -29,6 +29,19 @@ const Menu = () => {
   const [showDiningModal, setShowDiningModal] = useState(() => {
     return !localStorage.getItem('wow_location');
   });
+  const [showAboutModal, setShowAboutModal] = useState(false);
+
+  // Tutup popup About dengan tombol Escape
+  useEffect(() => {
+    if (!showAboutModal) return undefined;
+
+    const handleAboutEscape = (event) => {
+      if (event.key === 'Escape') setShowAboutModal(false);
+    };
+
+    window.addEventListener('keydown', handleAboutEscape);
+    return () => window.removeEventListener('keydown', handleAboutEscape);
+  }, [showAboutModal]);
 
   // State Riwayat Pesanan
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -783,6 +796,19 @@ const Menu = () => {
                   </button>
                 </div>
 
+                {/* Tombol Tentang Kami di bawah pilihan layanan */}
+                <button
+                  type="button"
+                  className="dining-about-trigger"
+                  onClick={() => setShowAboutModal(true)}
+                >
+                  <span className="dining-about-trigger-icon">
+                    <Info size={17} />
+                  </span>
+                  <span>Tentang Kami</span>
+                  <span className="dining-about-trigger-arrow">Lihat profil tim</span>
+                </button>
+
                 <p className="dining-modal-footer">
                   Pilihan ini dapat diubah kembali melalui menu pesanan.
                 </p>
@@ -972,8 +998,48 @@ const Menu = () => {
               opacity: 0.7;
             }
 
+            .dining-about-trigger {
+              width: 100%;
+              min-height: 43px;
+              margin-top: 15px;
+              padding: 9px 13px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 9px;
+              position: relative;
+              border: 1px solid rgba(216,167,68,0.38);
+              border-radius: 11px;
+              background: linear-gradient(110deg, rgba(216,167,68,0.08), rgba(216,167,68,0.025));
+              color: #e5bd65;
+              font-size: 12.5px;
+              font-weight: 700;
+              cursor: pointer;
+              transition: background 0.2s ease, border-color 0.2s ease;
+            }
+
+            .dining-about-trigger:hover {
+              border-color: rgba(216,167,68,0.75);
+              background: rgba(216,167,68,0.13);
+            }
+
+            .dining-about-trigger-icon {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              color: #d8a744;
+            }
+
+            .dining-about-trigger-arrow {
+              position: absolute;
+              right: 12px;
+              color: #81899a;
+              font-size: 10px;
+              font-weight: 500;
+            }
+
             .dining-modal-footer {
-              margin: 19px 0 0;
+              margin: 14px 0 0;
               color: #737d90;
               font-size: 10.5px;
               line-height: 1.5;
@@ -1004,7 +1070,546 @@ const Menu = () => {
         </div>
       )}
 
-      {/* 7. Modal Riwayat Pesanan */}
+      {/* 7. Modal Tentang Kami: tampil di atas popup pilihan layanan */}
+      {showAboutModal && (
+        <div
+          className="about-modal-overlay"
+          role="presentation"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setShowAboutModal(false);
+          }}
+        >
+          <div
+            className="about-modal-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="aboutModalTitle"
+          >
+            <header className="about-modal-header">
+              <div className="about-modal-header-title">
+                <span className="about-modal-header-icon">
+                  <Coffee size={18} />
+                </span>
+                <div>
+                  <h5 id="aboutModalTitle">Tentang Kami</h5>
+                  <p>Billion Cafe · Capstone Project</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="about-modal-close"
+                onClick={() => setShowAboutModal(false)}
+                aria-label="Tutup Tentang Kami"
+              >
+                <X size={20} />
+              </button>
+            </header>
+
+            <div className="about-modal-body">
+
+              {/* Identitas Universitas */}
+              <section className="about-identity-card">
+                <div className="about-logo-row">
+                  <img
+                    src="/images/logo-umy.png"
+                    alt="Logo Universitas Muhammadiyah Yogyakarta"
+                    className="about-umy-logo"
+                  />
+
+                  <span className="about-logo-separator" />
+
+                  <img
+                    src="/images/logo-ti-umy.png"
+                    alt="Logo Teknologi Informasi UMY"
+                    className="about-ti-logo"
+                  />
+                </div>
+
+                <span className="about-project-badge">CAPSTONE PROJECT</span>
+
+                <h2>Billion Cafe</h2>
+
+                <p>
+                  Kami merupakan tim pengembang yang merancang dan mengembangkan
+                  sistem informasi Billion Cafe sebagai bagian dari Capstone Project.
+                  Melalui pengembangan sistem ini, kami berupaya menghadirkan solusi
+                  digital yang mendukung proses pemesanan mandiri serta pengelolaan
+                  inventaris cafe berbasis web.
+                </p>
+              </section>
+
+              {/* Foto Bersama Tim */}
+              <section className="about-team-section">
+                <div className="about-section-heading">
+                  <span>OUR TEAM</span>
+                  <h4>Tim Pengembang</h4>
+                  <p>Bersama membangun inovasi melalui kolaborasi dan teknologi.</p>
+                </div>
+
+                <div className="about-team-photo-card">
+                  <img
+                    src="/images/team-kami.jpg"
+                    alt="Foto bersama Tim Pengembang Billion Cafe"
+                  />
+                </div>
+              </section>
+
+              {/* Hubungi Tim Kami */}
+              <section className="about-contact-card">
+                <div className="about-contact-icon">
+                  <Mail size={21} />
+                </div>
+
+                <h5>Hubungi Tim Kami</h5>
+
+                <div className="about-gold-divider" />
+
+                <a href="mailto:sarimicapstone@gmail.com">
+                  sarimicapstone@gmail.com
+                </a>
+              </section>
+
+              {/* Ucapan Terima Kasih */}
+              <section className="about-thanks-card">
+                <div className="about-thanks-icon">
+                  <HeartHandshake size={34} strokeWidth={1.6} />
+                </div>
+
+                <h4>Ucapan Terima Kasih</h4>
+
+                <p>
+                  Segala puji dan syukur kami panjatkan ke hadirat Allah SWT atas
+                  rahmat, karunia, kesehatan, dan kemudahan yang telah diberikan
+                  sehingga kami dapat menyelesaikan proses pengembangan sistem
+                  Billion Cafe ini.
+                </p>
+
+                <p>
+                  Kami mengucapkan terima kasih kepada orang tua dan keluarga
+                  atas doa, kasih sayang, serta dukungan yang tidak pernah
+                  berhenti diberikan selama proses pengerjaan proyek ini.
+                </p>
+
+                <p>
+                  Terima kasih juga kepada teman-teman dan seluruh pihak yang
+                  telah memberikan bantuan, semangat, masukan, serta dukungan,
+                  baik secara langsung maupun tidak langsung, sehingga proyek
+                  ini dapat terselesaikan.
+                </p>
+
+                <p>
+                  Setiap proses dan tantangan yang kami lalui menjadi pengalaman
+                  serta pembelajaran berharga bagi kami. Semoga sistem yang
+                  dikembangkan dapat memberikan manfaat dan menjadi langkah
+                  kecil dalam mendukung digitalisasi layanan Billion Cafe.
+                </p>
+
+                <div className="about-thanks-divider" />
+
+                <h6>With Gratitude,</h6>
+                <span>Tim Pengembang Billion Cafe</span>
+              </section>
+
+              <footer className="about-modal-footer">
+                <p>Billion Cafe · Capstone Project</p>
+                <span>Teknologi Informasi · Universitas Muhammadiyah Yogyakarta</span>
+              </footer>
+
+            </div>
+          </div>
+
+          <style>{`
+            .about-modal-overlay {
+              position: fixed;
+              inset: 0;
+              z-index: 1080;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 14px;
+              background: rgba(0,0,0,0.84);
+              backdrop-filter: blur(9px);
+              -webkit-backdrop-filter: blur(9px);
+            }
+
+            .about-modal-dialog {
+              display: flex;
+              flex-direction: column;
+              width: 100%;
+              max-width: 760px;
+              max-height: 91vh;
+              overflow: hidden;
+              background: #101116;
+              border: 1px solid rgba(216,167,68,0.38);
+              border-radius: 18px;
+              box-shadow: 0 24px 75px rgba(0,0,0,0.65);
+              animation: aboutModalEnter 0.2s ease-out;
+            }
+
+            @keyframes aboutModalEnter {
+              from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.985);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+              }
+            }
+
+            .about-modal-header {
+              position: relative;
+              z-index: 2;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 12px;
+              padding: 15px 19px;
+              background: #161720;
+              border-bottom: 1px solid #292b3a;
+            }
+
+            .about-modal-header-title {
+              display: flex;
+              align-items: center;
+              gap: 11px;
+              min-width: 0;
+            }
+
+            .about-modal-header-icon {
+              width: 38px;
+              height: 38px;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #e3bd69;
+              border: 1px solid rgba(216,167,68,0.35);
+              border-radius: 11px;
+              background: rgba(216,167,68,0.09);
+            }
+
+            .about-modal-header h5 {
+              margin: 0 0 3px;
+              color: #f1f5f9;
+              font-size: 15px;
+              font-weight: 700;
+            }
+
+            .about-modal-header p {
+              margin: 0;
+              color: #8791a3;
+              font-size: 10.5px;
+            }
+
+            .about-modal-close {
+              width: 36px;
+              height: 36px;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #cbd5e1;
+              background: #222433;
+              border: 1px solid #343749;
+              border-radius: 10px;
+              cursor: pointer;
+              transition: background 0.2s ease, color 0.2s ease;
+            }
+
+            .about-modal-close:hover {
+              color: #fff;
+              background: #343749;
+            }
+
+            .about-modal-body {
+              overflow-y: auto;
+              overscroll-behavior: contain;
+              padding: 20px;
+              scrollbar-width: thin;
+              scrollbar-color: #55505a #15161e;
+            }
+
+            .about-identity-card,
+            .about-contact-card,
+            .about-thanks-card {
+              background: #161720;
+              border: 1px solid #292b3b;
+              border-radius: 16px;
+            }
+
+            .about-identity-card {
+              padding: 25px 22px;
+              text-align: center;
+              margin-bottom: 22px;
+            }
+
+            .about-logo-row {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 23px;
+              margin-bottom: 20px;
+            }
+
+            .about-umy-logo {
+              width: 82px;
+              height: 82px;
+              object-fit: contain;
+            }
+
+            .about-ti-logo {
+              width: 94px;
+              height: 94px;
+              object-fit: contain;
+            }
+
+            .about-logo-separator {
+              width: 1px;
+              height: 62px;
+              background: #383b4d;
+            }
+
+            .about-project-badge {
+              display: inline-block;
+              padding: 5px 12px;
+              margin-bottom: 12px;
+              color: #d8a744;
+              background: rgba(216,167,68,0.1);
+              border: 1px solid rgba(216,167,68,0.3);
+              border-radius: 20px;
+              font-size: 10px;
+              font-weight: 700;
+              letter-spacing: 1px;
+            }
+
+            .about-identity-card h2 {
+              margin: 0 0 10px;
+              color: #f1f5f9;
+              font-size: 25px;
+              font-weight: 700;
+            }
+
+            .about-identity-card p {
+              max-width: 570px;
+              margin: 0 auto;
+              color: #94a3b8;
+              font-size: 12px;
+              line-height: 1.85;
+            }
+
+            .about-team-section {
+              margin-bottom: 22px;
+            }
+
+            .about-section-heading {
+              margin-bottom: 13px;
+              text-align: center;
+            }
+
+            .about-section-heading > span {
+              color: #d8a744;
+              font-size: 10px;
+              font-weight: 700;
+              letter-spacing: 1.5px;
+            }
+
+            .about-section-heading h4 {
+              margin: 5px 0 6px;
+              color: #f1f5f9;
+              font-size: 19px;
+              font-weight: 700;
+            }
+
+            .about-section-heading p {
+              margin: 0;
+              color: #94a3b8;
+              font-size: 11.5px;
+            }
+
+            .about-team-photo-card {
+              padding: 9px;
+              overflow: hidden;
+              background: #161720;
+              border: 1px solid #292b3b;
+              border-radius: 16px;
+            }
+
+            .about-team-photo-card img {
+              display: block;
+              width: 100%;
+              max-height: 360px;
+              min-height: 170px;
+              object-fit: cover;
+              object-position: center;
+              border-radius: 10px;
+            }
+
+            .about-contact-card {
+              padding: 23px 18px;
+              margin-bottom: 22px;
+              text-align: center;
+            }
+
+            .about-contact-icon {
+              width: 43px;
+              height: 43px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 12px;
+              color: #e0b65d;
+              background: rgba(216,167,68,0.1);
+              border: 1px solid rgba(216,167,68,0.3);
+              border-radius: 13px;
+            }
+
+            .about-contact-card h5 {
+              margin: 0 0 12px;
+              color: #f1f5f9;
+              font-size: 17px;
+              font-weight: 700;
+            }
+
+            .about-gold-divider {
+              width: 65px;
+              height: 2px;
+              margin: 0 auto 13px;
+              border-radius: 2px;
+              background: linear-gradient(90deg, #9c6e26, #f2d58a, #b6812c);
+            }
+
+            .about-contact-card a {
+              color: #cbd5e1;
+              font-size: 12.5px;
+              font-weight: 500;
+              text-decoration: none;
+              overflow-wrap: anywhere;
+            }
+
+            .about-contact-card a:hover {
+              color: #e5bd65;
+            }
+
+            .about-thanks-card {
+              padding: 28px 25px;
+              border-color: #38312a;
+              text-align: center;
+              box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            }
+
+            .about-thanks-icon {
+              width: 62px;
+              height: 62px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 17px;
+              color: #d8a744;
+              background: rgba(216,167,68,0.12);
+              border: 1px solid rgba(216,167,68,0.3);
+              border-radius: 50%;
+            }
+
+            .about-thanks-card h4 {
+              margin: 0 0 17px;
+              color: #d8a744;
+              font-size: 20px;
+              font-weight: 700;
+            }
+
+            .about-thanks-card p {
+              margin: 0 0 12px;
+              color: #cbd5e1;
+              font-size: 12px;
+              line-height: 1.85;
+            }
+
+            .about-thanks-divider {
+              width: 55px;
+              height: 2px;
+              margin: 22px auto 13px;
+              background: linear-gradient(90deg, #9c6e26, #f2d58a, #b6812c);
+            }
+
+            .about-thanks-card h6 {
+              margin: 0 0 5px;
+              color: #f1f5f9;
+              font-size: 13px;
+              font-weight: 700;
+            }
+
+            .about-thanks-card > span {
+              color: #d8a744;
+              font-size: 12px;
+              font-weight: 600;
+            }
+
+            .about-modal-footer {
+              padding: 17px 0 2px;
+              text-align: center;
+            }
+
+            .about-modal-footer p {
+              margin: 0 0 4px;
+              color: #64748b;
+              font-size: 10px;
+            }
+
+            .about-modal-footer span {
+              color: #475569;
+              font-size: 9px;
+            }
+
+            @media (max-width: 520px) {
+              .about-modal-overlay {
+                padding: 8px;
+              }
+
+              .about-modal-dialog {
+                max-height: 94vh;
+                border-radius: 15px;
+              }
+
+              .about-modal-body {
+                padding: 13px;
+              }
+
+              .about-identity-card {
+                padding: 20px 14px;
+              }
+
+              .about-umy-logo {
+                width: 68px;
+                height: 68px;
+              }
+
+              .about-ti-logo {
+                width: 78px;
+                height: 78px;
+              }
+
+              .about-logo-row {
+                gap: 15px;
+              }
+
+              .about-thanks-card {
+                padding: 24px 17px;
+              }
+
+              .about-team-photo-card img {
+                min-height: 150px;
+                max-height: 260px;
+              }
+            }
+          `}</style>
+        </div>
+      )}
+
+      {/* 8. Modal Riwayat Pesanan */}
       {showHistoryModal && (
         <div 
           className="modal show d-block" 
