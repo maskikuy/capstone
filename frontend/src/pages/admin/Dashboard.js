@@ -1,54 +1,64 @@
+
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { Link } from 'react-router-dom';
-import { 
-  Banknote, 
-  FileText, 
-  Users, 
-  Clock, 
-  ChevronRight, 
-  Calendar, 
-  Search, 
-  X, 
-  ArrowUpRight, 
-  Receipt, 
-  CheckCircle2, 
-  Filter,
-  Eye,
-  ShoppingBag
+import {
+  Banknote,
+  FileText,
+  Users,
+  Clock,
+  ChevronRight,
+  Search,
+  X,
+  ArrowUpRight,
+  Receipt,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip
+} from 'recharts';
 
 const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ];
 
+const formatRupiah = (value) =>
+  `Rp ${Number(value || 0).toLocaleString('id-ID')}`;
+
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Periode omzet: 'today' | 'week' | 'month' | 'custom_month'
   const [period, setPeriod] = useState('today');
-  
-  // Custom month picker (format: 'YYYY-MM')
+
   const now = new Date();
   const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const [customMonth, setCustomMonth] = useState(currentYearMonth);
 
-  // State Modal Detail Omzet
+  // Modal Detail Omzet
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [modalSearch, setModalSearch] = useState('');
   const [modalPaymentFilter, setModalPaymentFilter] = useState('all');
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
+  // Fetch Data
   const fetchData = useCallback(async () => {
     try {
       const [orderRes, productRes] = await Promise.all([
         api.get('/order'),
-        api.get('/product'),
+        api.get('/product')
       ]);
+
       setOrders(orderRes.data || []);
       setProducts(productRes.data || []);
     } catch (err) {
@@ -62,22 +72,25 @@ const Dashboard = () => {
     fetchData();
   }, [fetchData]);
 
-  // Keyboard escape listener untuk modal
+  // Escape untuk menutup modal
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && showDetailModal) {
         setShowDetailModal(false);
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showDetailModal]);
 
-  // Helper untuk mengecek apakah tanggal order masuk ke periode yang dipilih
+  // Pemeriksaan Periode
   const isOrderInPeriod = useCallback((orderDateStr, currentPeriod, chosenMonthStr) => {
     if (!orderDateStr) return false;
+
     const d = new Date(orderDateStr);
     if (isNaN(d.getTime())) return false;
+
     const today = new Date();
 
     if (currentPeriod === 'today') {
@@ -92,6 +105,7 @@ const Dashboard = () => {
       const sevenDaysAgo = new Date(today);
       sevenDaysAgo.setDate(today.getDate() - 6);
       sevenDaysAgo.setHours(0, 0, 0, 0);
+
       return d >= sevenDaysAgo && d <= today;
     }
 
@@ -104,6 +118,7 @@ const Dashboard = () => {
 
     if (currentPeriod === 'custom_month' && chosenMonthStr) {
       const [year, month] = chosenMonthStr.split('-').map(Number);
+
       return (
         d.getFullYear() === year &&
         d.getMonth() === month - 1
@@ -113,75 +128,93 @@ const Dashboard = () => {
     return true;
   }, []);
 
-  // Title label sesuai periode
   const getPeriodTitle = useCallback(() => {
     const currDate = new Date();
+
     if (period === 'today') return 'OMZET HARI INI';
     if (period === 'week') return 'OMZET 7 HARI TERAKHIR';
     if (period === 'month') return `OMZET BULAN INI (${MONTH_NAMES[currDate.getMonth()]})`;
+
     if (period === 'custom_month') {
       const [year, month] = customMonth.split('-').map(Number);
-      const mName = MONTH_NAMES[month - 1] || '';
-      return `OMZET ${mName.toUpperCase()} ${year}`;
+      return `OMZET ${(MONTH_NAMES[month - 1] || '').toUpperCase()} ${year}`;
     }
+
     return 'OMZET';
   }, [period, customMonth]);
 
   const getPeriodLabelFormatted = useCallback(() => {
     const currDate = new Date();
+
     if (period === 'today') {
-      return currDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      return currDate.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
     }
-    if (period === 'week') {
-      return '7 Hari Terakhir';
-    }
+
+    if (period === 'week') return '7 Hari Terakhir';
+
     if (period === 'month') {
       return `${MONTH_NAMES[currDate.getMonth()]} ${currDate.getFullYear()}`;
     }
+
     if (period === 'custom_month') {
       const [year, month] = customMonth.split('-').map(Number);
       return `${MONTH_NAMES[month - 1] || ''} ${year}`;
     }
+
     return '';
   }, [period, customMonth]);
 
-  // Filter pesanan sesuai periode
+  // Filter Pesanan Periode
   const periodOrders = useMemo(() => {
-    return orders.filter((o) => isOrderInPeriod(o.created_at, period, customMonth));
+    return orders.filter((o) =>
+      isOrderInPeriod(o.created_at, period, customMonth)
+    );
   }, [orders, period, customMonth, isOrderInPeriod]);
 
-  // Pesanan yang berstatus 'paid' (menyumbang omzet)
+  // Pesanan Lunas
   const periodPaidOrders = useMemo(() => {
     return periodOrders.filter((o) => o.payment_status === 'paid');
   }, [periodOrders]);
 
-  // Total nominal omzet
+  // Total Omzet
   const periodRevenue = useMemo(() => {
-    return periodPaidOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0);
+    return periodPaidOrders.reduce(
+      (sum, o) => sum + (parseFloat(o.total_amount) || 0),
+      0
+    );
   }, [periodPaidOrders]);
 
-  // Filter pesanan di dalam Modal
+  // Filter Modal
   const modalOrders = useMemo(() => {
     let result = periodPaidOrders;
 
     if (modalPaymentFilter !== 'all') {
       result = result.filter((o) => {
         const pm = (o.payment_method || '').toLowerCase();
+
         if (modalPaymentFilter === 'qris') return pm === 'qris';
         if (modalPaymentFilter === 'cash') return pm === 'cash' || pm === 'tunai';
+
         return true;
       });
     }
 
     if (modalSearch.trim()) {
       const q = modalSearch.toLowerCase().trim();
+
       result = result.filter((o) => {
         const idMatch = String(o.id).includes(q);
         const nameMatch = (o.customer_name || '').toLowerCase().includes(q);
         const tableMatch = String(o.table_number || '').includes(q);
-        const itemMatch = (o.items || []).some((it) => 
+
+        const itemMatch = (o.items || []).some((it) =>
           (it.product_name || '').toLowerCase().includes(q)
         );
+
         return idMatch || nameMatch || tableMatch || itemMatch;
       });
     }
@@ -189,28 +222,30 @@ const Dashboard = () => {
     return result;
   }, [periodPaidOrders, modalPaymentFilter, modalSearch]);
 
-  // Antrean dapur (pending / processing)
+  // Antrean Dapur
   const activeOrdersCount = useMemo(() => {
     return orders.filter(
       (o) => o.order_status === 'pending' || o.order_status === 'processing'
     ).length;
   }, [orders]);
 
-  // Menu habis
+  // Menu Habis
   const unavailableItemsCount = useMemo(() => {
-    return products.filter((p) => p.is_available === 0 || p.is_available === false).length;
+    return products.filter(
+      (p) => p.is_available === 0 || p.is_available === false
+    ).length;
   }, [products]);
 
-  // Top products preview
+  // Preview Menu
   const topProducts = useMemo(() => {
     return products.slice(0, 4);
   }, [products]);
 
-  // Perhitungan Data Tren Penjualan
+  // Data Grafik Penjualan
   const chartData = useMemo(() => {
     if (period === 'month' || period === 'custom_month') {
       let targetYear = now.getFullYear();
-      let targetMonth = now.getMonth(); // 0-indexed
+      let targetMonth = now.getMonth();
 
       if (period === 'custom_month' && customMonth) {
         const [y, m] = customMonth.split('-').map(Number);
@@ -218,35 +253,44 @@ const Dashboard = () => {
         targetMonth = m - 1;
       }
 
-      // Hitung jumlah hari dalam bulan
-      const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+      const daysInMonth = new Date(
+        targetYear,
+        targetMonth + 1,
+        0
+      ).getDate();
 
       return [...Array(daysInMonth)].map((_, i) => {
         const day = i + 1;
+
         const omzet = orders
           .filter((o) => {
             if (o.payment_status !== 'paid') return false;
+
             const d = new Date(o.created_at);
+
             return (
               d.getFullYear() === targetYear &&
               d.getMonth() === targetMonth &&
               d.getDate() === day
             );
           })
-          .reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0);
+          .reduce(
+            (sum, o) => sum + (parseFloat(o.total_amount) || 0),
+            0
+          );
 
         return {
           name: `${day}`,
           fullDate: `${day} ${MONTH_NAMES[targetMonth]} ${targetYear}`,
-          omzet,
+          omzet
         };
       });
     }
 
-    // Default: 7 Hari Terakhir
     return [...Array(7)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
+
       const fullDateStr = d.toLocaleDateString('id-ID');
       const day = d.getDate();
       const month = d.getMonth() + 1;
@@ -257,29 +301,43 @@ const Dashboard = () => {
             new Date(o.created_at).toLocaleDateString('id-ID') === fullDateStr &&
             o.payment_status === 'paid'
         )
-        .reduce((sum, o) => sum + (parseFloat(o.total_amount) || 0), 0);
+        .reduce(
+          (sum, o) => sum + (parseFloat(o.total_amount) || 0),
+          0
+        );
 
       return {
         name: `${day}/${month}`,
-        fullDate: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-        omzet,
+        fullDate: d.toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        }),
+        omzet
       };
     });
   }, [period, customMonth, orders, now]);
 
   const chartTitle = useMemo(() => {
-    if (period === 'month') return `Tren Penjualan Harian (${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()})`;
+    if (period === 'month') {
+      return `Tren Penjualan Harian (${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()})`;
+    }
+
     if (period === 'custom_month') {
       const [year, month] = customMonth.split('-').map(Number);
       return `Tren Penjualan Harian (${MONTH_NAMES[month - 1]} ${year})`;
     }
+
     return 'Tren Penjualan (7 Hari Terakhir)';
   }, [period, customMonth, now]);
 
+  // Format Tanggal
   const formatDateTime = (dateStr) => {
     if (!dateStr) return '-';
+
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return String(dateStr);
+
     return d.toLocaleDateString('id-ID', {
       day: '2-digit',
       month: 'short',
@@ -291,29 +349,49 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
-        <div className="spinner-border" style={{ color: '#e5a83b' }} role="status" />
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: '60vh' }}
+      >
+        <div
+          className="spinner-border"
+          style={{ color: '#d8a744' }}
+          role="status"
+        />
       </div>
     );
   }
 
   return (
-    <div style={{ backgroundColor: '#101116', color: '#f8fafc', paddingBottom: '30px' }}>
-      
-      {/* Header Dashboard & Filter Periode */}
+    <div style={{
+      backgroundColor: '#101116',
+      color: '#f8fafc',
+      paddingBottom: '30px'
+    }}>
+
+      {/* HEADER DASHBOARD */}
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 pt-3 pb-3 mb-2">
         <div>
-          <h3 style={{ color: '#f1f5f9', fontWeight: '700', fontSize: '1.45rem', margin: 0 }}>
+          <h3 style={{
+            color: '#f1f5f9',
+            fontWeight: '700',
+            fontSize: '1.45rem',
+            margin: 0
+          }}>
             Dashboard Admin
           </h3>
-          <small style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
+
+          <small style={{
+            color: '#94a3b8',
+            fontSize: '0.82rem'
+          }}>
             Pantau dan sesuaikan laporan omzet penjualan restoran
           </small>
         </div>
 
-        {/* Filter Periode Buttons */}
+        {/* Filter Periode */}
         <div className="d-flex align-items-center gap-2 flex-wrap">
-          <div 
+          <div
             className="d-flex align-items-center p-1"
             style={{
               backgroundColor: '#171821',
@@ -337,9 +415,8 @@ const Dashboard = () => {
                   padding: '6px 14px',
                   fontSize: '12px',
                   fontWeight: period === tab.key ? '700' : '500',
-                  backgroundColor: period === tab.key ? '#10b981' : 'transparent',
-                  color: period === tab.key ? '#090a0f' : '#94a3b8',
-                  transition: 'all 0.15s ease',
+                  backgroundColor: period === tab.key ? '#d8a744' : 'transparent',
+                  color: period === tab.key ? '#101116' : '#94a3b8',
                   cursor: 'pointer'
                 }}
               >
@@ -348,43 +425,46 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Input Picker Bulan jika 'Pilih Bulan' aktif */}
           {period === 'custom_month' && (
-            <div className="d-flex align-items-center gap-2">
-              <input
-                type="month"
-                value={customMonth}
-                onChange={(e) => setCustomMonth(e.target.value)}
-                className="form-control form-control-sm"
-                style={{
-                  width: 'auto',
-                  backgroundColor: '#171821',
-                  border: '1px solid #10b981',
-                  color: '#f1f5f9',
-                  borderRadius: '10px',
-                  padding: '6px 12px',
-                  fontSize: '12.5px',
-                  outline: 'none'
-                }}
-              />
-            </div>
+            <input
+              type="month"
+              value={customMonth}
+              onChange={(e) => setCustomMonth(e.target.value)}
+              className="form-control form-control-sm"
+              style={{
+                width: 'auto',
+                backgroundColor: '#171821',
+                border: '1px solid #c9973b',
+                color: '#f1f5f9',
+                borderRadius: '10px',
+                padding: '6px 12px',
+                fontSize: '12.5px',
+                outline: 'none'
+              }}
+            />
           )}
         </div>
       </div>
 
-      {/* 4 Metric Cards */}
+      {/* METRIC CARDS */}
       <div className="row g-3 mb-4">
-        
-        {/* Card 1: Omzet (Bisa Disesuaikan & Diklik untuk Melihat Detail) */}
+
+        {/* Omzet */}
         <div className="col-12 col-sm-6 col-xl-3">
-          <div 
+          <div
             onClick={() => setShowDetailModal(true)}
             title="Klik untuk melihat rincian pesanan omzet ini"
             role="button"
             tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setShowDetailModal(true);
+              }
+            }}
             style={{
               backgroundColor: '#171821',
-              border: '1px solid #10b981',
+              border: '1px solid #c9973b',
               borderRadius: '12px',
               padding: '16px 20px',
               height: '100%',
@@ -393,115 +473,136 @@ const Dashboard = () => {
               justifyContent: 'space-between',
               minHeight: '136px',
               cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              position: 'relative',
-              overflow: 'hidden'
+              transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.2)';
-              e.currentTarget.style.borderColor = '#34d399';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(216,167,68,0.15)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'none';
               e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.borderColor = '#10b981';
             }}
           >
             <div className="d-flex align-items-center justify-content-between mb-2">
               <div className="d-flex align-items-center gap-2">
-                <span 
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '26px',
-                    height: '26px',
-                    borderRadius: '6px',
-                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                    color: '#10b981'
-                  }}
-                >
-                  <Banknote size={15} />
-                </span>
-                <span style={{ color: '#10b981', fontSize: '11px', fontWeight: '700', letterSpacing: '0.4px' }}>
-                  {getPeriodTitle()}
-                </span>
-              </div>
-              <span 
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '3px',
-                  backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                  color: '#34d399',
-                  fontSize: '10.5px',
-                  fontWeight: '600',
-                  padding: '2px 8px',
-                  borderRadius: '9999px',
-                  border: '1px solid rgba(16, 185, 129, 0.25)'
-                }}
-              >
-                Lihat Detail <ArrowUpRight size={12} />
-              </span>
-            </div>
-
-            <div style={{ color: '#22c55e', fontSize: '1.65rem', fontWeight: '700' }}>
-              Rp {periodRevenue.toLocaleString('id-ID')}
-            </div>
-
-            <div className="d-flex align-items-center justify-content-between pt-1" style={{ fontSize: '11.5px' }}>
-              <span style={{ color: '#94a3b8' }}>
-                {periodPaidOrders.length} pesanan berhasil
-              </span>
-              <span style={{ color: '#10b981', fontWeight: '600', textDecoration: 'underline' }}>
-                Klik rincian &gt;
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Pesanan Sesuai Periode */}
-        <div className="col-12 col-sm-6 col-xl-3">
-          <div 
-            style={{
-              backgroundColor: '#171821',
-              border: '1px solid #2563eb',
-              borderRadius: '12px',
-              padding: '16px 20px',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              minHeight: '136px'
-            }}
-          >
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <span 
-                style={{
+                <span style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   width: '26px',
                   height: '26px',
                   borderRadius: '6px',
-                  backgroundColor: 'rgba(37, 99, 235, 0.15)',
-                  color: '#38bdf8'
-                }}
-              >
+                  backgroundColor: 'rgba(216,167,68,0.13)',
+                  color: '#d8a744'
+                }}>
+                  <Banknote size={15} />
+                </span>
+
+                <span style={{
+                  color: '#d8a744',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  letterSpacing: '0.4px'
+                }}>
+                  {getPeriodTitle()}
+                </span>
+              </div>
+
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                backgroundColor: 'rgba(216,167,68,0.1)',
+                color: '#e5bd65',
+                fontSize: '10.5px',
+                fontWeight: '600',
+                padding: '2px 8px',
+                borderRadius: '9999px',
+                border: '1px solid rgba(216,167,68,0.25)'
+              }}>
+                Lihat Detail <ArrowUpRight size={12} />
+              </span>
+            </div>
+
+            <div style={{
+              color: '#e5bd65',
+              fontSize: '1.65rem',
+              fontWeight: '700'
+            }}>
+              {formatRupiah(periodRevenue)}
+            </div>
+
+            <div
+              className="d-flex align-items-center justify-content-between pt-1"
+              style={{ fontSize: '11.5px' }}
+            >
+              <span style={{ color: '#94a3b8' }}>
+                {periodPaidOrders.length} pesanan berhasil
+              </span>
+
+              <span style={{
+                color: '#d8a744',
+                fontWeight: '600'
+              }}>
+                Klik rincian &gt;
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Pesanan */}
+        <div className="col-12 col-sm-6 col-xl-3">
+          <div style={{
+            backgroundColor: '#171821',
+            border: '1px solid #303348',
+            borderRadius: '12px',
+            padding: '16px 20px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            minHeight: '136px'
+          }}>
+            <div className="d-flex align-items-center gap-2 mb-2">
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '26px',
+                height: '26px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(148,163,184,0.12)',
+                color: '#94a3b8'
+              }}>
                 <FileText size={15} />
               </span>
-              <span style={{ color: '#38bdf8', fontSize: '11px', fontWeight: '700', letterSpacing: '0.4px', textTransform: 'uppercase' }}>
-                PESANAN ({period === 'today' ? 'HARI INI' : period === 'week' ? '7 HARI' : 'BULAN INI'})
+
+              <span style={{
+                color: '#aab3c4',
+                fontSize: '11px',
+                fontWeight: '700',
+                letterSpacing: '0.4px'
+              }}>
+                PESANAN
               </span>
             </div>
-            <div style={{ color: '#38bdf8', fontSize: '1.65rem', fontWeight: '700' }}>
+
+            <div style={{
+              color: '#f1f5f9',
+              fontSize: '1.65rem',
+              fontWeight: '700'
+            }}>
               {periodOrders.length}
             </div>
+
             <div style={{ color: '#9ca3af', fontSize: '11.5px' }}>
-              <span style={{ color: '#22c55e' }}>{periodPaidOrders.length} Lunas</span>
+              <span style={{ color: '#4ade80' }}>
+                {periodPaidOrders.length} Lunas
+              </span>
+
               {periodOrders.length - periodPaidOrders.length > 0 && (
-                <span style={{ color: '#fbbf24', marginLeft: '6px' }}>
+                <span style={{ color: '#e5bd65', marginLeft: '6px' }}>
                   • {periodOrders.length - periodPaidOrders.length} Belum Bayar
                 </span>
               )}
@@ -509,162 +610,218 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Card 3: Antrean Dapur */}
+        {/* Antrean Dapur */}
         <div className="col-12 col-sm-6 col-xl-3">
-          <div 
-            style={{
-              backgroundColor: '#171821',
-              border: '1px solid #d97706',
-              borderRadius: '12px',
-              padding: '16px 20px',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              minHeight: '136px'
-            }}
-          >
+          <div style={{
+            backgroundColor: '#171821',
+            border: '1px solid #38312a',
+            borderRadius: '12px',
+            padding: '16px 20px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            minHeight: '136px'
+          }}>
             <div className="d-flex align-items-center gap-2 mb-2">
-              <span 
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(217, 119, 6, 0.15)',
-                  color: '#fbbf24'
-                }}
-              >
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '26px',
+                height: '26px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(216,167,68,0.1)',
+                color: '#d8a744'
+              }}>
                 <Users size={15} />
               </span>
-              <span style={{ color: '#fbbf24', fontSize: '11px', fontWeight: '700', letterSpacing: '0.4px' }}>
+
+              <span style={{
+                color: '#d8a744',
+                fontSize: '11px',
+                fontWeight: '700',
+                letterSpacing: '0.4px'
+              }}>
                 ANTREAN DAPUR
               </span>
             </div>
-            <div style={{ color: '#fbbf24', fontSize: '1.65rem', fontWeight: '700' }}>
+
+            <div style={{
+              color: '#e5bd65',
+              fontSize: '1.65rem',
+              fontWeight: '700'
+            }}>
               {activeOrdersCount}
             </div>
+
             <div style={{ color: '#9ca3af', fontSize: '11.5px' }}>
               Pending / Processing
             </div>
           </div>
         </div>
 
-        {/* Card 4: Menu Habis */}
+        {/* Menu Habis */}
         <div className="col-12 col-sm-6 col-xl-3">
-          <div 
-            style={{
-              backgroundColor: '#171821',
-              border: '1px solid #dc2626',
-              borderRadius: '12px',
-              padding: '16px 20px',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              minHeight: '136px'
-            }}
-          >
+          <div style={{
+            backgroundColor: '#171821',
+            border: '1px solid #38312a',
+            borderRadius: '12px',
+            padding: '16px 20px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            minHeight: '136px'
+          }}>
             <div className="d-flex align-items-center gap-2 mb-2">
-              <span 
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(220, 38, 38, 0.15)',
-                  color: '#f87171'
-                }}
-              >
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '26px',
+                height: '26px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(148,163,184,0.12)',
+                color: '#94a3b8'
+              }}>
                 <Clock size={15} />
               </span>
-              <span style={{ color: '#f87171', fontSize: '11px', fontWeight: '700', letterSpacing: '0.4px' }}>
+
+              <span style={{
+                color: '#aab3c4',
+                fontSize: '11px',
+                fontWeight: '700',
+                letterSpacing: '0.4px'
+              }}>
                 MENU HABIS
               </span>
             </div>
-            <div style={{ color: '#f87171', fontSize: '1.65rem', fontWeight: '700' }}>
+
+            <div style={{
+              color: '#f1f5f9',
+              fontSize: '1.65rem',
+              fontWeight: '700'
+            }}>
               {unavailableItemsCount}
             </div>
+
             <div>
-              <Link 
-                to="/admin/products" 
-                style={{ color: '#eab308', fontSize: '11.5px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+              <Link
+                to="/admin/products"
+                style={{
+                  color: '#d8a744',
+                  fontSize: '11.5px',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3px'
+                }}
               >
-                Cek Stok ↗
+                Cek Stok <ArrowUpRight size={12} />
               </Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Grid: Tren Penjualan & Right Column */}
+      {/* MAIN GRID */}
       <div className="row g-3">
-        {/* Left Column: Tren Penjualan */}
+
+        {/* Tren Penjualan */}
         <div className="col-12 col-lg-8">
-          <div 
-            style={{
-              backgroundColor: '#171821',
-              border: '1px solid #232530',
-              borderRadius: '14px',
-              padding: '20px 24px',
-              height: '100%'
-            }}
-          >
+          <div style={{
+            backgroundColor: '#171821',
+            border: '1px solid #232530',
+            borderRadius: '14px',
+            padding: '20px 24px',
+            height: '100%'
+          }}>
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-2">
-              <h5 style={{ color: '#e2e8f0', fontSize: '14.5px', fontWeight: '600', margin: 0 }}>
+              <h5 style={{
+                color: '#e2e8f0',
+                fontSize: '14.5px',
+                fontWeight: '600',
+                margin: 0
+              }}>
                 {chartTitle}
               </h5>
-              <small style={{ color: '#94a3b8', fontSize: '11.5px' }}>
-                Omzet Periode: <strong style={{ color: '#22c55e' }}>Rp {periodRevenue.toLocaleString('id-ID')}</strong>
+
+              <small style={{
+                color: '#94a3b8',
+                fontSize: '11.5px'
+              }}>
+                Omzet Periode:{' '}
+                <strong style={{ color: '#d8a744' }}>
+                  {formatRupiah(periodRevenue)}
+                </strong>
               </small>
             </div>
 
-            {/* Centered Legend */}
             <div className="d-flex justify-content-center align-items-center gap-2 mb-3">
-              <div style={{ width: '32px', height: '14px', backgroundColor: '#2563eb', borderRadius: '2px' }}></div>
-              <span style={{ fontSize: '11.5px', color: '#cbd5e1' }}>Omzet (Rp)</span>
+              <div style={{
+                width: '32px',
+                height: '3px',
+                background: 'linear-gradient(90deg,#a7792e,#f2d58a,#c9973b)',
+                borderRadius: '4px'
+              }} />
+
+              <span style={{
+                fontSize: '11.5px',
+                color: '#cbd5e1'
+              }}>
+                Omzet (Rp)
+              </span>
             </div>
 
             <div style={{ width: '100%', height: '330px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 10, right: 15, left: -20, bottom: 5 }}>
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 10, right: 15, left: -20, bottom: 5 }}
+                >
                   <CartesianGrid stroke="#232634" />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#64748b" 
-                    tick={{ fill: '#64748b', fontSize: 11 }} 
-                    tickLine={false} 
-                    axisLine={{ stroke: '#2e3242' }} 
+
+                  <XAxis
+                    dataKey="name"
+                    stroke="#64748b"
+                    tick={{ fill: '#64748b', fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#2e3242' }}
                   />
-                  <YAxis 
-                    stroke="#64748b" 
-                    tick={{ fill: '#64748b', fontSize: 11 }} 
-                    tickLine={false} 
+
+                  <YAxis
+                    stroke="#64748b"
+                    tick={{ fill: '#64748b', fontSize: 11 }}
+                    tickLine={false}
                     axisLine={{ stroke: '#2e3242' }}
                     domain={[0, 'auto']}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#171821', 
-                      borderColor: '#232530', 
-                      borderRadius: '8px', 
+
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#171821',
+                      borderColor: '#38312a',
+                      borderRadius: '8px',
                       color: '#f8fafc',
-                      fontSize: '12px' 
+                      fontSize: '12px'
                     }}
-                    formatter={(val) => [`Rp ${Number(val).toLocaleString('id-ID')}`, 'Omzet']}
-                    labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate || label}
+                    formatter={(val) => [
+                      formatRupiah(val),
+                      'Omzet'
+                    ]}
+                    labelFormatter={(label, payload) =>
+                      payload?.[0]?.payload?.fullDate || label
+                    }
                   />
-                  <Line 
-                    type="linear" 
-                    dataKey="omzet" 
-                    stroke="#2563eb" 
-                    strokeWidth={2} 
-                    dot={{ r: 3, fill: '#3b82f6', stroke: '#3b82f6' }} 
-                    activeDot={{ r: 5, fill: '#60a5fa' }} 
+
+                  <Line
+                    type="linear"
+                    dataKey="omzet"
+                    stroke="#d8a744"
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: '#e5bd65', stroke: '#d8a744' }}
+                    activeDot={{ r: 5, fill: '#f2d58a' }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -672,24 +829,33 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right Column: Menu Preview & Aksi Cepat */}
+        {/* Menu Preview & Aksi Cepat */}
         <div className="col-12 col-lg-4 d-flex flex-column gap-3">
+
           {/* Menu Preview */}
-          <div 
-            style={{
-              backgroundColor: '#171821',
-              border: '1px solid #232530',
-              borderRadius: '14px',
-              padding: '20px'
-            }}
-          >
+          <div style={{
+            backgroundColor: '#171821',
+            border: '1px solid #232530',
+            borderRadius: '14px',
+            padding: '20px'
+          }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 style={{ color: '#e2e8f0', fontSize: '14.5px', fontWeight: '600', margin: 0 }}>
+              <h5 style={{
+                color: '#e2e8f0',
+                fontSize: '14.5px',
+                fontWeight: '600',
+                margin: 0
+              }}>
                 Menu Preview
               </h5>
-              <Link 
-                to="/admin/products" 
-                style={{ color: '#eab308', fontSize: '11.5px', textDecoration: 'none' }}
+
+              <Link
+                to="/admin/products"
+                style={{
+                  color: '#d8a744',
+                  fontSize: '11.5px',
+                  textDecoration: 'none'
+                }}
               >
                 Lihat Semua
               </Link>
@@ -698,23 +864,28 @@ const Dashboard = () => {
             <div className="d-flex flex-column gap-3">
               {topProducts.length > 0 ? (
                 topProducts.map((product) => (
-                  <div key={product.id} className="d-flex justify-content-between align-items-center">
+                  <div
+                    key={product.id}
+                    className="d-flex justify-content-between align-items-center"
+                  >
                     <div className="d-flex align-items-center gap-3">
-                      <div 
-                        style={{
-                          width: '38px',
-                          height: '38px',
-                          borderRadius: '8px',
-                          overflow: 'hidden',
-                          backgroundColor: '#262835',
-                          flexShrink: 0
-                        }}
-                      >
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        backgroundColor: '#262835',
+                        flexShrink: 0
+                      }}>
                         {product.image_url ? (
-                          <img 
-                            src={`${API_IMAGE_URL}/${product.image_url}`} 
-                            alt={product.name} 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          <img
+                            src={`${API_IMAGE_URL}/${product.image_url}`}
+                            alt={product.name}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
                           />
                         ) : (
                           <div className="w-100 h-100 d-flex align-items-center justify-content-center text-secondary" style={{ fontSize: '10px' }}>
@@ -722,49 +893,60 @@ const Dashboard = () => {
                           </div>
                         )}
                       </div>
-                      <span style={{ color: '#f1f5f9', fontSize: '13.5px', fontWeight: '500', textTransform: 'lowercase' }}>
+
+                      <span style={{
+                        color: '#f1f5f9',
+                        fontSize: '13.5px',
+                        fontWeight: '500',
+                        textTransform: 'lowercase'
+                      }}>
                         {product.name}
                       </span>
                     </div>
-                    <span 
-                      style={{
-                        padding: '2px 14px',
-                        borderRadius: '9999px',
-                        fontSize: '11px',
-                        fontWeight: '600',
-                        backgroundColor: product.is_available ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                        color: product.is_available ? '#22c55e' : '#ef4444',
-                        border: `1px solid ${product.is_available ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`
-                      }}
-                    >
+
+                    <span style={{
+                      padding: '2px 14px',
+                      borderRadius: '9999px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      backgroundColor: product.is_available ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                      color: product.is_available ? '#22c55e' : '#ef4444',
+                      border: `1px solid ${product.is_available ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.35)'}`
+                    }}>
                       {product.is_available ? 'Ready' : 'Habis'}
                     </span>
                   </div>
                 ))
               ) : (
-                <div style={{ color: '#9ca3af', fontSize: '13px' }}>Belum ada menu.</div>
+                <div style={{ color: '#9ca3af', fontSize: '13px' }}>
+                  Belum ada menu.
+                </div>
               )}
             </div>
           </div>
 
           {/* Aksi Cepat */}
-          <div 
-            style={{
-              backgroundColor: '#171821',
-              border: '1px solid #232530',
-              borderRadius: '14px',
-              padding: '20px'
-            }}
-          >
-            <h5 style={{ color: '#e2e8f0', fontSize: '14.5px', fontWeight: '600', marginBottom: '10px' }}>
+          <div style={{
+            backgroundColor: '#171821',
+            border: '1px solid #232530',
+            borderRadius: '14px',
+            padding: '20px'
+          }}>
+            <h5 style={{
+              color: '#e2e8f0',
+              fontSize: '14.5px',
+              fontWeight: '600',
+              marginBottom: '10px'
+            }}>
               Aksi Cepat
             </h5>
+
             <div className="d-flex flex-column">
               {[
                 { label: 'Tambah Menu Baru', to: '/admin/product/new' },
                 { label: 'Cetak QR Code Meja', to: '/admin/qr-codes' },
                 { label: 'Pengaturan QRIS Statis', to: '/admin/qris-settings' },
-                { label: 'Buat Akun Dapur', to: '/admin/users' },
+                { label: 'Buat Akun Dapur', to: '/admin/users' }
               ].map((action, idx, arr) => (
                 <Link
                   key={action.label}
@@ -780,8 +962,12 @@ const Dashboard = () => {
                     fontSize: '13px',
                     transition: 'color 0.15s ease'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = '#cbd5e1'; }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#d8a744';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#cbd5e1';
+                  }}
                 >
                   <span>{action.label}</span>
                   <ChevronRight size={15} color="#64748b" />
@@ -792,345 +978,256 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ======================================================== */}
-      {/* MODAL DETAIL PESANAN OMZET                              */}
-      {/* ======================================================== */}
+      {/* ====================================================== */}
+      {/* MODAL DETAIL PESANAN OMZET */}
+      {/* ====================================================== */}
+
       {showDetailModal && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(5, 6, 10, 0.78)',
-            zIndex: 9999,
-            backdropFilter: 'blur(5px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px'
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowDetailModal(false);
+        <div
+          className="revenue-overlay"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowDetailModal(false);
+            }
           }}
         >
-          <div 
-            style={{
-              backgroundColor: '#161722',
-              border: '1px solid #282a3c',
-              borderRadius: '18px',
-              width: '100%',
-              maxWidth: '880px',
-              maxHeight: '90vh',
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: '0 24px 48px rgba(0, 0, 0, 0.65)',
-              overflow: 'hidden',
-              animation: 'fadeIn 0.15s ease-out'
-            }}
+          <div
+            className="revenue-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="revenueTitle"
           >
-            {/* Modal Header */}
-            <div 
-              style={{
-                padding: '18px 24px',
-                borderBottom: '1px solid #242738',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                backgroundColor: '#181926'
-              }}
-            >
-              <div className="d-flex align-items-center gap-3">
-                <span 
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '38px',
-                    height: '38px',
-                    borderRadius: '10px',
-                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                    color: '#10b981'
-                  }}
-                >
-                  <Banknote size={20} />
+
+            {/* HEADER */}
+            <div className="revenue-header">
+              <div>
+                <h4 id="revenueTitle">Rincian Omzet</h4>
+
+                <span className="revenue-period">
+                  {getPeriodLabelFormatted()}
                 </span>
-                <div>
-                  <h5 style={{ margin: 0, color: '#f1f5f9', fontWeight: '700', fontSize: '1.15rem' }}>
-                    Rincian Pesanan Omzet
-                  </h5>
-                  <small style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
-                    Periode: <strong style={{ color: '#10b981' }}>{getPeriodLabelFormatted()}</strong>
-                  </small>
-                </div>
               </div>
 
               <button
                 type="button"
+                className="revenue-close"
                 onClick={() => setShowDetailModal(false)}
-                className="btn p-0 d-flex align-items-center justify-content-center"
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: '#202230',
-                  border: '1px solid #2d3042',
-                  color: '#94a3b8',
-                  cursor: 'pointer'
-                }}
+                aria-label="Tutup rincian omzet"
               >
-                <X size={18} />
+                <X size={19} />
               </button>
             </div>
 
-            {/* Modal Summary Banner */}
-            <div 
-              style={{
-                padding: '14px 24px',
-                backgroundColor: '#12131c',
-                borderBottom: '1px solid #232535',
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '24px',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}
-            >
-              <div className="d-flex align-items-center gap-2">
-                <span style={{ color: '#94a3b8', fontSize: '0.84rem' }}>Total Omzet:</span>
-                <span style={{ color: '#22c55e', fontWeight: '800', fontSize: '1.25rem' }}>
-                  Rp {periodRevenue.toLocaleString('id-ID')}
-                </span>
+            {/* RINGKASAN OMZET */}
+            <div className="revenue-summary">
+              <div className="revenue-total">
+                <span>Total Omzet</span>
+                <strong>{formatRupiah(periodRevenue)}</strong>
               </div>
-              <div className="d-flex align-items-center gap-3" style={{ fontSize: '0.84rem' }}>
-                <span style={{ color: '#cbd5e1' }}>
-                  Total Transaksi Paid: <strong style={{ color: '#38bdf8' }}>{periodPaidOrders.length}</strong>
-                </span>
-                <span style={{ color: '#64748b' }}>•</span>
-                <span style={{ color: '#cbd5e1' }}>
-                  Rata-rata: <strong style={{ color: '#fbbf24' }}>
-                    Rp {periodPaidOrders.length > 0 ? Math.round(periodRevenue / periodPaidOrders.length).toLocaleString('id-ID') : 0}
-                  </strong>
-                </span>
+
+              <div className="revenue-summary-stat">
+                <span>Transaksi Lunas</span>
+                <strong>{periodPaidOrders.length}</strong>
+              </div>
+
+              <div className="revenue-summary-stat">
+                <span>Rata-rata Transaksi</span>
+                <strong>
+                  {formatRupiah(
+                    periodPaidOrders.length > 0
+                      ? Math.round(periodRevenue / periodPaidOrders.length)
+                      : 0
+                  )}
+                </strong>
               </div>
             </div>
 
-            {/* Search & Filter Bar */}
-            <div 
-              style={{
-                padding: '14px 24px',
-                borderBottom: '1px solid #232535',
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '12px',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
-            >
-              <div style={{ position: 'relative', flex: '1', minWidth: '220px', maxWidth: '360px' }}>
-                <Search size={15} style={{ position: 'absolute', left: '12px', top: '10px', color: '#64748b' }} />
+            {/* PENCARIAN DAN FILTER */}
+            <div className="revenue-tools">
+              <div className="revenue-search">
+                <Search size={17} />
+
                 <input
                   type="text"
-                  placeholder="Cari ID, pelanggan, meja, menu..."
+                  placeholder="Cari nama pelanggan, ID, meja, atau menu..."
                   value={modalSearch}
                   onChange={(e) => setModalSearch(e.target.value)}
-                  style={{
-                    width: '100%',
-                    backgroundColor: '#1b1c28',
-                    border: '1px solid #282a3c',
-                    borderRadius: '9px',
-                    padding: '7px 12px 7px 34px',
-                    color: '#f1f5f9',
-                    fontSize: '0.85rem',
-                    outline: 'none'
-                  }}
                 />
+
+                {modalSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setModalSearch('')}
+                    aria-label="Hapus pencarian"
+                  >
+                    <X size={15} />
+                  </button>
+                )}
               </div>
 
-              {/* Payment Filter Pills */}
-              <div className="d-flex align-items-center gap-1">
-                <span style={{ color: '#64748b', fontSize: '0.78rem', marginRight: '4px' }}>Metode:</span>
-                {[
-                  { key: 'all', label: 'Semua' },
-                  { key: 'qris', label: 'QRIS' },
-                  { key: 'cash', label: 'Tunai' }
-                ].map((f) => (
-                  <button
-                    key={f.key}
-                    onClick={() => setModalPaymentFilter(f.key)}
-                    style={{
-                      border: 'none',
-                      borderRadius: '7px',
-                      padding: '4px 10px',
-                      fontSize: '0.78rem',
-                      fontWeight: modalPaymentFilter === f.key ? '700' : '500',
-                      backgroundColor: modalPaymentFilter === f.key ? '#3b82f6' : '#1e202e',
-                      color: modalPaymentFilter === f.key ? '#ffffff' : '#94a3b8',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {f.label}
-                  </button>
-                ))}
+              <div className="revenue-filter">
+                <span>Metode pembayaran</span>
+
+                <div className="revenue-filter-options">
+                  {[
+                    { key: 'all', label: 'Semua' },
+                    { key: 'qris', label: 'QRIS' },
+                    { key: 'cash', label: 'Tunai' }
+                  ].map((filter) => (
+                    <button
+                      key={filter.key}
+                      type="button"
+                      className={modalPaymentFilter === filter.key ? 'active' : ''}
+                      onClick={() => setModalPaymentFilter(filter.key)}
+                    >
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Modal Body: Daftar Pesanan */}
-            <div 
-              style={{
-                padding: '16px 24px',
-                overflowY: 'auto',
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px'
-              }}
-            >
+            {/* DAFTAR TRANSAKSI */}
+            <div className="revenue-list">
+
+              <div className="revenue-list-heading">
+                <span>Daftar transaksi</span>
+
+                <span>
+                  {modalOrders.length} pesanan
+                </span>
+              </div>
+
               {modalOrders.length === 0 ? (
-                <div className="text-center py-5" style={{ color: '#64748b' }}>
-                  <Receipt size={40} className="mb-2" style={{ opacity: 0.4 }} />
-                  <p className="mb-1" style={{ fontSize: '0.95rem', color: '#94a3b8' }}>
-                    Tidak ada pesanan yang sesuai filter.
-                  </p>
-                  <small style={{ fontSize: '0.8rem' }}>
-                    Pastikan status pembayaran sudah lunas (Paid) pada periode {getPeriodLabelFormatted()}.
-                  </small>
+                <div className="revenue-empty">
+                  <Receipt size={30} />
+
+                  <strong>Pesanan tidak ditemukan</strong>
+
+                  <span>
+                    Coba ubah kata pencarian atau filter pembayaran.
+                  </span>
                 </div>
               ) : (
                 modalOrders.map((order) => {
                   const isExpanded = expandedOrderId === order.id;
-                  const isQris = (order.payment_method || '').toLowerCase() === 'qris';
 
                   return (
-                    <div 
+                    <div
                       key={order.id}
-                      style={{
-                        backgroundColor: '#1b1c28',
-                        border: '1px solid #282a3c',
-                        borderRadius: '12px',
-                        padding: '14px 18px',
-                        transition: 'border-color 0.15s ease'
-                      }}
+                      className="revenue-order"
                     >
-                      <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                        <div className="d-flex align-items-center gap-2">
-                          <span 
-                            style={{
-                              backgroundColor: 'rgba(216, 167, 68, 0.15)',
-                              color: '#d8a744',
-                              fontWeight: '700',
-                              fontSize: '0.82rem',
-                              padding: '2px 8px',
-                              borderRadius: '6px'
-                            }}
-                          >
+                      {/* Informasi utama pesanan */}
+                      <div className="revenue-order-main">
+
+                        <div className="revenue-order-left">
+                          <span className="revenue-order-id">
                             #{order.id}
                           </span>
-                          <span style={{ color: '#f1f5f9', fontWeight: '700', fontSize: '0.96rem' }}>
-                            {order.customer_name || 'Pelanggan'}
-                          </span>
-                          <span style={{ color: '#64748b', fontSize: '0.8rem' }}>
-                            (Meja {order.table_number || '-'} • {order.location || 'Dine-In'})
-                          </span>
-                        </div>
 
-                        <div className="d-flex align-items-center gap-2">
-                          <span 
-                            style={{
-                              backgroundColor: isQris ? 'rgba(56, 189, 248, 0.15)' : 'rgba(251, 191, 36, 0.15)',
-                              color: isQris ? '#38bdf8' : '#fbbf24',
-                              fontSize: '0.75rem',
-                              fontWeight: '700',
-                              padding: '2px 8px',
-                              borderRadius: '9999px',
-                              textTransform: 'uppercase'
-                            }}
-                          >
-                            {order.payment_method || 'QRIS'}
-                          </span>
-                          <span 
-                            style={{
-                              backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                              color: '#22c55e',
-                              fontSize: '0.75rem',
-                              fontWeight: '700',
-                              padding: '2px 8px',
-                              borderRadius: '9999px',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '3px'
-                            }}
-                          >
-                            <CheckCircle2 size={11} /> Lunas
-                          </span>
-                          <div style={{ color: '#22c55e', fontWeight: '800', fontSize: '1.05rem', marginLeft: '6px' }}>
-                            Rp {parseFloat(order.total_amount || 0).toLocaleString('id-ID')}
+                          <div className="revenue-customer">
+                            <strong>
+                              {order.customer_name || 'Pelanggan'}
+                            </strong>
+
+                            <span>
+                              Meja {order.table_number || '-'}
+                              {' · '}
+                              {order.location || 'Dine-In'}
+                            </span>
                           </div>
                         </div>
+
+                        <strong className="revenue-order-total">
+                          {formatRupiah(order.total_amount)}
+                        </strong>
                       </div>
 
-                      {/* Baris Waktu & Toggle Menu */}
-                      <div className="d-flex justify-content-between align-items-center mb-2" style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-                        <span>
-                          <Clock size={12} className="me-1" />
+                      {/* Status dan waktu */}
+                      <div className="revenue-order-info">
+                        <div className="revenue-badges">
+                          <span className="revenue-method">
+                            {order.payment_method || 'QRIS'}
+                          </span>
+
+                          <span className="revenue-status">
+                            <CheckCircle2 size={13} />
+                            Lunas
+                          </span>
+                        </div>
+
+                        <span className="revenue-date">
+                          <Clock size={13} />
                           {formatDateTime(order.created_at)}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#38bdf8',
-                            fontSize: '0.78rem',
-                            cursor: 'pointer',
-                            padding: 0,
-                            textDecoration: 'underline'
-                          }}
-                        >
-                          {isExpanded ? 'Sembunyikan Menu ▲' : `Lihat Rincian (${order.items?.length || 0} item) ▼`}
-                        </button>
                       </div>
 
-                      {/* Rincian Menu yang dibeli */}
+                      {/* Detail Pesanan */}
+                      <button
+                        type="button"
+                        className="revenue-detail-toggle"
+                        onClick={() => {
+                          setExpandedOrderId(isExpanded ? null : order.id);
+                        }}
+                        aria-expanded={isExpanded}
+                      >
+                        <span>
+                          {isExpanded ? 'Sembunyikan item' : 'Lihat item pesanan'}
+
+                          <span className="revenue-item-count">
+                            {order.items?.length || 0}
+                          </span>
+                        </span>
+
+                        {isExpanded
+                          ? <ChevronUp size={16} />
+                          : <ChevronDown size={16} />
+                        }
+                      </button>
+
+                      {/* Daftar Menu */}
                       {isExpanded && (
-                        <div 
-                          style={{
-                            backgroundColor: '#141520',
-                            borderRadius: '8px',
-                            padding: '10px 14px',
-                            marginTop: '8px',
-                            border: '1px solid #232537'
-                          }}
-                        >
-                          <small style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: '700', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>
-                            Daftar Menu:
-                          </small>
-                          <div className="d-flex flex-column gap-2">
-                            {(order.items || []).map((it, idx) => (
-                              <div key={idx} className="d-flex justify-content-between align-items-start" style={{ fontSize: '0.85rem' }}>
-                                <div>
-                                  <span style={{ color: '#f1f5f9', fontWeight: '600' }}>
-                                    {it.quantity}x {it.product_name || 'Item'}
+                        <div className="revenue-items">
+                          {(order.items || []).length > 0 ? (
+                            order.items.map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="revenue-item"
+                              >
+                                <div className="revenue-item-description">
+                                  <strong>
+                                    {item.product_name || 'Item'}
+                                  </strong>
+
+                                  <span>
+                                    {item.quantity} × {formatRupiah(item.price_at_order)}
                                   </span>
-                                  {it.variants && it.variants.length > 0 && (
-                                    <small style={{ color: '#38bdf8', display: 'block', fontSize: '0.75rem' }}>
-                                      + {it.variants.map((v) => v.variant_name).join(', ')}
+
+                                  {item.variants && item.variants.length > 0 && (
+                                    <small>
+                                      Varian: {item.variants.map((v) => v.variant_name).join(', ')}
                                     </small>
                                   )}
-                                  {it.notes && (
-                                    <small style={{ color: '#d8a744', display: 'block', fontSize: '0.75rem' }}>
-                                      "{it.notes}"
+
+                                  {item.notes && (
+                                    <small>
+                                      Catatan: {item.notes}
                                     </small>
                                   )}
                                 </div>
-                                <span style={{ color: '#cbd5e1', fontWeight: '600' }}>
-                                  Rp {((parseFloat(it.price_at_order) || 0) * it.quantity).toLocaleString('id-ID')}
-                                </span>
+
+                                <strong className="revenue-item-subtotal">
+                                  {formatRupiah(
+                                    (parseFloat(item.price_at_order) || 0) * item.quantity
+                                  )}
+                                </strong>
                               </div>
-                            ))}
-                          </div>
+                            ))
+                          ) : (
+                            <div className="revenue-no-items">
+                              Tidak ada rincian item untuk pesanan ini.
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1139,61 +1236,739 @@ const Dashboard = () => {
               )}
             </div>
 
-            {/* Modal Footer */}
-            <div 
-              style={{
-                padding: '14px 24px',
-                borderTop: '1px solid #242738',
-                backgroundColor: '#181926',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
-            >
-              <span style={{ color: '#94a3b8', fontSize: '0.84rem' }}>
-                Menampilkan <strong>{modalOrders.length}</strong> dari <strong>{periodPaidOrders.length}</strong> pesanan
+            {/* FOOTER */}
+            <div className="revenue-footer">
+              <span className="revenue-count">
+                Menampilkan {modalOrders.length} dari {periodPaidOrders.length} transaksi
               </span>
 
-              <div className="d-flex align-items-center gap-2">
+              <div className="revenue-actions">
                 <Link
                   to="/admin/orders"
-                  className="btn btn-sm"
-                  style={{
-                    backgroundColor: '#202230',
-                    border: '1px solid #2d3042',
-                    color: '#f1f5f9',
-                    fontSize: '0.82rem',
-                    padding: '6px 14px',
-                    borderRadius: '8px',
-                    textDecoration: 'none'
-                  }}
+                  className="revenue-history"
                 >
-                  Buka Riwayat Pesanan ↗
+                  Riwayat Pesanan
+                  <ArrowUpRight size={14} />
                 </Link>
+
                 <button
                   type="button"
+                  className="revenue-done"
                   onClick={() => setShowDetailModal(false)}
-                  className="btn btn-sm"
-                  style={{
-                    backgroundColor: '#10b981',
-                    border: 'none',
-                    color: '#090a0f',
-                    fontWeight: '700',
-                    fontSize: '0.82rem',
-                    padding: '6px 16px',
-                    borderRadius: '8px',
-                    cursor: 'pointer'
-                  }}
                 >
                   Tutup
                 </button>
               </div>
             </div>
-
           </div>
+
+          {/* ================================================== */}
+          {/* CSS MODAL DETAIL OMZET */}
+          {/* ================================================== */}
+
+          <style>{`
+            .revenue-overlay {
+              position: fixed;
+              inset: 0;
+              z-index: 9999;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 22px;
+              background: rgba(5,6,10,0.78);
+              backdrop-filter: blur(7px);
+              -webkit-backdrop-filter: blur(7px);
+            }
+
+            .revenue-dialog {
+              width: 100%;
+              max-width: 900px;
+              max-height: 88vh;
+              max-height: 88dvh;
+              display: flex;
+              flex-direction: column;
+              overflow: hidden;
+              background: #15161e;
+              border: 1px solid #303140;
+              border-radius: 15px;
+              box-shadow: 0 24px 75px rgba(0,0,0,0.55);
+              animation: revenueEnter 0.2s ease-out;
+            }
+
+            @keyframes revenueEnter {
+              from {
+                opacity: 0;
+                transform: translateY(8px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+
+            /* Header */
+            .revenue-header {
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 15px;
+              padding: 18px 23px;
+              background: #191a23;
+              border-bottom: 1px solid #2a2c38;
+            }
+
+            .revenue-header h4 {
+              margin: 0 0 5px;
+              color: #f1f5f9;
+              font-size: 16px;
+              font-weight: 700;
+            }
+
+            .revenue-period {
+              color: #9ca3af;
+              font-size: 12px;
+            }
+
+            .revenue-close {
+              width: 35px;
+              height: 35px;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: #222431;
+              border: 1px solid #373949;
+              border-radius: 8px;
+              color: #cbd5e1;
+              cursor: pointer;
+              transition: all 0.2s ease;
+            }
+
+            .revenue-close:hover {
+              color: #fff;
+              border-color: #c9973b;
+              background: #292a35;
+            }
+
+            /* Summary */
+            .revenue-summary {
+              flex-shrink: 0;
+              display: grid;
+              grid-template-columns: minmax(0, 1.5fr) minmax(140px, 0.7fr) minmax(170px, 0.8fr);
+              align-items: center;
+              gap: 22px;
+              padding: 20px 23px;
+              background: #15161e;
+              border-bottom: 1px solid #2a2c38;
+            }
+
+            .revenue-total {
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+            }
+
+            .revenue-total span,
+            .revenue-summary-stat span {
+              color: #929bad;
+              font-size: 12px;
+            }
+
+            .revenue-total strong {
+              color: #e5bd65;
+              font-size: 27px;
+              font-weight: 800;
+              line-height: 1.2;
+              letter-spacing: -0.5px;
+            }
+
+            .revenue-summary-stat {
+              display: flex;
+              flex-direction: column;
+              gap: 7px;
+              padding-left: 20px;
+              border-left: 1px solid #303140;
+            }
+
+            .revenue-summary-stat strong {
+              color: #f1f5f9;
+              font-size: 16px;
+              font-weight: 700;
+            }
+
+            /* Search and Filter */
+            .revenue-tools {
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 17px;
+              padding: 15px 23px;
+              background: #191a23;
+              border-bottom: 1px solid #2a2c38;
+            }
+
+            .revenue-search {
+              min-width: 180px;
+              max-width: 420px;
+              width: 100%;
+              height: 42px;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              padding: 0 13px;
+              background: #101116;
+              border: 1px solid #303140;
+              border-radius: 9px;
+              color: #8791a3;
+              transition: border-color 0.2s ease;
+            }
+
+            .revenue-search:focus-within {
+              border-color: #c9973b;
+            }
+
+            .revenue-search input {
+              flex: 1;
+              min-width: 0;
+              border: none;
+              outline: none;
+              background: transparent;
+              color: #f1f5f9;
+              font-size: 12px;
+            }
+
+            .revenue-search input::placeholder {
+              color: #788195;
+            }
+
+            .revenue-search button {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 0;
+              border: none;
+              background: transparent;
+              color: #94a3b8;
+              cursor: pointer;
+            }
+
+            .revenue-filter {
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              flex-shrink: 0;
+            }
+
+            .revenue-filter > span {
+              color: #929bad;
+              font-size: 11px;
+            }
+
+            .revenue-filter-options {
+              display: flex;
+              align-items: center;
+              gap: 5px;
+            }
+
+            .revenue-filter-options button {
+              min-width: 55px;
+              padding: 7px 12px;
+              border: 1px solid #303140;
+              border-radius: 7px;
+              background: #222431;
+              color: #aab1c0;
+              font-size: 11px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.15s ease;
+            }
+
+            .revenue-filter-options button:hover {
+              border-color: #c9973b;
+              color: #e5bd65;
+            }
+
+            .revenue-filter-options button.active {
+              color: #171717;
+              background: linear-gradient(135deg,#f0d48b,#c9973b);
+              border-color: #d8a744;
+            }
+
+            /* List */
+            .revenue-list {
+              flex: 1;
+              min-height: 130px;
+              overflow-y: auto;
+              padding: 17px 23px;
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+              scrollbar-width: thin;
+              scrollbar-color: #454451 #15161e;
+            }
+
+            .revenue-list-heading {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 2px;
+              color: #e2e8f0;
+              font-size: 12px;
+              font-weight: 700;
+            }
+
+            .revenue-list-heading span:last-child {
+              color: #929bad;
+              font-size: 11px;
+              font-weight: 500;
+            }
+
+            /* Order Card */
+            .revenue-order {
+              padding: 15px 17px;
+              background: #1a1b25;
+              border: 1px solid #303140;
+              border-radius: 11px;
+              transition: border-color 0.2s ease;
+            }
+
+            .revenue-order:hover {
+              border-color: #494453;
+            }
+
+            .revenue-order-main {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 15px;
+            }
+
+            .revenue-order-left {
+              display: flex;
+              align-items: center;
+              gap: 11px;
+              min-width: 0;
+            }
+
+            .revenue-order-id {
+              flex-shrink: 0;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              min-width: 39px;
+              padding: 6px 8px;
+              color: #e5bd65;
+              background: rgba(216,167,68,0.1);
+              border: 1px solid rgba(216,167,68,0.22);
+              border-radius: 6px;
+              font-size: 11px;
+              font-weight: 700;
+            }
+
+            .revenue-customer {
+              display: flex;
+              flex-direction: column;
+              gap: 3px;
+              min-width: 0;
+            }
+
+            .revenue-customer strong {
+              color: #f1f5f9;
+              font-size: 13px;
+              font-weight: 700;
+              overflow-wrap: anywhere;
+            }
+
+            .revenue-customer span {
+              color: #929bad;
+              font-size: 11px;
+            }
+
+            .revenue-order-total {
+              flex-shrink: 0;
+              color: #e5bd65;
+              font-size: 16px;
+              font-weight: 800;
+              white-space: nowrap;
+            }
+
+            /* Meta */
+            .revenue-order-info {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              flex-wrap: wrap;
+              gap: 9px;
+              margin-top: 13px;
+            }
+
+            .revenue-badges {
+              display: flex;
+              align-items: center;
+              gap: 7px;
+            }
+
+            .revenue-method,
+            .revenue-status {
+              display: inline-flex;
+              align-items: center;
+              gap: 5px;
+              padding: 5px 9px;
+              border-radius: 20px;
+              font-size: 10.5px;
+              font-weight: 600;
+            }
+
+            .revenue-method {
+              color: #e5bd65;
+              background: rgba(216,167,68,0.1);
+              border: 1px solid rgba(216,167,68,0.2);
+              text-transform: uppercase;
+            }
+
+            .revenue-status {
+              color: #86c99b;
+              background: rgba(34,197,94,0.08);
+              border: 1px solid rgba(34,197,94,0.18);
+            }
+
+            .revenue-date {
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+              color: #929bad;
+              font-size: 11px;
+            }
+
+            /* Detail Toggle */
+            .revenue-detail-toggle {
+              width: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-top: 12px;
+              padding: 11px 0 0;
+              border: none;
+              border-top: 1px solid #303140;
+              background: transparent;
+              color: #d8a744;
+              font-size: 11.5px;
+              font-weight: 600;
+              text-align: left;
+              cursor: pointer;
+            }
+
+            .revenue-detail-toggle > span {
+              display: inline-flex;
+              align-items: center;
+              gap: 8px;
+            }
+
+            .revenue-detail-toggle:hover {
+              color: #f2d58a;
+            }
+
+            .revenue-item-count {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              min-width: 19px;
+              height: 19px;
+              padding: 0 5px;
+              background: rgba(216,167,68,0.12);
+              border-radius: 5px;
+              color: #e5bd65;
+              font-size: 10px;
+            }
+
+            /* Order Items */
+            .revenue-items {
+              margin-top: 11px;
+              padding: 12px 14px;
+              background: #12131b;
+              border: 1px solid #2d2f3b;
+              border-radius: 8px;
+            }
+
+            .revenue-item {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              gap: 14px;
+              padding: 10px 0;
+              border-bottom: 1px solid #282a36;
+            }
+
+            .revenue-item:first-child {
+              padding-top: 0;
+            }
+
+            .revenue-item:last-child {
+              padding-bottom: 0;
+              border-bottom: none;
+            }
+
+            .revenue-item-description {
+              min-width: 0;
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+            }
+
+            .revenue-item-description strong {
+              color: #f1f5f9;
+              font-size: 12px;
+              font-weight: 600;
+            }
+
+            .revenue-item-description span {
+              color: #aab1c0;
+              font-size: 11px;
+            }
+
+            .revenue-item-description small {
+              color: #8f9aad;
+              font-size: 10.5px;
+            }
+
+            .revenue-item-subtotal {
+              flex-shrink: 0;
+              color: #e5bd65;
+              font-size: 12px;
+              font-weight: 700;
+              white-space: nowrap;
+            }
+
+            .revenue-no-items {
+              color: #929bad;
+              font-size: 11px;
+            }
+
+            /* Empty State */
+            .revenue-empty {
+              min-height: 180px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 10px;
+              text-align: center;
+              color: #d8a744;
+            }
+
+            .revenue-empty strong {
+              color: #f1f5f9;
+              font-size: 13px;
+            }
+
+            .revenue-empty span {
+              color: #929bad;
+              font-size: 11px;
+            }
+
+            /* Footer */
+            .revenue-footer {
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 12px;
+              flex-wrap: wrap;
+              padding: 14px 23px;
+              background: #191a23;
+              border-top: 1px solid #2a2c38;
+            }
+
+            .revenue-count {
+              color: #929bad;
+              font-size: 11px;
+            }
+
+            .revenue-actions {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+
+            .revenue-history,
+            .revenue-done {
+              min-height: 37px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              gap: 7px;
+              padding: 8px 14px;
+              border-radius: 8px;
+              font-size: 11px;
+              font-weight: 600;
+              text-decoration: none;
+              cursor: pointer;
+              transition: all 0.15s ease;
+            }
+
+            .revenue-history {
+              background: #222431;
+              border: 1px solid #373949;
+              color: #cbd5e1;
+            }
+
+            .revenue-history:hover {
+              color: #e5bd65;
+              border-color: #c9973b;
+            }
+
+            .revenue-done {
+              background: linear-gradient(135deg,#f0d48b,#c9973b);
+              border: 1px solid #d8a744;
+              color: #171717;
+            }
+
+            .revenue-done:hover {
+              background: linear-gradient(135deg,#f5dfa7,#dfb653);
+            }
+
+            /* Responsive */
+            @media (max-width: 650px) {
+              .revenue-overlay {
+                padding: 12px;
+              }
+
+              .revenue-dialog {
+                max-height: 92vh;
+                max-height: 92dvh;
+                border-radius: 12px;
+              }
+
+              .revenue-header {
+                padding: 15px 16px;
+              }
+
+              .revenue-header h4 {
+                font-size: 15px;
+              }
+
+              .revenue-summary {
+                grid-template-columns: 1fr 1fr;
+                gap: 13px;
+                padding: 16px;
+              }
+
+              .revenue-total {
+                grid-column: 1 / -1;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #303140;
+              }
+
+              .revenue-total strong {
+                font-size: 24px;
+              }
+
+              .revenue-summary-stat {
+                padding-left: 0;
+                border-left: none;
+              }
+
+              .revenue-summary-stat span {
+                font-size: 10.5px;
+              }
+
+              .revenue-summary-stat strong {
+                font-size: 13px;
+              }
+
+              .revenue-tools {
+                align-items: stretch;
+                flex-direction: column;
+                padding: 13px 16px;
+                gap: 12px;
+              }
+
+              .revenue-search {
+                max-width: none;
+              }
+
+              .revenue-filter {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+              }
+
+              .revenue-list {
+                padding: 14px 13px;
+              }
+
+              .revenue-order {
+                padding: 13px;
+              }
+
+              .revenue-order-total {
+                font-size: 14px;
+              }
+
+              .revenue-order-info {
+                align-items: flex-start;
+                flex-direction: column;
+              }
+
+              .revenue-footer {
+                padding: 13px 15px;
+                flex-direction: column;
+                align-items: stretch;
+              }
+
+              .revenue-count {
+                text-align: center;
+              }
+
+              .revenue-actions {
+                display: grid;
+                grid-template-columns: 1fr auto;
+              }
+            }
+
+            @media (max-width: 380px) {
+              .revenue-filter {
+                align-items: flex-start;
+                flex-direction: column;
+              }
+
+              .revenue-order-main {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 9px;
+              }
+
+              .revenue-order-total {
+                padding-left: 50px;
+              }
+
+              .revenue-item {
+                flex-direction: column;
+                gap: 7px;
+              }
+
+              .revenue-item-subtotal {
+                align-self: flex-end;
+              }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              .revenue-dialog,
+              .revenue-close,
+              .revenue-order,
+              .revenue-filter-options button,
+              .revenue-history,
+              .revenue-done {
+                animation: none;
+                transition: none;
+              }
+            }
+          `}</style>
         </div>
       )}
-
     </div>
   );
 };
