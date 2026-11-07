@@ -5,6 +5,258 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import MenuDropdown from './MenuDropdown';
 import { Coffee, Utensils, ShoppingBag, Check, X, Mail, HeartHandshake, Info } from 'lucide-react';
 
+const diningStylesCSS = `
+  .dining-modal-dialog {
+    width: 100%;
+    margin: 0 auto;
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .dining-modal-body {
+    padding: 29px 30px 23px;
+    text-align: center;
+  }
+
+  .dining-modal-brand-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(216,167,68,0.42);
+    border-radius: 50%;
+    color: #e3bd69;
+    background: radial-gradient(circle, rgba(216,167,68,0.17), rgba(216,167,68,0.04));
+  }
+
+  .dining-eyebrow {
+    margin: 0 0 3px;
+    color: #c9973b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2.4px;
+  }
+
+  .dining-modal-title {
+    margin: 0;
+    color: #f8e4b0;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 27px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+
+  .dining-title-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 70%;
+    margin: 15px auto 13px;
+  }
+
+  .dining-title-divider > span:not(.dining-divider-dot) {
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, transparent, #c9973b);
+  }
+
+  .dining-title-divider > span:last-child {
+    background: linear-gradient(90deg, #c9973b, transparent);
+  }
+
+  .dining-divider-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #e5bd65;
+    box-shadow: 0 0 8px rgba(229,189,101,0.4);
+  }
+
+  .dining-modal-subtitle {
+    margin: 0 0 22px;
+    color: #aab1c0;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .dining-choice-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+  }
+
+  .dining-choice-card {
+    position: relative;
+    width: 100%;
+    min-height: 176px;
+    padding: 20px 12px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 1px solid #343444;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #20212c, #191a24 75%);
+    color: #f1f5f9;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+  }
+
+  .dining-choice-card:hover {
+    border-color: rgba(216,167,68,0.72);
+    background: linear-gradient(145deg, #292638, #1b1c26 75%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 23px rgba(0,0,0,0.22);
+  }
+
+  .dining-choice-card.selected {
+    border: 1.5px solid #d8a744;
+    background: linear-gradient(145deg, rgba(216,167,68,0.16), #1c1d27 78%);
+    box-shadow: inset 0 0 0 1px rgba(216,167,68,0.08), 0 0 20px rgba(216,167,68,0.08);
+  }
+
+  .dining-choice-card:focus-visible {
+    outline: 2px solid #f0cf7a;
+    outline-offset: 3px;
+  }
+
+  .dining-choice-check {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 21px;
+    height: 21px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(216,167,68,0.4);
+    border-radius: 50%;
+    color: #171717;
+    background: transparent;
+  }
+
+  .dining-choice-card.selected .dining-choice-check {
+    background: #d8a744;
+  }
+
+  .dining-choice-icon {
+    width: 54px;
+    height: 54px;
+    margin-bottom: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(216,167,68,0.35);
+    border-radius: 15px;
+    color: #e0b65d;
+    background: rgba(216,167,68,0.09);
+  }
+
+  .dining-choice-title {
+    display: block;
+    margin-bottom: 7px;
+    color: #f6e5bd;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .dining-choice-description {
+    display: block;
+    max-width: 190px;
+    margin: 0 auto;
+    color: #aeb4c1;
+    font-size: 11.5px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .dining-choice-accent {
+    position: absolute;
+    bottom: 0;
+    left: 25%;
+    width: 50%;
+    height: 2px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, transparent, #d8a744, transparent);
+    opacity: 0.7;
+  }
+
+  .dining-about-trigger {
+    width: 100%;
+    min-height: 43px;
+    margin-top: 15px;
+    padding: 9px 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    position: relative;
+    border: 1px solid rgba(216,167,68,0.38);
+    border-radius: 11px;
+    background: linear-gradient(110deg, rgba(216,167,68,0.08), rgba(216,167,68,0.025));
+    color: #e5bd65;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .dining-about-trigger:hover {
+    border-color: rgba(216,167,68,0.75);
+    background: rgba(216,167,68,0.13);
+  }
+
+  .dining-about-trigger-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #d8a744;
+  }
+
+  .dining-about-trigger-arrow {
+    position: absolute;
+    right: 12px;
+    color: #81899a;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .dining-modal-footer {
+    margin: 14px 0 0;
+    color: #737d90;
+    font-size: 10.5px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 420px) {
+    .dining-modal-body {
+      padding: 25px 19px 20px;
+    }
+
+    .dining-choice-list {
+      grid-template-columns: 1fr;
+      gap: 11px;
+    }
+
+    .dining-choice-card {
+      min-height: 145px;
+      padding: 16px 12px;
+    }
+
+    .dining-choice-icon {
+      width: 47px;
+      height: 47px;
+      margin-bottom: 9px;
+    }
+  }
+`;
+
 const Menu = () => {
   const [searchParams] = useSearchParams();
   const tableNumber = searchParams.get('table') || '0';
@@ -23,13 +275,22 @@ const Menu = () => {
   const [productVariants, setProductVariants] = useState([]);
 
   // State Dine In / Take Away
+  // Logika: Saat scan QR meja (atau belum memilih metode pelayanan di sesi meja ini),
+  // pengguna WAJIB memilih Makan di Sini atau Bawa Pulang terlebih dahulu sebelum masuk ke menu.
   const [diningMethod, setDiningMethod] = useState(() => {
-    return localStorage.getItem('wow_location') || null;
+    const currentTable = searchParams.get('table') || '0';
+    const savedTable = sessionStorage.getItem('wow_table');
+    const savedLocation = sessionStorage.getItem('wow_location');
+
+    // Hanya jika meja sama persis dan sudah memilih di sesi ini (misal kembali dari checkout / browsing)
+    if (savedLocation && savedTable === currentTable && currentTable !== '0') {
+      return savedLocation;
+    }
+    // Scan baru / belum memilih: default null (tampilkan layar pemilihan terlebih dahulu)
+    return null;
   });
 
-  const [showDiningModal, setShowDiningModal] = useState(() => {
-    return !localStorage.getItem('wow_location');
-  });
+  const [showDiningModal, setShowDiningModal] = useState(false);
 
   const [showAboutModal, setShowAboutModal] = useState(false);
 
@@ -65,6 +326,13 @@ const Menu = () => {
     if (savedCart) setCart(JSON.parse(savedCart));
 
     if (tableNumber !== '0') {
+      const savedTable = sessionStorage.getItem('wow_table');
+      if (savedTable && savedTable !== tableNumber) {
+        // Meja berbeda dari sesi sebelumnya, reset pilihan
+        sessionStorage.removeItem('wow_location');
+        sessionStorage.removeItem('wow_table');
+        setDiningMethod(null);
+      }
       localStorage.setItem('wow_table', tableNumber);
     }
 
@@ -73,6 +341,8 @@ const Menu = () => {
 
   const handleSelectDiningMethod = (method) => {
     setDiningMethod(method);
+    sessionStorage.setItem('wow_location', method);
+    sessionStorage.setItem('wow_table', tableNumber);
     localStorage.setItem('wow_location', method);
     setShowDiningModal(false);
   };
@@ -194,35 +464,168 @@ const Menu = () => {
   const cartTotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // JIKA BELUM MEMILIH METODE PELAYANAN (DINE IN / TAKE AWAY):
+  // Wajib memilih metode pelayanan terlebih dahulu sebelum masuk ke menu
+  if (!diningMethod) {
+    return (
+      <div
+        className="billion-service-selection-page"
+        style={{
+          backgroundColor: '#0c0d12',
+          backgroundImage: 'radial-gradient(ellipse at top, rgba(216,167,68,0.16), transparent 55%)',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px 18px',
+          color: '#f1f5f9'
+        }}
+      >
+        <div
+          className="dining-modal-content border-0 shadow-lg w-100"
+          style={{
+            maxWidth: '460px',
+            background: 'radial-gradient(ellipse at top, rgba(216,167,68,0.12), transparent 48%), #161720',
+            border: '1px solid rgba(216,167,68,0.45)',
+            borderRadius: '24px',
+            overflow: 'hidden',
+            color: '#f1f5f9',
+            boxShadow: '0 25px 70px rgba(0,0,0,0.65), 0 0 35px rgba(216,167,68,0.1)'
+          }}
+        >
+          <div className="dining-modal-body" style={{ padding: '36px 28px 28px', textAlign: 'center' }}>
+            <div className="dining-modal-brand-icon">
+              <Coffee size={28} strokeWidth={1.6} />
+            </div>
+
+            <p className="dining-eyebrow">WELCOME TO</p>
+
+            <h1 className="dining-modal-title">
+              Billion Cafe
+            </h1>
+
+            <div className="dining-title-divider">
+              <span />
+              <span className="dining-divider-dot" />
+              <span />
+            </div>
+
+            <p className="dining-modal-subtitle">
+              Silakan pilih metode pelayanan untuk pesanan Anda
+            </p>
+
+            <div className="dining-choice-list">
+              <button
+                type="button"
+                className="dining-choice-card"
+                onClick={() => handleSelectDiningMethod('dine-in')}
+              >
+                <span className="dining-choice-check" />
+                <span className="dining-choice-icon">
+                  <Utensils size={28} strokeWidth={1.7} />
+                </span>
+                <span className="dining-choice-title">
+                  Makan di Sini
+                </span>
+                <span className="dining-choice-description">
+                  {tableNumber !== '0' ? `Disajikan langsung di Meja ${tableNumber}` : 'Disajikan langsung di meja Anda'}
+                </span>
+                <span className="dining-choice-accent" />
+              </button>
+
+              <button
+                type="button"
+                className="dining-choice-card"
+                onClick={() => handleSelectDiningMethod('takeaway')}
+              >
+                <span className="dining-choice-check" />
+                <span className="dining-choice-icon">
+                  <ShoppingBag size={28} strokeWidth={1.7} />
+                </span>
+                <span className="dining-choice-title">
+                  Bawa Pulang
+                </span>
+                <span className="dining-choice-description">
+                  Dibungkus untuk dibawa pulang
+                </span>
+                <span className="dining-choice-accent" />
+              </button>
+            </div>
+
+            {/* Tombol Tentang Kami */}
+            <button
+              type="button"
+              className="dining-about-trigger"
+              onClick={() => {
+                const query = searchParams.toString();
+                navigate(query ? `/customer/about?${query}` : '/customer/about');
+              }}
+              aria-label="Buka informasi tentang tim Billion Cafe"
+            >
+              <span className="dining-about-trigger-icon">
+                <Info size={20} strokeWidth={1.8} />
+              </span>
+              <span className="dining-about-trigger-content">
+                <span className="dining-about-trigger-title">
+                  Tentang Kami
+                </span>
+              </span>
+              <span className="dining-about-trigger-arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+
+            <p className="dining-modal-footer">
+              Pilihan ini dapat diubah kembali melalui menu pesanan.
+            </p>
+          </div>
+        </div>
+
+        <style>{diningStylesCSS}</style>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ backgroundColor: '#101116', minHeight: '100vh', color: '#f1f5f9', paddingBottom: '90px' }}>
+    <div
+      className="billion-customer-menu-page"
+      style={{
+        backgroundColor: '#0c0d12',
+        backgroundImage: 'radial-gradient(ellipse at top, rgba(216, 167, 68, 0.14), transparent 55%)',
+        minHeight: '100vh',
+        color: '#f1f5f9',
+        paddingBottom: '95px'
+      }}
+    >
 
       {/* 1. Header Info Meja & Menu */}
       <div
         className="d-flex justify-content-between align-items-center p-3 sticky-top"
         style={{
-          backgroundColor: '#161720',
-          borderBottom: '1px solid #23253a',
+          backgroundColor: 'rgba(18, 19, 26, 0.95)',
+          borderBottom: '1px solid rgba(216, 167, 68, 0.25)',
+          backdropFilter: 'blur(10px)',
           top: 0,
           zIndex: 1020,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+          boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
         }}
       >
         <div>
-          <h5 className="mb-0 fw-bold" style={{ color: '#f1f5f9', fontSize: '1.2rem', letterSpacing: '0.2px' }}>
+          <h1 className="mb-0 fw-bold" style={{ color: '#ffffff', fontSize: '1.3rem', fontFamily: "Georgia, 'Times New Roman', serif", letterSpacing: '0.3px' }}>
             Billion Cafe Menu
-          </h5>
+          </h1>
 
           <div className="d-flex align-items-center gap-2 mt-2">
             <span
               style={{
-                fontSize: '0.72rem',
+                fontSize: '0.75rem',
                 fontWeight: '600',
-                backgroundColor: '#222433',
-                color: '#cbd5e1',
-                border: '1px solid #2c2f40',
-                borderRadius: '20px',
-                padding: '3px 10px',
+                backgroundColor: '#171821',
+                color: '#e5bd65',
+                border: '1px solid rgba(216, 167, 68, 0.45)',
+                borderRadius: '999px',
+                padding: '4px 12px',
                 display: 'inline-flex',
                 alignItems: 'center'
               }}
@@ -233,22 +636,22 @@ const Menu = () => {
             {diningMethod && (
               <span
                 style={{
-                  fontSize: '0.72rem',
+                  fontSize: '0.75rem',
                   fontWeight: '600',
-                  backgroundColor: '#222433',
-                  color: '#cbd5e1',
-                  border: '1px solid #2c2f40',
-                  borderRadius: '20px',
-                  padding: '3px 10px',
+                  backgroundColor: '#171821',
+                  color: '#e5bd65',
+                  border: '1px solid rgba(216, 167, 68, 0.45)',
+                  borderRadius: '999px',
+                  padding: '4px 12px',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '5px'
                 }}
                 onClick={() => setShowDiningModal(true)}
               >
                 {diningMethod === 'dine-in' ? 'Makan di Sini' : 'Bawa Pulang'}
-                <i className="bi bi-pencil-square" style={{ fontSize: '0.65rem', color: '#94a3b8' }}></i>
+                <i className="bi bi-pencil-square" style={{ fontSize: '0.7rem', color: '#e5bd65' }}></i>
               </span>
             )}
           </div>
@@ -263,29 +666,39 @@ const Menu = () => {
         />
       </div>
 
+      {/* Ornamen Garis Emas Atas */}
+      <div className="status-top-divider my-2" style={{ maxWidth: '300px' }}>
+        <span />
+        <span className="status-divider-dot" />
+        <span />
+      </div>
+
       {/* 2. Kategori Filter */}
       <div
         className="d-flex overflow-auto p-3 gap-2 hide-scrollbar sticky-top"
         style={{
           whiteSpace: 'nowrap',
-          top: '73px',
+          top: '77px',
           zIndex: 1010,
-          backgroundColor: '#101116',
-          borderBottom: '1px solid #1c1d27'
+          backgroundColor: 'rgba(12, 13, 18, 0.95)',
+          borderBottom: '1px solid rgba(216, 167, 68, 0.18)',
+          backdropFilter: 'blur(8px)'
         }}
       >
         <button
           className="border-0 transition-all"
           style={{
-            borderRadius: '20px',
-            padding: '7px 18px',
+            borderRadius: '999px',
+            padding: '8px 20px',
             fontSize: '0.85rem',
             fontWeight: '700',
-            backgroundColor: activeCategory === 'all' ? '#d8a744' : '#222433',
-            color: activeCategory === 'all' ? '#101116' : '#94a3b8',
-            border: activeCategory === 'all' ? 'none' : '1px solid #2c2f40',
+            background: activeCategory === 'all'
+              ? 'linear-gradient(90deg, #b88728 0%, #e5c165 50%, #c49335 100%)'
+              : '#171821',
+            color: activeCategory === 'all' ? '#141414' : '#94a3b8',
+            border: activeCategory === 'all' ? 'none' : '1px solid rgba(216, 167, 68, 0.25)',
             cursor: 'pointer',
-            boxShadow: activeCategory === 'all' ? '0 2px 8px rgba(216, 167, 68, 0.3)' : 'none'
+            boxShadow: activeCategory === 'all' ? '0 4px 14px rgba(216, 167, 68, 0.35)' : 'none'
           }}
           onClick={() => setActiveCategory('all')}
         >
@@ -300,15 +713,17 @@ const Menu = () => {
               key={cat.id}
               className="border-0 transition-all"
               style={{
-                borderRadius: '20px',
-                padding: '7px 18px',
+                borderRadius: '999px',
+                padding: '8px 20px',
                 fontSize: '0.85rem',
                 fontWeight: '700',
-                backgroundColor: isActive ? '#d8a744' : '#222433',
-                color: isActive ? '#101116' : '#94a3b8',
-                border: isActive ? 'none' : '1px solid #2c2f40',
+                background: isActive
+                  ? 'linear-gradient(90deg, #b88728 0%, #e5c165 50%, #c49335 100%)'
+                  : '#171821',
+                color: isActive ? '#141414' : '#94a3b8',
+                border: isActive ? 'none' : '1px solid rgba(216, 167, 68, 0.25)',
                 cursor: 'pointer',
-                boxShadow: isActive ? '0 2px 8px rgba(216, 167, 68, 0.3)' : 'none'
+                boxShadow: isActive ? '0 4px 14px rgba(216, 167, 68, 0.35)' : 'none'
               }}
               onClick={() => setActiveCategory(cat.id)}
             >
@@ -335,12 +750,13 @@ const Menu = () => {
                 <div
                   className="h-100 d-flex flex-column justify-content-between transition-all"
                   style={{
-                    backgroundColor: '#161720',
-                    border: '1px solid #23253a',
-                    borderRadius: '16px',
+                    background: 'radial-gradient(ellipse at top, rgba(216, 167, 68, 0.08), transparent 60%), #171821',
+                    border: '1px solid rgba(216, 167, 68, 0.35)',
+                    borderRadius: '20px',
                     overflow: 'hidden',
                     opacity: isAvailable ? 1 : 0.6,
-                    padding: '10px'
+                    padding: '12px',
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.45), 0 0 15px rgba(216, 167, 68, 0.04)'
                   }}
                 >
                   <div>
@@ -349,8 +765,9 @@ const Menu = () => {
                         height: '135px',
                         overflow: 'hidden',
                         position: 'relative',
-                        borderRadius: '12px',
-                        backgroundColor: '#222433'
+                        borderRadius: '14px',
+                        backgroundColor: '#12131a',
+                        border: '1px solid rgba(216, 167, 68, 0.2)'
                       }}
                     >
                       {product.image_url ? (
@@ -372,7 +789,7 @@ const Menu = () => {
                       {!isAvailable && (
                         <div
                           className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-                          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+                          style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
                         >
                           <span
                             className="badge"
@@ -393,23 +810,25 @@ const Menu = () => {
                     </div>
 
                     <div className="pt-2 px-1">
-                      <h6
+                      <h2
                         className="mb-1 fw-bold text-truncate"
                         style={{
-                          fontSize: '0.92rem',
-                          color: isAvailable ? '#f1f5f9' : '#94a3b8',
+                          fontSize: '0.98rem',
+                          fontFamily: "Georgia, 'Times New Roman', serif",
+                          color: isAvailable ? '#ffffff' : '#94a3b8',
                           textDecoration: !isAvailable ? 'line-through' : 'none'
                         }}
                         title={product.name}
                       >
                         {product.name}
-                      </h6>
+                      </h2>
 
                       <div
                         style={{
-                          color: '#d8a744',
+                          color: '#e5bd65',
                           fontWeight: '700',
-                          fontSize: '1rem',
+                          fontSize: '1.05rem',
+                          fontFamily: "Georgia, 'Times New Roman', serif",
                           marginBottom: hasGrosir ? '2px' : '4px'
                         }}
                       >
@@ -420,7 +839,7 @@ const Menu = () => {
                         <div
                           style={{
                             fontSize: '0.72rem',
-                            color: '#94a3b8',
+                            color: '#cbd5e1',
                             fontWeight: '500',
                             marginBottom: '6px'
                           }}
@@ -435,12 +854,16 @@ const Menu = () => {
                     <button
                       className="w-100 border-0 fw-bold transition-all"
                       style={{
-                        backgroundColor: isAvailable ? '#d8a744' : '#282a36',
-                        color: isAvailable ? '#101116' : '#64748b',
-                        padding: '8px 0',
-                        borderRadius: '10px',
+                        background: isAvailable
+                          ? 'linear-gradient(90deg, #b88728 0%, #e5c165 50%, #c49335 100%)'
+                          : '#1c1d27',
+                        color: isAvailable ? '#141414' : '#64748b',
+                        padding: '9px 0',
+                        borderRadius: '999px',
                         fontSize: '0.88rem',
-                        cursor: isAvailable ? 'pointer' : 'not-allowed'
+                        fontWeight: '700',
+                        cursor: isAvailable ? 'pointer' : 'not-allowed',
+                        boxShadow: isAvailable ? '0 4px 12px rgba(216, 167, 68, 0.25)' : 'none'
                       }}
                       disabled={!isAvailable}
                     >
@@ -464,21 +887,21 @@ const Menu = () => {
             <button
               className="w-100 border-0 d-flex justify-content-between align-items-center shadow-lg transition-all"
               style={{
-                backgroundColor: '#d8a744',
-                color: '#101116',
-                padding: '14px 22px',
-                borderRadius: '30px',
+                background: 'linear-gradient(90deg, #b88728 0%, #e5c165 50%, #c49335 100%)',
+                color: '#141414',
+                padding: '14px 24px',
+                borderRadius: '999px',
                 fontWeight: '700',
                 cursor: 'pointer',
-                boxShadow: '0 8px 24px rgba(216, 167, 68, 0.4)'
+                boxShadow: '0 10px 32px rgba(216, 167, 68, 0.45)'
               }}
               onClick={() => navigate('/customer/checkout')}
             >
-              <span className="d-flex align-items-center gap-2" style={{ fontSize: '0.95rem' }}>
-                {cartCount} Item
+              <span className="d-flex align-items-center gap-2" style={{ fontSize: '0.98rem', fontWeight: '700' }}>
+                🛒 {cartCount} Item
               </span>
 
-              <span style={{ fontSize: '1.05rem', fontWeight: '800' }}>
+              <span style={{ fontSize: '1.1rem', fontWeight: '800', fontFamily: "Georgia, 'Times New Roman', serif" }}>
                 Rp {cartTotal.toLocaleString('id-ID')}
               </span>
             </button>
@@ -491,26 +914,27 @@ const Menu = () => {
         <div
           className="modal show d-block"
           style={{
-            backgroundColor: 'rgba(0,0,0,0.75)',
+            backgroundColor: 'rgba(0,0,0,0.85)',
             zIndex: 1050,
-            backdropFilter: 'blur(6px)'
+            backdropFilter: 'blur(8px)'
           }}
         >
           <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: '440px' }}>
             <div
-              className="modal-content border-0 shadow-lg"
+              className="modal-content border-0"
               style={{
-                backgroundColor: '#161720',
-                border: '1px solid #23253a',
-                borderRadius: '20px',
+                background: 'radial-gradient(ellipse at top, rgba(216, 167, 68, 0.12), transparent 55%), #171821',
+                border: '1px solid rgba(216, 167, 68, 0.48)',
+                borderRadius: '24px',
                 color: '#f1f5f9',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(216, 167, 68, 0.08)'
               }}
             >
               <div className="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                <h5 className="modal-title fw-bold" style={{ color: '#f1f5f9', fontSize: '1.2rem' }}>
+                <h2 className="modal-title fw-bold" style={{ color: '#ffffff', fontSize: '1.35rem', fontFamily: "Georgia, 'Times New Roman', serif" }}>
                   {selectedProduct.name}
-                </h5>
+                </h2>
 
                 <button
                   type="button"
@@ -524,13 +948,13 @@ const Menu = () => {
                   <img
                     src={`${API_IMAGE_URL}/${selectedProduct.image_url}`}
                     className="w-100 rounded mb-3"
-                    style={{ maxHeight: '190px', objectFit: 'cover', borderRadius: '12px' }}
+                    style={{ maxHeight: '200px', objectFit: 'cover', borderRadius: '16px', border: '1px solid rgba(216, 167, 68, 0.25)' }}
                     alt="detail"
                   />
                 )}
 
                 {selectedProduct.description && (
-                  <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '16px' }}>
+                  <p style={{ color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.5', marginBottom: '16px' }}>
                     {selectedProduct.description}
                   </p>
                 )}
@@ -539,15 +963,15 @@ const Menu = () => {
                   <div
                     style={{
                       backgroundColor: 'rgba(216, 167, 68, 0.1)',
-                      border: '1px solid rgba(216, 167, 68, 0.3)',
-                      borderRadius: '12px',
+                      border: '1px solid rgba(216, 167, 68, 0.35)',
+                      borderRadius: '14px',
                       padding: '12px 14px',
                       fontSize: '0.82rem',
                       marginBottom: '16px'
                     }}
                   >
                     <div className="d-flex justify-content-between align-items-center mb-1">
-                      <strong style={{ color: '#d8a744' }}>📦 Promo Grosir</strong>
+                      <strong style={{ color: '#e5bd65' }}>📦 Promo Grosir</strong>
 
                       {orderQty >= selectedProduct.grosir_min_qty ? (
                         <span
@@ -571,7 +995,7 @@ const Menu = () => {
 
                     <div style={{ color: '#cbd5e1' }}>
                       Beli min {selectedProduct.grosir_min_qty} pcs:{' '}
-                      <strong style={{ color: '#d8a744' }}>
+                      <strong style={{ color: '#e5bd65' }}>
                         Rp {parseInt(selectedProduct.grosir_price_per_unit, 10).toLocaleString('id-ID')}
                       </strong>/pcs
                     </div>
@@ -595,7 +1019,7 @@ const Menu = () => {
                           <div
                             key={v.id}
                             className="form-check d-flex justify-content-between align-items-center p-2 rounded"
-                            style={{ backgroundColor: '#1c1d27', border: '1px solid #282a36' }}
+                            style={{ backgroundColor: '#12131a', border: '1px solid rgba(216, 167, 68, 0.25)', borderRadius: '12px' }}
                           >
                             <div className="d-flex align-items-center gap-2">
                               <input
@@ -604,7 +1028,7 @@ const Menu = () => {
                                 id={`var-${v.id}`}
                                 checked={selectedVariants.some(sv => sv.id === v.id)}
                                 onChange={() => handleVariantToggle(v)}
-                                style={{ cursor: 'pointer', backgroundColor: '#161720', borderColor: '#475569' }}
+                                style={{ cursor: 'pointer', backgroundColor: '#171821', borderColor: 'rgba(216, 167, 68, 0.4)' }}
                               />
 
                               <label
@@ -616,7 +1040,7 @@ const Menu = () => {
                               </label>
                             </div>
 
-                            <span style={{ color: '#d8a744', fontSize: '0.8rem', fontWeight: '600' }}>
+                            <span style={{ color: '#e5bd65', fontSize: '0.82rem', fontWeight: '700' }}>
                               +Rp {parseInt(v.extra_price, 10).toLocaleString('id-ID')}
                             </span>
                           </div>
@@ -637,48 +1061,54 @@ const Menu = () => {
                     value={orderNotes}
                     onChange={e => setOrderNotes(e.target.value)}
                     style={{
-                      backgroundColor: '#1c1d27',
-                      border: '1px solid #282a36',
-                      color: '#f1f5f9',
-                      fontSize: '0.85rem',
-                      borderRadius: '8px',
-                      padding: '10px 12px'
+                      backgroundColor: '#12131a',
+                      border: '1px solid rgba(216, 167, 68, 0.35)',
+                      color: '#f8fafc',
+                      fontSize: '0.88rem',
+                      borderRadius: '12px',
+                      padding: '12px 14px'
                     }}
                   />
                 </div>
 
                 <div className="d-flex align-items-center justify-content-center gap-4 my-3">
                   <button
+                    type="button"
                     className="border-0 rounded-circle d-flex align-items-center justify-content-center"
                     onClick={() => setOrderQty(Math.max(1, orderQty - 1))}
                     style={{
-                      width: 38,
-                      height: 38,
-                      backgroundColor: '#222433',
-                      border: '1px solid #2c2f40',
-                      color: '#f1f5f9',
-                      fontSize: '1.2rem',
-                      cursor: 'pointer'
+                      width: 42,
+                      height: 42,
+                      backgroundColor: '#171821',
+                      border: '1px solid rgba(216, 167, 68, 0.45)',
+                      color: '#e5bd65',
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     -
                   </button>
 
-                  <span style={{ fontSize: '1.3rem', fontWeight: '700', color: '#f1f5f9' }}>
+                  <span style={{ fontSize: '1.45rem', fontWeight: '700', color: '#ffffff', fontFamily: "Georgia, 'Times New Roman', serif" }}>
                     {orderQty}
                   </span>
 
                   <button
+                    type="button"
                     className="border-0 rounded-circle d-flex align-items-center justify-content-center"
                     onClick={() => setOrderQty(orderQty + 1)}
                     style={{
-                      width: 38,
-                      height: 38,
-                      backgroundColor: '#222433',
-                      border: '1px solid #2c2f40',
-                      color: '#f1f5f9',
-                      fontSize: '1.2rem',
-                      cursor: 'pointer'
+                      width: 42,
+                      height: 42,
+                      backgroundColor: '#171821',
+                      border: '1px solid rgba(216, 167, 68, 0.45)',
+                      color: '#e5bd65',
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     +
@@ -688,14 +1118,16 @@ const Menu = () => {
 
               <div className="modal-footer border-0 p-4 pt-2">
                 <button
+                  type="button"
                   className="w-100 border-0 fw-bold py-3 transition-all"
                   style={{
-                    backgroundColor: '#d8a744',
-                    color: '#101116',
-                    borderRadius: '12px',
-                    fontSize: '0.95rem',
+                    background: 'linear-gradient(90deg, #b88728 0%, #e5c165 50%, #c49335 100%)',
+                    color: '#141414',
+                    borderRadius: '999px',
+                    fontSize: '1rem',
+                    fontWeight: '700',
                     cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(216, 167, 68, 0.35)'
+                    boxShadow: '0 8px 24px rgba(216, 167, 68, 0.35)'
                   }}
                   onClick={addToCart}
                 >
@@ -707,7 +1139,7 @@ const Menu = () => {
         </div>
       )}
 
-      {/* 6. Modal Pilihan Tipe Pesanan */}
+      {/* 6. Modal Pilihan Tipe Pesanan (Dapat diakses kembali dari header menu) */}
       {showDiningModal && (
         <div
           className="modal show d-block dining-modal-overlay"
@@ -724,7 +1156,7 @@ const Menu = () => {
             style={{ maxWidth: '490px', minHeight: '100%', display: 'flex', alignItems: 'center' }}
           >
             <div
-              className="modal-content dining-modal-content border-0 shadow-lg mx-3"
+              className="modal-content dining-modal-content border-0 shadow-lg mx-3 position-relative"
               style={{
                 background: 'radial-gradient(ellipse at top, rgba(216,167,68,0.10), transparent 48%), #161720',
                 border: '1px solid rgba(216,167,68,0.45)',
@@ -734,6 +1166,14 @@ const Menu = () => {
                 boxShadow: '0 22px 70px rgba(0,0,0,0.55), 0 0 30px rgba(216,167,68,0.08)'
               }}
             >
+              <button
+                type="button"
+                className="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                onClick={() => setShowDiningModal(false)}
+                aria-label="Tutup"
+                style={{ zIndex: 10, cursor: 'pointer' }}
+              />
+
               <div className="modal-body dining-modal-body">
 
                 <div className="dining-modal-brand-icon">
@@ -776,7 +1216,7 @@ const Menu = () => {
                     </span>
 
                     <span className="dining-choice-description">
-                      Disajikan langsung di Meja {tableNumber}
+                      {tableNumber !== '0' ? `Disajikan langsung di Meja ${tableNumber}` : 'Disajikan langsung di meja Anda'}
                     </span>
 
                     <span className="dining-choice-accent" />
@@ -809,26 +1249,29 @@ const Menu = () => {
                 </div>
 
                 {/* Tombol Tentang Kami */}
-                  <button
-                    type="button"
-                    className="dining-about-trigger"
-                    onClick={() => setShowAboutModal(true)}
-                    aria-label="Buka informasi tentang tim Billion Cafe"
-                  >
-                    <span className="dining-about-trigger-icon">
-                      <Info size={20} strokeWidth={1.8} />
-                    </span>
+                <button
+                  type="button"
+                  className="dining-about-trigger"
+                  onClick={() => {
+                    const query = searchParams.toString();
+                    navigate(query ? `/customer/about?${query}` : '/customer/about');
+                  }}
+                  aria-label="Buka informasi tentang tim Billion Cafe"
+                >
+                  <span className="dining-about-trigger-icon">
+                    <Info size={20} strokeWidth={1.8} />
+                  </span>
 
-                    <span className="dining-about-trigger-content">
-                      <span className="dining-about-trigger-title">
-                        Tentang Kami
-                      </span>
+                  <span className="dining-about-trigger-content">
+                    <span className="dining-about-trigger-title">
+                      Tentang Kami
                     </span>
+                  </span>
 
-                    <span className="dining-about-trigger-arrow" aria-hidden="true">
-                      →
-                    </span>
-                  </button>
+                  <span className="dining-about-trigger-arrow" aria-hidden="true">
+                    →
+                  </span>
+                </button>
 
                 <p className="dining-modal-footer">
                   Pilihan ini dapat diubah kembali melalui menu pesanan.
@@ -837,257 +1280,7 @@ const Menu = () => {
             </div>
           </div>
 
-          <style>{`
-            .dining-modal-dialog {
-              width: 100%;
-              margin: 0 auto;
-              padding-top: 18px;
-              padding-bottom: 18px;
-            }
-
-            .dining-modal-body {
-              padding: 29px 30px 23px;
-              text-align: center;
-            }
-
-            .dining-modal-brand-icon {
-              width: 52px;
-              height: 52px;
-              margin: 0 auto 12px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              border: 1px solid rgba(216,167,68,0.42);
-              border-radius: 50%;
-              color: #e3bd69;
-              background: radial-gradient(circle, rgba(216,167,68,0.17), rgba(216,167,68,0.04));
-            }
-
-            .dining-eyebrow {
-              margin: 0 0 3px;
-              color: #c9973b;
-              font-size: 10px;
-              font-weight: 800;
-              letter-spacing: 2.4px;
-            }
-
-            .dining-modal-title {
-              margin: 0;
-              color: #f8e4b0;
-              font-family: Georgia, 'Times New Roman', serif;
-              font-size: 27px;
-              font-weight: 700;
-              letter-spacing: 0.2px;
-            }
-
-            .dining-title-divider {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 8px;
-              width: 70%;
-              margin: 15px auto 13px;
-            }
-
-            .dining-title-divider > span:not(.dining-divider-dot) {
-              height: 1px;
-              flex: 1;
-              background: linear-gradient(90deg, transparent, #c9973b);
-            }
-
-            .dining-title-divider > span:last-child {
-              background: linear-gradient(90deg, #c9973b, transparent);
-            }
-
-            .dining-divider-dot {
-              width: 6px;
-              height: 6px;
-              border-radius: 50%;
-              background: #e5bd65;
-              box-shadow: 0 0 8px rgba(229,189,101,0.4);
-            }
-
-            .dining-modal-subtitle {
-              margin: 0 0 22px;
-              color: #aab1c0;
-              font-size: 12.5px;
-              line-height: 1.5;
-            }
-
-            .dining-choice-list {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 13px;
-            }
-
-            .dining-choice-card {
-              position: relative;
-              width: 100%;
-              min-height: 176px;
-              padding: 20px 12px 18px;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              text-align: center;
-              border: 1px solid #343444;
-              border-radius: 16px;
-              background: linear-gradient(145deg, #20212c, #191a24 75%);
-              color: #f1f5f9;
-              cursor: pointer;
-              transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-              overflow: hidden;
-            }
-
-            .dining-choice-card:hover {
-              border-color: rgba(216,167,68,0.72);
-              background: linear-gradient(145deg, #292638, #1b1c26 75%);
-              transform: translateY(-2px);
-              box-shadow: 0 8px 23px rgba(0,0,0,0.22);
-            }
-
-            .dining-choice-card.selected {
-              border: 1.5px solid #d8a744;
-              background: linear-gradient(145deg, rgba(216,167,68,0.16), #1c1d27 78%);
-              box-shadow: inset 0 0 0 1px rgba(216,167,68,0.08), 0 0 20px rgba(216,167,68,0.08);
-            }
-
-            .dining-choice-card:focus-visible {
-              outline: 2px solid #f0cf7a;
-              outline-offset: 3px;
-            }
-
-            .dining-choice-check {
-              position: absolute;
-              top: 10px;
-              right: 10px;
-              width: 21px;
-              height: 21px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              border: 1px solid rgba(216,167,68,0.4);
-              border-radius: 50%;
-              color: #171717;
-              background: transparent;
-            }
-
-            .dining-choice-card.selected .dining-choice-check {
-              background: #d8a744;
-            }
-
-            .dining-choice-icon {
-              width: 54px;
-              height: 54px;
-              margin-bottom: 13px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              border: 1px solid rgba(216,167,68,0.35);
-              border-radius: 15px;
-              color: #e0b65d;
-              background: rgba(216,167,68,0.09);
-            }
-
-            .dining-choice-title {
-              display: block;
-              margin-bottom: 7px;
-              color: #f6e5bd;
-              font-size: 15px;
-              font-weight: 800;
-              line-height: 1.25;
-            }
-
-            .dining-choice-description {
-              display: block;
-              max-width: 190px;
-              margin: 0 auto;
-              color: #aeb4c1;
-              font-size: 11.5px;
-              font-weight: 400;
-              line-height: 1.5;
-            }
-
-            .dining-choice-accent {
-              position: absolute;
-              bottom: 0;
-              left: 25%;
-              width: 50%;
-              height: 2px;
-              border-radius: 99px;
-              background: linear-gradient(90deg, transparent, #d8a744, transparent);
-              opacity: 0.7;
-            }
-
-            .dining-about-trigger {
-              width: 100%;
-              min-height: 43px;
-              margin-top: 15px;
-              padding: 9px 13px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 9px;
-              position: relative;
-              border: 1px solid rgba(216,167,68,0.38);
-              border-radius: 11px;
-              background: linear-gradient(110deg, rgba(216,167,68,0.08), rgba(216,167,68,0.025));
-              color: #e5bd65;
-              font-size: 12.5px;
-              font-weight: 700;
-              cursor: pointer;
-              transition: background 0.2s ease, border-color 0.2s ease;
-            }
-
-            .dining-about-trigger:hover {
-              border-color: rgba(216,167,68,0.75);
-              background: rgba(216,167,68,0.13);
-            }
-
-            .dining-about-trigger-icon {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              color: #d8a744;
-            }
-
-            .dining-about-trigger-arrow {
-              position: absolute;
-              right: 12px;
-              color: #81899a;
-              font-size: 10px;
-              font-weight: 500;
-            }
-
-            .dining-modal-footer {
-              margin: 14px 0 0;
-              color: #737d90;
-              font-size: 10.5px;
-              line-height: 1.5;
-            }
-
-            @media (max-width: 420px) {
-              .dining-modal-body {
-                padding: 25px 19px 20px;
-              }
-
-              .dining-choice-list {
-                grid-template-columns: 1fr;
-                gap: 11px;
-              }
-
-              .dining-choice-card {
-                min-height: 145px;
-                padding: 16px 12px;
-              }
-
-              .dining-choice-icon {
-                width: 47px;
-                height: 47px;
-                margin-bottom: 9px;
-              }
-            }
-          `}</style>
+          <style>{diningStylesCSS}</style>
         </div>
       )}
 
@@ -1791,6 +1984,35 @@ const Menu = () => {
           </div>
         </div>
       )}
+
+      <style>{`
+        .status-top-divider {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          width: 100%;
+          margin: 4px auto 16px;
+        }
+
+        .status-top-divider > span:not(.status-divider-dot) {
+          height: 1px;
+          flex: 1;
+          background: linear-gradient(90deg, transparent, rgba(201, 151, 59, 0.75));
+        }
+
+        .status-top-divider > span:last-child {
+          background: linear-gradient(90deg, rgba(201, 151, 59, 0.75), transparent);
+        }
+
+        .status-divider-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #e5bd65;
+          box-shadow: 0 0 10px rgba(229, 189, 101, 0.65);
+        }
+      `}</style>
 
     </div>
   );
