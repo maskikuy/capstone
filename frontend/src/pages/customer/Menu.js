@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import MenuDropdown from './MenuDropdown';
-import { Coffee, Utensils, ShoppingBag, Check, X, Mail, HeartHandshake, Info } from 'lucide-react';
+import { Coffee, Utensils, ShoppingBag, Check, X, Mail, HeartHandshake, Info, ArrowUpRight } from 'lucide-react';
 
 const diningStylesCSS = `
   .dining-modal-dialog {
@@ -256,6 +256,42 @@ const diningStylesCSS = `
     }
   }
 `;
+
+
+const aboutTeamMembers = [
+  {
+    id: 'mesi',
+    name: 'MESI ANANDA PUTRI',
+    role: 'Tim Pengembang',
+    photoPosition: '75%',
+    portfolioUrl: 'https://www.linkedin.com/in/mesi-ananda-putri-2023-teknologiinformasi/',
+    portfolioLabel: 'LinkedIn'
+  },
+  {
+    id: 'rizky',
+    name: 'RIZKY GUSTI AFIQ MAULANA',
+    role: 'Tim Pengembang',
+    photoPosition: '34%',
+    portfolioUrl: 'https://www.linkedin.com/in/rizky-gusti-afiq-maulana-1772aa259/',
+    portfolioLabel: 'LinkedIn'
+  },
+  {
+    id: 'regina',
+    name: 'REGINA RANA NABILA',
+    role: 'Tim Pengembang',
+    photoPosition: '94%',
+    portfolioUrl: 'https://www.linkedin.com/in/regina-rana-nabila-76b114289/',
+    portfolioLabel: 'LinkedIn'
+  },
+  {
+    id: 'irsyad',
+    name: 'MUHAMMAD IRSYAD RAHMAD MAULANA',
+    role: 'Tim Pengembang',
+    photoPosition: '13%',
+    portfolioUrl: 'https://github.com/icad08',
+    portfolioLabel: 'GitHub'
+  }
+];
 
 const Menu = () => {
   const [searchParams] = useSearchParams();
@@ -557,10 +593,7 @@ const Menu = () => {
             <button
               type="button"
               className="dining-about-trigger"
-              onClick={() => {
-                const query = searchParams.toString();
-                navigate(query ? `/customer/about?${query}` : '/customer/about');
-              }}
+              onClick={() => setShowAboutModal(true)}
               aria-label="Buka informasi tentang tim Billion Cafe"
             >
               <span className="dining-about-trigger-icon">
@@ -659,10 +692,7 @@ const Menu = () => {
 
         <MenuDropdown
           onHistoryClick={() => setShowHistoryModal(true)}
-          onAboutClick={() => {
-            const query = searchParams.toString();
-            navigate(query ? `/customer/about?${query}` : '/customer/about');
-          }}
+          onAboutClick={() => setShowAboutModal(true)}
         />
       </div>
 
@@ -1354,7 +1384,7 @@ const Menu = () => {
                 </p>
               </section>
 
-              {/* Foto Bersama Tim */}
+              {/* Foto Bersama dan Profil Tim Pengembang */}
               <section className="about-team-section">
                 <div className="about-section-heading">
                   <span>OUR TEAM</span>
@@ -1367,6 +1397,46 @@ const Menu = () => {
                     src="/images/team-kami.jpg"
                     alt="Foto bersama Tim Pengembang Billion Cafe"
                   />
+                </div>
+
+                <div className="about-team-member-grid">
+                  {aboutTeamMembers.map((member) => (
+                    <article className="about-team-member-card" key={member.id}>
+                      <div
+                        className="about-team-member-avatar"
+                        role="img"
+                        aria-label={`Foto ${member.name}`}
+                        style={{
+                          backgroundImage: "url('/images/team-kami.jpg')",
+                          backgroundSize: '500% auto',
+                          backgroundPosition: `${member.photoPosition} 28%`
+                        }}
+                      />
+
+                      <div className="about-team-member-info">
+                        <span className="about-team-member-role">{member.role}</span>
+                        <a
+                          className="about-team-member-name"
+                          href={member.portfolioUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={`Buka portfolio ${member.name}`}
+                        >
+                          {member.name}
+                          <ArrowUpRight size={14} strokeWidth={2} />
+                        </a>
+                        <a
+                          className="about-team-member-portfolio"
+                          href={member.portfolioUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Lihat Portfolio {member.portfolioLabel}
+                          <ArrowUpRight size={13} />
+                        </a>
+                      </div>
+                    </article>
+                  ))}
                 </div>
               </section>
 
@@ -1670,6 +1740,100 @@ const Menu = () => {
               border-radius: 10px;
             }
 
+            .about-team-member-grid {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 11px;
+              margin-top: 13px;
+            }
+
+            .about-team-member-card {
+              min-width: 0;
+              display: flex;
+              align-items: center;
+              gap: 11px;
+              padding: 12px;
+              background: linear-gradient(145deg, #1b1c26, #15161e);
+              border: 1px solid #30313e;
+              border-radius: 12px;
+              transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+            }
+
+            .about-team-member-card:hover {
+              background: linear-gradient(145deg, #22212a, #191a23);
+              border-color: rgba(216,167,68,0.55);
+              transform: translateY(-2px);
+            }
+
+            .about-team-member-avatar {
+              width: 66px;
+              height: 66px;
+              flex: 0 0 66px;
+              overflow: hidden;
+              background-color: #292a34;
+              background-repeat: no-repeat;
+              border: 2px solid rgba(216,167,68,0.62);
+              border-radius: 50%;
+              box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+            }
+
+            .about-team-member-info {
+              min-width: 0;
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 5px;
+            }
+
+            .about-team-member-role {
+              color: #c69a4b;
+              font-size: 9px;
+              font-weight: 700;
+              letter-spacing: 0.7px;
+              text-transform: uppercase;
+            }
+
+            .about-team-member-name {
+              display: inline-flex;
+              align-items: flex-start;
+              gap: 4px;
+              max-width: 100%;
+              color: #f1f5f9;
+              font-size: 10.5px;
+              font-weight: 800;
+              line-height: 1.45;
+              text-decoration: none;
+              overflow-wrap: anywhere;
+              transition: color 0.2s ease;
+            }
+
+            .about-team-member-name:hover {
+              color: #e5bd65;
+            }
+
+            .about-team-member-name svg {
+              flex: 0 0 14px;
+              margin-top: 1px;
+              color: #d8a744;
+            }
+
+            .about-team-member-portfolio {
+              display: inline-flex;
+              align-items: center;
+              gap: 5px;
+              margin-top: 2px;
+              color: #e5bd65;
+              font-size: 9px;
+              font-weight: 700;
+              text-decoration: none;
+            }
+
+            .about-team-member-portfolio:hover {
+              color: #f5d98e;
+              text-decoration: underline;
+            }
+
             .about-contact-card {
               padding: 23px 18px;
               margin-bottom: 22px;
@@ -1828,6 +1992,21 @@ const Menu = () => {
               .about-team-photo-card img {
                 min-height: 150px;
                 max-height: 260px;
+              }
+
+              .about-team-member-grid {
+                grid-template-columns: 1fr;
+                gap: 9px;
+              }
+
+              .about-team-member-card {
+                padding: 11px;
+              }
+
+              .about-team-member-avatar {
+                width: 60px;
+                height: 60px;
+                flex-basis: 60px;
               }
             }
           `}</style>
