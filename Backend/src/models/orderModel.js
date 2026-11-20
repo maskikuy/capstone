@@ -104,6 +104,8 @@ export const getOrderById = async (conn, orderId) => {
             o.payment_method, 
             o.payment_status, 
             o.order_status, 
+            o.qris_image,
+            o.payment_link_url,
             o.created_at,
             oi.id AS item_id, 
             oi.quantity, 
@@ -137,6 +139,8 @@ export const getOrderById = async (conn, orderId) => {
                 payment_method: row.payment_method,
                 payment_status: row.payment_status,
                 order_status: row.order_status,
+                qris_image: row.qris_image,
+                payment_link_url: row.payment_link_url,
                 created_at: row.created_at,
                 items: [] 
             });
@@ -182,27 +186,29 @@ export const createOrder = async (conn, orderData) => {
             payment_method, payment_status, order_status
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const subtotal = orderData.subtotal !== undefined && orderData.subtotal !== null ? orderData.subtotal : orderData.total_amount;
+    const subtotal = orderData.subtotal !== undefined && orderData.subtotal !== null ? orderData.subtotal : (orderData.total_amount || 0);
     const discountId = orderData.discount_id || null;
     const discountName = orderData.discount_name || null;
     const discountAmount = parseFloat(orderData.discount_amount) || 0;
+    const paymentStatus = orderData.payment_status || (orderData.payment_method === 'qris' ? 'pending' : 'pending');
+    const orderStatus = orderData.order_status || 'pending';
 
     const [result] = await conn.execute(sql, [
-        orderData.table_number, 
-        orderData.customer_name, 
-        orderData.location, 
+        orderData.table_number ?? null, 
+        orderData.customer_name ?? 'Pelanggan', 
+        orderData.location ?? 'dine-in', 
         subtotal,
         discountId,
         discountName,
         discountAmount,
-        orderData.total_amount, 
-        orderData.payment_method, 
-        orderData.payment_status, 
-        orderData.order_status
+        orderData.total_amount || 0, 
+        orderData.payment_method ?? 'cash', 
+        paymentStatus, 
+        orderStatus
     ]);
     logger.info(`Order created with ID: ${result.insertId}`);
     return result.insertId;
-}
+};
 
 export const updateOrder = async (conn, orderId, orderData) => {
     logger.debug(`Updating order with ID: ${orderId} with data: ${JSON.stringify(orderData)}`);

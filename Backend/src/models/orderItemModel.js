@@ -25,7 +25,13 @@ export const getOrderItemById = async (conn, id) => {
 export const createOrderItem = async (conn, orderItem) => {
     logger.debug(`Creating a new order item with data: ${JSON.stringify(orderItem)}`);
     const sql = 'INSERT INTO order_items (order_id, product_id, quantity, price_at_order, notes) VALUES (?, ?, ?, ?, ?)';
-    const [result] = await conn.execute(sql, [orderItem.order_id, orderItem.product_id, orderItem.quantity, orderItem.price_at_order, orderItem.notes]);
+    const [result] = await conn.execute(sql, [
+        orderItem.order_id, 
+        orderItem.product_id, 
+        orderItem.quantity, 
+        orderItem.price_at_order, 
+        orderItem.notes ?? null
+    ]);
     logger.info(`Created new order item with ID: ${result.insertId}`);
     return { id: result.insertId, ...orderItem };
 }

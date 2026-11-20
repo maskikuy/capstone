@@ -58,7 +58,8 @@ export const createSumopodPayment = async ({ orderId, amount, paymentMethod = 'Q
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'X-Api-Key': apiKey
+            'X-Api-Key': apiKey,
+            'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify(payload)
     });
@@ -90,6 +91,26 @@ export const createSumopodPayment = async ({ orderId, amount, paymentMethod = 'Q
         }
     }
 
+    // Jika SumoPod mengembalikan payment_link_url (hosted checkout), otomatis ambil gambar QRIS bawaannya
+    // sehingga QR Code muncul langsung di aplikasi tanpa customer harus dialihkan ke halaman luar SumoPod
+    if (!qrImage && paymentLinkUrl) {
+        try {
+            logger.info(`Extracting embedded QRIS from SumoPod payment link: ${paymentLinkUrl}`);
+            const pageRes = await fetch(paymentLinkUrl);
+            if (pageRes.ok) {
+                const html = await pageRes.text();
+                const svgMatch = html.match(/<svg[^>]*id="qrcode"[^>]*>[\s\S]*?<\/svg>/i);
+                if (svgMatch) {
+                    const svgBase64 = Buffer.from(svgMatch[0]).toString('base64');
+                    qrImage = `data:image/svg+xml;base64,${svgBase64}`;
+                    logger.info('Successfully extracted direct QRIS SVG from SumoPod checkout page');
+                }
+            }
+        } catch (fetchErr) {
+            logger.warn(`Failed extracting QRIS SVG from paymentLinkUrl: ${fetchErr.message}`);
+        }
+    }
+
     return {
         payment_id: data.id || data.payment_id || '',
         order_id: data.order_id || String(orderId),
@@ -99,6 +120,31 @@ export const createSumopodPayment = async ({ orderId, amount, paymentMethod = 'Q
         payment_link_url: paymentLinkUrl,
         status: data.status || 'PENDING'
     };
+};
+
+/**
+ * Cek status transaksi pembayaran langsung ke SumoPod (Active Polling)
+ * Endpoint: GET /api/v1/payments/:id
+ */
+export const checkSumopodPaymentStatus = async (paymentId) => {
+    const apiKey = getApiKey();
+    if (!apiKey || !paymentId) return null;
+    const url = `${getBaseUrl()}/api/v1/payments/${paymentId}`;
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Api-Key': apiKey,
+                'Authorization': `Bearer ${apiKey}`
+            }
+        });
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (err) {
+        logger.warn(`Failed checking SumoPod payment status for ${paymentId}: ${err.message}`);
+        return null;
+    }
 };
 
 /**
@@ -154,6 +200,7 @@ export const verifySumopodWebhook = (headers = {}, rawBody = '') => {
 
 export default {
     createSumopodPayment,
+    checkSumopodPaymentStatus,
     verifySumopodWebhook
 };
 

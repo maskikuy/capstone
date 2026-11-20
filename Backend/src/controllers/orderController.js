@@ -4,7 +4,7 @@ import * as orderItemModel from '../models/orderItemModel.js';
 import * as orderItemVariantModel from '../models/orderItemVariantModel.js';
 import baseLogger from '../utils/logger.js';
 import { createQrisCharge, checkMidtransStatus, verifyMidtransSignature } from '../utils/midtransHelper.js';
-import { createSumopodPayment, verifySumopodWebhook } from '../utils/sumopodHelper.js';
+import { createSumopodPayment, checkSumopodPaymentStatus, verifySumopodWebhook } from '../utils/sumopodHelper.js';
 import * as productRecipeModel from '../models/productRecipeModel.js';
 
 const logger = baseLogger.child({ context: 'OrderController' });
@@ -325,6 +325,22 @@ export const checkPaymentStatus = async (req, res) => {
         // Kalau sudah paid di DB, langsung return
         if (payment_status === 'paid') return res.json({ payment_status: 'paid' });
 
+        // Cek status pembayaran ke SumoPod jika menggunakan SumoPod
+        if (sumopod_payment_id) {
+            try {
+                const spStatus = await checkSumopodPaymentStatus(sumopod_payment_id);
+                const statusStr = (spStatus?.status || '').toUpperCase();
+                logger.info(`SumoPod status for ${sumopod_payment_id}: ${statusStr}`);
+
+                if (['SUCCESS', 'PAID', 'SETTLED', 'COMPLETED'].includes(statusStr)) {
+                    await orderModel.updatePaymentStatus(conn, orderId, 'paid');
+                    return res.json({ payment_status: 'paid' });
+                }
+            } catch (err) {
+                logger.warn(`Could not check SumoPod status: ${err.message}`);
+            }
+        }
+
         // Kalau order QRIS lama menggunakan Midtrans murni tanpa sumopod
         if (midtrans_order_id && !sumopod_payment_id && !midtrans_order_id.includes('-17')) {
             try {
@@ -365,31 +381,41 @@ export const handleSumopodWebhook = async (req, res) => {
             return res.status(403).json({ error: 'Invalid webhook token / signature' });
         }
 
-        // SumoPod payload could be { event: 'payment.completed', data: { order_id, status } }
-        // or direct fields { order_id, status, event }
+        // SumoPod payload: { event_type: 'payment.completed', data: { order_id, status, payment_id, ... } }
         const payloadData = body.data || body;
-        const eventType = body.event || payloadData.event || '';
+        const eventType = body.event_type || body.event || payloadData.event_type || payloadData.event || '';
         const orderIdRaw = payloadData.order_id || body.order_id || '';
+        const paymentIdRaw = payloadData.payment_id || body.payment_id || '';
         const status = (payloadData.status || body.status || '').toUpperCase();
 
-        logger.info(`SumoPod webhook event: ${eventType}, order: ${orderIdRaw}, status: ${status}`);
+        logger.info(`SumoPod webhook event: ${eventType}, order: ${orderIdRaw}, payment_id: ${paymentIdRaw}, status: ${status}`);
 
         const isSuccess = 
             eventType === 'payment.completed' ||
+            eventType === 'payment_completed' ||
             status === 'COMPLETED' ||
             status === 'PAID' ||
             status === 'SETTLED' ||
             status === 'SUCCESS';
 
-        if (isSuccess && orderIdRaw) {
-            // Extract dbOrderId from order-123 or order-123-173000...
-            const match = orderIdRaw.match(/order-(\d+)/);
-            const dbOrderId = match ? match[1] : orderIdRaw;
+        if (isSuccess) {
+            let dbOrderId = null;
+            const match = String(orderIdRaw).match(/order-(\d+)/);
+            if (match) {
+                dbOrderId = match[1];
+            } else if (orderIdRaw && !isNaN(orderIdRaw)) {
+                dbOrderId = orderIdRaw;
+            }
 
             const conn = await db.getConnection();
             try {
-                await orderModel.updatePaymentStatus(conn, dbOrderId, 'paid');
-                logger.info(`Payment confirmed via SumoPod webhook for order ID: ${dbOrderId}`);
+                if (dbOrderId) {
+                    await orderModel.updatePaymentStatus(conn, dbOrderId, 'paid');
+                    logger.info(`Payment confirmed via SumoPod webhook for order ID: ${dbOrderId}`);
+                } else if (paymentIdRaw) {
+                    await conn.query('UPDATE orders SET payment_status = ? WHERE sumopod_payment_id = ?', ['paid', paymentIdRaw]);
+                    logger.info(`Payment confirmed via SumoPod webhook for payment ID: ${paymentIdRaw}`);
+                }
             } finally {
                 conn.release();
             }

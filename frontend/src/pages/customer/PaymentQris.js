@@ -10,6 +10,8 @@ const PaymentQris = () => {
   // Ambil data dari halaman checkout
   const { orderId, totalAmount, qris_image, payment_link_url, customerName, tableNumber } = location.state || {};
 
+  const [qrisImage, setQrisImage] = useState(qris_image || '');
+
   // Timer hitung mundur (15 menit)
   const [timeLeft, setTimeLeft] = useState(900);
   const [isCompleting, setIsCompleting] = useState(false);
@@ -20,6 +22,17 @@ const PaymentQris = () => {
     if (!orderId) {
         navigate('/customer/menu');
         return;
+    }
+
+    // Jika qrisImage belum ada di state (misal customer refresh halaman), ambil dari server
+    if (!qrisImage) {
+      api.get(`/order/${orderId}`)
+        .then(res => {
+          if (res.data && res.data.qris_image) {
+            setQrisImage(res.data.qris_image);
+          }
+        })
+        .catch(err => console.warn('Could not fetch order QRIS:', err));
     }
 
     // Countdown timer
@@ -90,9 +103,9 @@ const PaymentQris = () => {
 
   // Helper Download QR Code
   const downloadQR = () => {
-    if (!qris_image) return;
+    if (!qrisImage) return;
     const link = document.createElement('a');
-    link.href = qris_image;
+    link.href = qrisImage;
     link.download = `qris-order-${orderId}.png`;
     document.body.appendChild(link);
     link.click();
@@ -145,8 +158,8 @@ const PaymentQris = () => {
             className="p-3 d-inline-block rounded-3 mb-3 shadow"
             style={{ backgroundColor: '#ffffff', borderRadius: '16px' }}
           >
-            {qris_image ? (
-              <img src={qris_image} alt="QRIS Code" className="img-fluid" style={{ width: '220px', height: '220px' }} />
+            {qrisImage ? (
+              <img src={qrisImage} alt="QRIS Code" className="img-fluid" style={{ width: '220px', height: '220px' }} />
             ) : (
               <div className="d-flex align-items-center justify-content-center bg-light" style={{ width: '220px', height: '220px' }}>
                 <span className="spinner-border text-secondary"></span>
@@ -222,26 +235,7 @@ const PaymentQris = () => {
 
       {/* 3. TOMBOL AKSI */}
       <div className="w-100 d-flex flex-column gap-2" style={{ maxWidth: '420px' }}>
-        {payment_link_url && (
-          <a 
-            href={payment_link_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-100 py-3 fw-bold text-decoration-none text-center d-flex align-items-center justify-content-center shadow-sm"
-            style={{
-              backgroundColor: '#3b82f6',
-              color: '#ffffff',
-              borderRadius: '14px',
-              fontSize: '1rem',
-              cursor: 'pointer'
-            }}
-          >
-            <i className="bi bi-box-arrow-up-right me-2"></i>
-            Buka Halaman Pembayaran SumoPod
-          </a>
-        )}
-
-        {qris_image && (
+        {qrisImage && (
           <button 
             className="w-100 py-3 fw-bold border-0 transition-all shadow-sm"
             style={{
