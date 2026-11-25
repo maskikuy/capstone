@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { notifyError, notifySuccess } from '../../utils/notify';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, AlertTriangle, AlertCircle, Eye, ZoomIn } from 'lucide-react';
 
 const cleanNumericValue = (val) => {
   if (val === undefined || val === null || val === '') return '';
@@ -30,6 +30,8 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -86,6 +88,10 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
       }
       return nextForm;
     });
+
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
 
   const handleImageChange = (e) => {
@@ -110,31 +116,47 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const validateForm = () => {
+    const newErrors = {};
     const grosirUnit = form.stock_unit === 'gram' ? 'gram' : 'pcs';
     const minGrosirQty = 5;
 
-    if (!form.name || form.name.trim() === '') return notifyError('Nama wajib diisi');
-    if (Number(form.stock_available || 0) < 0) return notifyError('Stok tidak boleh negatif');
+    if (!form.name || form.name.trim() === '') {
+      newErrors.name = 'Nama item inventori wajib diisi';
+    }
 
-    if (form.price_type === 'bahan_baku') {
-      // Bahan baku tidak wajib harga jual
-    } else {
-      // Retail dan Grosir wajib harga jual
+    if (Number(form.stock_available || 0) < 0) {
+      newErrors.stock_available = 'Jumlah stok tidak boleh bernilai negatif';
+    }
+
+    if (form.price_type !== 'bahan_baku') {
       if (!form.selling_price || Number(form.selling_price) <= 0) {
-        return notifyError('Harga jual wajib diisi dan lebih dari 0 untuk menu retail / grosir');
+        newErrors.selling_price = 'Harga jual wajib diisi dan lebih dari Rp 0';
       }
       if (form.price_type === 'grosir') {
-        if (Number(form.grosir_min_qty || 0) < minGrosirQty) {
-          return notifyError(`Minimal pembelian grosir harus minimal ${minGrosirQty} ${grosirUnit}`);
+        if (!form.grosir_min_qty || Number(form.grosir_min_qty) < minGrosirQty) {
+          newErrors.grosir_min_qty = `Minimal pembelian grosir minimal ${minGrosirQty} ${grosirUnit}`;
         }
-        if (Number(form.grosir_price_per_unit || 0) <= 0) {
-          return notifyError('Harga grosir per unit tidak valid');
+        if (!form.grosir_price_per_unit || Number(form.grosir_price_per_unit) <= 0) {
+          newErrors.grosir_price_per_unit = 'Harga grosir per unit harus lebih besar dari Rp 0';
         }
       }
     }
+
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      const firstError = Object.values(validationErrors)[0];
+      return notifyError(firstError || 'Mohon lengkapi field wajib dengan benar');
+    }
+
+    setErrors({});
 
     const payload = {
       ...form,
@@ -205,7 +227,7 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
       <h5 style={{ color: '#f1f5f9', fontWeight: '700', marginBottom: '20px' }}>
         {item ? 'Edit Inventori' : 'Tambah Inventori'}
       </h5>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {/* Pilihan Tipe Item */}
         <div className="mb-3">
           <label style={{ color: '#94a3b8', fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block' }}>
@@ -247,10 +269,18 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
             value={form.name} 
             onChange={handleChange} 
             className="form-control" 
-            style={inputStyle} 
+            style={{
+              ...inputStyle,
+              ...(errors.name ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+            }}
             placeholder={form.price_type === 'bahan_baku' ? 'Contoh: Biji Kopi Arabika, Daging Ayam' : 'Contoh: Kopi Botol 250ml, Sirup Coklat'} 
-            required 
           />
+          {errors.name && (
+            <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <AlertCircle size={12} color="#ef4444" />
+              <span>{errors.name}</span>
+            </div>
+          )}
         </div>
 
         {/* Kategori Klasifikasi */}
@@ -281,11 +311,19 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
                 onFocus={handleNumberFocus}
                 placeholder="0"
                 className="form-control" 
-                style={inputStyle} 
+                style={{
+                  ...inputStyle,
+                  ...(errors.selling_price ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                }}
                 min="0" 
                 step="0.01" 
-                required
               />
+              {errors.selling_price && (
+                <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <AlertCircle size={12} color="#ef4444" />
+                  <span>{errors.selling_price}</span>
+                </div>
+              )}
             </div>
           )}
           <div className={isSellable ? "col-md-4" : "col-md-6"}>
@@ -335,13 +373,21 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
                   onFocus={handleNumberFocus}
                   placeholder="5"
                   className="form-control" 
-                  style={inputStyle} 
+                  style={{
+                    ...inputStyle,
+                    ...(errors.grosir_min_qty ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                  }}
                   min="1" 
                   step="1" 
-                  required
                 />
                 <span className="input-group-text" style={addonStyle}>{form.stock_unit === 'gram' ? 'gram' : 'pcs'}</span>
               </div>
+              {errors.grosir_min_qty && (
+                <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <AlertCircle size={12} color="#ef4444" />
+                  <span>{errors.grosir_min_qty}</span>
+                </div>
+              )}
             </div>
             <div className="col-md-4">
               <label style={{ color: '#94a3b8', fontSize: '13px', fontWeight: '500', marginBottom: '6px', display: 'block' }}>
@@ -355,11 +401,19 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
                 onFocus={handleNumberFocus}
                 placeholder="0"
                 className="form-control" 
-                style={inputStyle} 
+                style={{
+                  ...inputStyle,
+                  ...(errors.grosir_price_per_unit ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                }}
                 min="0" 
                 step="0.01" 
-                required
               />
+              {errors.grosir_price_per_unit && (
+                <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <AlertCircle size={12} color="#ef4444" />
+                  <span>{errors.grosir_price_per_unit}</span>
+                </div>
+              )}
             </div>
             <div className="col-md-4 d-flex align-items-end">
               <div style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#60a5fa', width: '100%' }}>
@@ -409,6 +463,29 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
           </div>
         </div>
 
+        {/* Peringatan Stok Rendah Realtime */}
+        {Number(form.stock_available || 0) <= Number(form.low_stock_threshold || 0) && form.low_stock_threshold !== '' && Number(form.low_stock_threshold) > 0 && (
+          <div
+            style={{
+              backgroundColor: 'rgba(245, 158, 11, 0.12)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              fontSize: '12.5px',
+              color: '#fbbf24',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}
+          >
+            <AlertTriangle size={18} color="#f59e0b" style={{ flexShrink: 0 }} />
+            <span>
+              <strong>Peringatan Ambang Batas:</strong> Stok tersedia saat ini (<strong>{Number(form.stock_available || 0)} {form.stock_unit}</strong>) berada pada atau di bawah ambang batas stok rendah (<strong>{Number(form.low_stock_threshold)} {form.stock_unit}</strong>).
+            </span>
+          </div>
+        )}
+
         {/* Upload Foto (Opsional, terutama untuk menu penjualan) */}
         {isSellable && (
           <div className="mb-3">
@@ -417,15 +494,63 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
             </label>
             <div className="d-flex align-items-center gap-3">
               {imagePreview ? (
-                <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #334155' }}>
-                  <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <button 
-                    type="button" 
-                    onClick={removeImage}
-                    style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', color: '#fff', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                <div className="d-flex align-items-center gap-3">
+                  <div 
+                    onClick={() => setPreviewModalOpen(true)}
+                    title="Klik untuk melihat pratinjau penuh"
+                    style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(216, 167, 68, 0.4)', cursor: 'pointer', backgroundColor: '#0d0d12' }}
                   >
-                    <X size={12} />
-                  </button>
+                    <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div 
+                      style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.opacity = 1; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.opacity = 0; }}
+                    >
+                      <ZoomIn size={18} color="#fff" />
+                    </div>
+                  </div>
+                  <div className="d-flex flex-column gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewModalOpen(true)}
+                      style={{
+                        backgroundColor: 'rgba(216, 167, 68, 0.15)',
+                        border: '1px solid rgba(216, 167, 68, 0.35)',
+                        color: '#e5c165',
+                        borderRadius: '6px',
+                        padding: '4px 10px',
+                        fontSize: '11.5px',
+                        fontWeight: '600',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Eye size={12} />
+                      Pratinjau
+                    </button>
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      style={{
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.25)',
+                        color: '#f87171',
+                        borderRadius: '6px',
+                        padding: '4px 10px',
+                        fontSize: '11.5px',
+                        fontWeight: '500',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <X size={12} />
+                      Hapus
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <label 
@@ -504,6 +629,121 @@ const InventoryForm = ({ item, onSaved, onCancel }) => {
           </button>
         </div>
       </form>
+
+      {/* Lightbox / Modal Pratinjau Foto */}
+      {previewModalOpen && imagePreview && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.88)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px'
+          }}
+          onClick={() => setPreviewModalOpen(false)}
+        >
+          <div
+            style={{
+              backgroundColor: '#161822',
+              border: '1px solid rgba(216, 167, 68, 0.35)',
+              borderRadius: '16px',
+              maxWidth: '600px',
+              width: '100%',
+              overflow: 'hidden',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8)',
+              position: 'relative'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div
+              className="d-flex justify-content-between align-items-center"
+              style={{
+                padding: '16px 20px',
+                borderBottom: '1px solid #232530',
+                backgroundColor: '#12131b'
+              }}
+            >
+              <div className="d-flex align-items-center gap-2">
+                <Eye size={16} color="#d8a744" />
+                <span style={{ fontSize: '13.5px', fontWeight: '700', color: '#f1f5f9' }}>
+                  Pratinjau Foto Inventori / Menu
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewModalOpen(false)}
+                style={{
+                  background: '#202230',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#94a3b8',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={15} />
+              </button>
+            </div>
+            <div
+              style={{
+                padding: '20px',
+                backgroundColor: '#0a0a0e',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                maxHeight: '65vh'
+              }}
+            >
+              <img
+                src={imagePreview}
+                alt="Pratinjau Foto Penuh"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '55vh',
+                  objectFit: 'contain',
+                  borderRadius: '10px'
+                }}
+              />
+            </div>
+            <div
+              className="d-flex justify-content-between align-items-center"
+              style={{
+                padding: '12px 20px',
+                borderTop: '1px solid #232530',
+                backgroundColor: '#14151e'
+              }}
+            >
+              <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                📷 {imageFile ? imageFile.name : (item?.image_url || 'Foto Terlampir')}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewModalOpen(false)}
+                style={{
+                  backgroundColor: '#d8a744',
+                  border: 'none',
+                  color: '#101116',
+                  borderRadius: '8px',
+                  padding: '6px 16px',
+                  fontSize: '12.5px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

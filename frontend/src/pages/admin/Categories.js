@@ -13,6 +13,8 @@ const Categories = () => {
   const [saving, setSaving] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [editCategoryName, setEditCategoryName] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -129,9 +131,18 @@ const Categories = () => {
     }
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab]);
+
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
+
+  const totalPages = Math.max(1, Math.ceil(filteredCategories.length / ITEMS_PER_PAGE));
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (validCurrentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedCategories = filteredCategories.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <div style={{
@@ -391,8 +402,8 @@ const Categories = () => {
                     Memuat kategori...
                   </td>
                 </tr>
-              ) : filteredCategories.length > 0 ? (
-                filteredCategories.map((category, index) => (
+              ) : paginatedCategories.length > 0 ? (
+                paginatedCategories.map((category, index) => (
                   <tr
                     key={category.id}
                     style={{ borderBottom: '1px solid #1e2030' }}
@@ -412,7 +423,7 @@ const Categories = () => {
                       textAlign: 'center',
                       color: '#94a3b8'
                     })}>
-                      {index + 1}
+                      {startIndex + index + 1}
                     </td>
 
                     {/* Category Name */}
@@ -520,31 +531,43 @@ const Categories = () => {
 
       {/* Pagination Indicator */}
       {!loading && filteredCategories.length > 0 && (
-        <div className="d-flex justify-content-center align-items-center gap-2 mt-4">
-          <button
-            type="button"
-            style={pageBtnStyle(false)}
-            disabled
-            aria-label="Halaman sebelumnya"
-          >
-            ‹
-          </button>
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
+          <div style={{ color: '#64748b', fontSize: '13px' }}>
+            Menampilkan <strong style={{ color: '#cbd5e1' }}>{startIndex + 1}</strong> - <strong style={{ color: '#cbd5e1' }}>{Math.min(startIndex + ITEMS_PER_PAGE, filteredCategories.length)}</strong> dari <strong style={{ color: '#cbd5e1' }}>{filteredCategories.length}</strong> kategori
+          </div>
 
-          <button
-            type="button"
-            style={pageBtnStyle(true)}
-          >
-            1
-          </button>
+          <div className="d-flex align-items-center gap-2">
+            <button
+              type="button"
+              style={pageBtnStyle(false, validCurrentPage <= 1)}
+              disabled={validCurrentPage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              aria-label="Halaman sebelumnya"
+            >
+              ‹
+            </button>
 
-          <button
-            type="button"
-            style={pageBtnStyle(false)}
-            disabled
-            aria-label="Halaman berikutnya"
-          >
-            ›
-          </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+              <button
+                key={pageNum}
+                type="button"
+                style={pageBtnStyle(pageNum === validCurrentPage)}
+                onClick={() => setCurrentPage(pageNum)}
+              >
+                {pageNum}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              style={pageBtnStyle(false, validCurrentPage >= totalPages)}
+              disabled={validCurrentPage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              aria-label="Halaman berikutnya"
+            >
+              ›
+            </button>
+          </div>
         </div>
       )}
 
@@ -737,15 +760,22 @@ const tdStyle = (extra = {}) => ({
   ...extra
 });
 
-const pageBtnStyle = (active) => ({
+const pageBtnStyle = (active, disabled = false) => ({
   backgroundColor: active ? '#c9973b' : '#161720',
   border: active ? 'none' : '1px solid #282a36',
-  color: active ? '#fff' : '#64748b',
-  fontWeight: active ? '700' : '400',
-  borderRadius: '6px',
-  padding: '5px 12px',
-  fontSize: '12px',
-  cursor: active ? 'pointer' : 'default'
+  color: active ? '#fff' : disabled ? '#475569' : '#94a3b8',
+  fontWeight: active ? '700' : '500',
+  borderRadius: '8px',
+  minWidth: '34px',
+  height: '34px',
+  padding: '0 10px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '13px',
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  opacity: disabled ? 0.45 : 1,
+  transition: 'all 0.15s ease'
 });
 
 export default Categories;

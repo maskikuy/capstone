@@ -846,7 +846,10 @@ const Menu = () => {
                           fontSize: '0.98rem',
                           fontFamily: "Georgia, 'Times New Roman', serif",
                           color: isAvailable ? '#ffffff' : '#94a3b8',
-                          textDecoration: !isAvailable ? 'line-through' : 'none'
+                          textDecoration: !isAvailable ? 'line-through' : 'none',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
                         }}
                         title={product.name}
                       >
@@ -984,7 +987,15 @@ const Menu = () => {
                 )}
 
                 {selectedProduct.description && (
-                  <p style={{ color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.5', marginBottom: '16px' }}>
+                  <p style={{ 
+                    color: '#cbd5e1', 
+                    fontSize: '0.88rem', 
+                    lineHeight: '1.6', 
+                    marginBottom: '16px',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'anywhere'
+                  }}>
                     {selectedProduct.description}
                   </p>
                 )}

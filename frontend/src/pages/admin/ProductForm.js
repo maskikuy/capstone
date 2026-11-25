@@ -2,10 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api, { API_IMAGE_URL } from '../../utils/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { notifySuccess, notifyError } from '../../utils/notify';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, AlertCircle, Eye, X, ZoomIn, Upload } from 'lucide-react';
 
 const cleanNumericValue = (val) => {
   if (val === undefined || val === null || val === '') return '';
+  const str = String(val).trim();
+  if (/^\d+\.00$/.test(str)) {
+    return str.replace(/\.00$/, '');
+  }
   const num = Number(val);
   if (isNaN(num)) return '';
   return Number.isInteger(num) ? String(num) : String(parseFloat(num.toFixed(4)));
@@ -25,10 +29,14 @@ const ProductForm = () => {
   const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
   const [currentImage, setCurrentImage] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [imageMeta, setImageMeta] = useState(null);
   const [priceType, setPriceType] = useState('retail');
   const [grosirPricePerUnit, setGrosirPricePerUnit] = useState('');
   const [grosirMinQty, setGrosirMinQty] = useState('');
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // State Data Varian & Resep
   const [variants, setVariants] = useState([{ name: '', extra_price: '' }]);
@@ -62,6 +70,9 @@ const ProductForm = () => {
       setBasePrice(cleanNumericValue(product.base_price));
       setDescription(product.description || '');
       setCurrentImage(product.image_url);
+      if (product.image_url) {
+        setPreviewUrl(`${API_IMAGE_URL}/${product.image_url}`);
+      }
       setPriceType(product.price_type || 'retail');
       setGrosirPricePerUnit(cleanNumericValue(product.grosir_price_per_unit));
       setGrosirMinQty(cleanNumericValue(product.grosir_min_qty));
@@ -106,6 +117,13 @@ const ProductForm = () => {
     const newVariants = [...variants];
     newVariants[index][field] = value;
     setVariants(newVariants);
+    if (errors[`variant_name_${index}`] || errors[`variant_price_${index}`]) {
+      setErrors(prev => ({
+        ...prev,
+        [`variant_name_${index}`]: null,
+        [`variant_price_${index}`]: null
+      }));
+    }
   };
 
   const addVariantField = () => {
@@ -125,6 +143,13 @@ const ProductForm = () => {
     const newRecipes = [...recipes];
     newRecipes[index][field] = value;
     setRecipes(newRecipes);
+    if (errors[`recipe_inv_${index}`] || errors[`recipe_qty_${index}`]) {
+      setErrors(prev => ({
+        ...prev,
+        [`recipe_inv_${index}`]: null,
+        [`recipe_qty_${index}`]: null
+      }));
+    }
   };
 
   const addRecipeField = () => {
@@ -136,8 +161,105 @@ const ProductForm = () => {
     setRecipes(newRecipes);
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      setImage(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      setImageMeta({
+        name: file.name,
+        size: (file.size / 1024).toFixed(1) + ' KB'
+      });
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    if (currentImage) {
+      setPreviewUrl(`${API_IMAGE_URL}/${currentImage}`);
+    } else {
+      setPreviewUrl('');
+    }
+    setImageMeta(null);
+    const fileInput = document.getElementById('menu-image-input');
+    if (fileInput) fileInput.value = '';
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    // 1. Validasi Nama Menu
+    if (!name || !name.trim()) {
+      newErrors.name = 'Nama menu wajib diisi';
+    } else if (name.trim().length > 15) {
+      newErrors.name = 'Nama menu tidak boleh melebihi 15 huruf';
+    }
+
+    // 2. Validasi Kategori Menu
+    if (!categoryId) {
+      newErrors.categoryId = 'Kategori menu wajib dipilih';
+    }
+
+    // 3. Validasi Harga Dasar
+    if (basePrice === '' || basePrice === null || basePrice === undefined) {
+      newErrors.basePrice = 'Harga dasar wajib diisi';
+    } else if (Number(basePrice) <= 0) {
+      newErrors.basePrice = 'Harga dasar harus lebih besar dari Rp 0';
+    }
+
+    // 4. Validasi Grosir jika Kategori Bahan Baku
+    const selectedCategory = categories.find(c => c.id === parseInt(categoryId));
+    const isBahanBaku = selectedCategory && selectedCategory.name.toLowerCase() === 'bahan baku';
+    if (isBahanBaku && priceType === 'grosir') {
+      if (!grosirMinQty || Number(grosirMinQty) < 2) {
+        newErrors.grosirMinQty = 'Minimal pembelian grosir minimal 2 pcs';
+      }
+      if (!grosirPricePerUnit || Number(grosirPricePerUnit) <= 0) {
+        newErrors.grosirPricePerUnit = 'Harga grosir per unit harus lebih besar dari Rp 0';
+      }
+    }
+
+    // 5. Validasi Varian Tambahan
+    variants.forEach((v, idx) => {
+      const vName = String(v.name || '').trim();
+      const vPrice = v.extra_price !== '' && v.extra_price !== null && v.extra_price !== undefined ? Number(v.extra_price) : null;
+      if (vName.length > 15) {
+        newErrors[`variant_name_${idx}`] = 'Nama varian maksimal 15 huruf';
+      }
+      if (vPrice !== null && vPrice < 0) {
+        newErrors[`variant_price_${idx}`] = 'Harga ekstra varian tidak boleh bernilai negatif';
+      }
+      if (vPrice !== null && vPrice > 0 && !vName) {
+        newErrors[`variant_name_${idx}`] = 'Nama varian wajib diisi jika harga ekstra diisi';
+      }
+    });
+
+    // 6. Validasi Resep
+    recipes.forEach((r, idx) => {
+      if (r.inventory_id && (!r.quantity_required || Number(r.quantity_required) <= 0)) {
+        newErrors[`recipe_qty_${idx}`] = 'Jumlah takaran per porsi harus lebih dari 0';
+      }
+      if (!r.inventory_id && r.quantity_required && Number(r.quantity_required) > 0) {
+        newErrors[`recipe_inv_${idx}`] = 'Pilih bahan inventori untuk takaran resep';
+      }
+    });
+
+    return newErrors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      const firstErrorMessage = Object.values(validationErrors)[0];
+      notifyError(firstErrorMessage || 'Mohon lengkapi field wajib dengan benar');
+      return;
+    }
+
+    setErrors({});
     setSaving(true);
 
     const formData = new FormData();
@@ -213,7 +335,11 @@ const ProductForm = () => {
     padding: '10px 14px',
     fontSize: '13.5px',
     outline: 'none',
-    width: '100%'
+    width: '100%',
+    maxWidth: '100%',
+    boxSizing: 'border-box',
+    wordBreak: 'break-word',
+    overflowWrap: 'anywhere'
   };
 
   const labelStyle = {
@@ -270,10 +396,13 @@ const ProductForm = () => {
             border: '1px solid #232530',
             borderRadius: '14px',
             padding: '28px 30px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
+            overflow: 'hidden'
           }}
         >
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             
             {/* Section 1: Informasi Menu */}
             <div className="d-flex align-items-center gap-2 mb-3">
@@ -285,23 +414,49 @@ const ProductForm = () => {
 
             <div className="row g-3 mb-3">
               <div className="col-md-6">
-                <label style={labelStyle}>Nama Menu</label>
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>
+                    Nama Menu <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <span style={{ fontSize: '11px', color: name.length >= 15 ? '#e5bd65' : '#64748b', fontWeight: '600' }}>
+                    {name.length}/15 huruf
+                  </span>
+                </div>
                 <input 
                   type="text" 
-                  style={inputStyle}
-                  placeholder="Contoh: Es Kopi Susu Gula Aren"
+                  style={{
+                    ...inputStyle,
+                    ...(errors.name ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                  }}
+                  placeholder="Contoh: Es Kopi Susu"
                   value={name} 
-                  onChange={e => setName(e.target.value)} 
-                  required 
+                  maxLength={15}
+                  onChange={e => {
+                    setName(e.target.value.slice(0, 15));
+                    if (errors.name) setErrors(prev => ({ ...prev, name: null }));
+                  }} 
                 />
+                {errors.name && (
+                  <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <AlertCircle size={12} color="#ef4444" />
+                    <span>{errors.name}</span>
+                  </div>
+                )}
               </div>
               <div className="col-md-6">
-                <label style={labelStyle}>Kategori Menu</label>
+                <label style={labelStyle}>
+                  Kategori Menu <span style={{ color: '#ef4444' }}>*</span>
+                </label>
                 <select 
-                  style={inputStyle}
+                  style={{
+                    ...inputStyle,
+                    ...(errors.categoryId ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                  }}
                   value={categoryId} 
-                  onChange={e => setCategoryId(e.target.value)} 
-                  required
+                  onChange={e => {
+                    setCategoryId(e.target.value);
+                    if (errors.categoryId) setErrors(prev => ({ ...prev, categoryId: null }));
+                  }} 
                 >
                   <option value="" style={{ backgroundColor: '#1c1d27', color: '#94a3b8' }}>-- Pilih Kategori Menu --</option>
                   {categories.map(cat => (
@@ -310,17 +465,28 @@ const ProductForm = () => {
                     </option>
                   ))}
                 </select>
+                {errors.categoryId && (
+                  <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <AlertCircle size={12} color="#ef4444" />
+                    <span>{errors.categoryId}</span>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="row g-3 mb-3">
               <div className="col-md-6">
-                <label style={labelStyle}>Harga Dasar (Rp)</label>
+                <label style={labelStyle}>
+                  Harga Dasar (Rp) <span style={{ color: '#ef4444' }}>*</span>
+                </label>
                 <input 
                   type="text" 
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  style={inputStyle}
+                  style={{
+                    ...inputStyle,
+                    ...(errors.basePrice ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                  }}
                   placeholder="Contoh: 25000"
                   value={basePrice} 
                   onFocus={(e) => {
@@ -331,46 +497,242 @@ const ProductForm = () => {
                     let val = e.target.value.replace(/[^0-9]/g, '');
                     if (val.length > 1 && val.startsWith('0')) val = val.replace(/^0+/, '');
                     setBasePrice(val);
+                    if (errors.basePrice) setErrors(prev => ({ ...prev, basePrice: null }));
                   }} 
-                  required 
+                  maxLength={16}
                 />
+                {errors.basePrice && (
+                  <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <AlertCircle size={12} color="#ef4444" />
+                    <span>{errors.basePrice}</span>
+                  </div>
+                )}
               </div>
               <div className="col-md-6">
                 <label style={labelStyle}>Foto Menu</label>
-                <div 
-                  style={{
-                    backgroundColor: '#1c1d27',
-                    border: '1px solid #282a36',
-                    borderRadius: '8px',
-                    padding: '6px 12px'
-                  }}
-                >
-                  <input 
-                    type="file" 
-                    onChange={e => setImage(e.target.files[0])} 
-                    accept="image/*" 
-                    style={{ color: '#cbd5e1', fontSize: '12.5px', width: '100%' }}
-                  />
-                </div>
-                {(image || currentImage) && (
+                
+                {previewUrl ? (
                   <div 
-                    className="mt-2 d-flex align-items-center gap-3 p-2" 
-                    style={{ backgroundColor: '#1c1d27', borderRadius: '8px', border: '1px solid #282a36' }}
+                    style={{
+                      backgroundColor: '#1c1d27',
+                      border: '1px solid #282a36',
+                      borderRadius: '10px',
+                      padding: '12px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '14px'
+                    }}
                   >
-                    <img 
-                      src={image ? URL.createObjectURL(image) : `${API_IMAGE_URL}/${currentImage}`} 
-                      alt="Preview" 
-                      style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px' }} 
-                    />
-                    <div>
-                      <span style={{ fontSize: '11px', color: '#d8a744', fontWeight: '600', textTransform: 'uppercase' }}>
-                        {image ? 'Foto Baru Dipilih' : 'Foto Saat Ini'}
-                      </span>
-                      <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                        {image ? image.name : currentImage}
+                    {/* Thumbnail yang bisa diklik untuk pratinjau penuh */}
+                    <div 
+                      onClick={() => setPreviewModalOpen(true)}
+                      title="Klik untuk melihat pratinjau foto penuh"
+                      style={{
+                        position: 'relative',
+                        width: '74px',
+                        height: '74px',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        border: '1px solid rgba(216, 167, 68, 0.4)',
+                        flexShrink: 0,
+                        backgroundColor: '#0d0d12'
+                      }}
+                    >
+                      <img 
+                        src={previewUrl} 
+                        alt="Pratinjau Foto" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          backgroundColor: 'rgba(0,0,0,0.35)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          opacity: 0,
+                          transition: 'opacity 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.opacity = 1; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.opacity = 0; }}
+                      >
+                        <ZoomIn size={20} color="#fff" />
                       </div>
                     </div>
+
+                    {/* Info Foto & Tombol Aksi */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="d-flex align-items-center gap-2 mb-1">
+                        <span 
+                          style={{
+                            fontSize: '10.5px',
+                            fontWeight: '700',
+                            letterSpacing: '0.5px',
+                            textTransform: 'uppercase',
+                            color: image ? '#4ade80' : '#e5c165',
+                            backgroundColor: image ? 'rgba(34, 197, 94, 0.12)' : 'rgba(216, 167, 68, 0.12)',
+                            border: image ? '1px solid rgba(34, 197, 94, 0.25)' : '1px solid rgba(216, 167, 68, 0.25)',
+                            padding: '2px 7px',
+                            borderRadius: '4px'
+                          }}
+                        >
+                          {image ? '✨ Foto Baru Dipilih' : 'Foto Saat Ini'}
+                        </span>
+                        {imageMeta?.size && (
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>({imageMeta.size})</span>
+                        )}
+                      </div>
+                      <div 
+                        style={{
+                          fontSize: '12.5px',
+                          color: '#e2e8f0',
+                          fontWeight: '500',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          marginBottom: '8px'
+                        }}
+                        title={image ? image.name : currentImage}
+                      >
+                        {image ? image.name : currentImage}
+                      </div>
+
+                      <div className="d-flex align-items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewModalOpen(true)}
+                          style={{
+                            backgroundColor: 'rgba(216, 167, 68, 0.15)',
+                            border: '1px solid rgba(216, 167, 68, 0.35)',
+                            color: '#e5c165',
+                            borderRadius: '6px',
+                            padding: '4px 9px',
+                            fontSize: '11.5px',
+                            fontWeight: '600',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <Eye size={12} />
+                          Pratinjau
+                        </button>
+
+                        <label
+                          htmlFor="menu-image-input"
+                          style={{
+                            backgroundColor: '#282a36',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            color: '#cbd5e1',
+                            borderRadius: '6px',
+                            padding: '4px 9px',
+                            fontSize: '11.5px',
+                            fontWeight: '500',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            cursor: 'pointer',
+                            margin: 0
+                          }}
+                        >
+                          <Upload size={12} />
+                          Ganti
+                        </label>
+
+                        {image && (
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            style={{
+                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                              border: '1px solid rgba(239, 68, 68, 0.25)',
+                              color: '#f87171',
+                              borderRadius: '6px',
+                              padding: '4px 9px',
+                              fontSize: '11.5px',
+                              fontWeight: '500',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Trash2 size={12} />
+                            Hapus
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <input 
+                      id="menu-image-input"
+                      type="file" 
+                      onChange={handleImageChange} 
+                      accept="image/*" 
+                      style={{ display: 'none' }}
+                    />
                   </div>
+                ) : (
+                  <label 
+                    htmlFor="menu-image-input"
+                    style={{
+                      border: '1.5px dashed #334155',
+                      backgroundColor: '#1c1d27',
+                      borderRadius: '10px',
+                      padding: '16px 20px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      color: '#94a3b8',
+                      transition: 'all 0.2s ease',
+                      width: '100%',
+                      margin: 0
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#d8a744';
+                      e.currentTarget.style.backgroundColor = 'rgba(216, 167, 68, 0.04)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#334155';
+                      e.currentTarget.style.backgroundColor = '#1c1d27';
+                    }}
+                  >
+                    <div 
+                      style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(216, 167, 68, 0.12)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#d8a744'
+                      }}
+                    >
+                      <Upload size={18} />
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <span style={{ color: '#e5c165', fontWeight: '600', fontSize: '13px' }}>
+                        Pilih foto menu
+                      </span>
+                      <span style={{ color: '#64748b', fontSize: '11.5px', display: 'block', marginTop: '2px' }}>
+                        Mendukung format JPG, PNG, WEBP
+                      </span>
+                    </div>
+                    <input 
+                      id="menu-image-input"
+                      type="file" 
+                      onChange={handleImageChange} 
+                      accept="image/*" 
+                      style={{ display: 'none' }}
+                    />
+                  </label>
                 )}
               </div>
             </div>
@@ -378,8 +740,17 @@ const ProductForm = () => {
             <div className="mb-4">
               <label style={labelStyle}>Deskripsi</label>
               <textarea 
-                rows="2" 
-                style={{ ...inputStyle, resize: 'vertical' }}
+                rows="3" 
+                wrap="soft"
+                style={{ 
+                  ...inputStyle, 
+                  resize: 'vertical',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'anywhere',
+                  overflowX: 'hidden',
+                  lineHeight: '1.5'
+                }}
                 placeholder="Tuliskan keterangan singkat tentang menu ini..."
                 value={description} 
                 onChange={e => setDescription(e.target.value)}
@@ -415,13 +786,18 @@ const ProductForm = () => {
                     {priceType === 'grosir' && (
                       <>
                         <div className="col-md-4">
-                          <label style={labelStyle}>Minimal Pembelian Grosir (pcs)</label>
+                          <label style={labelStyle}>
+                            Minimal Pembelian Grosir (pcs) <span style={{ color: '#ef4444' }}>*</span>
+                          </label>
                           <input 
                             type="text" 
                             inputMode="numeric"
                             pattern="[0-9]*"
                             placeholder="5"
-                            style={inputStyle}
+                            style={{
+                              ...inputStyle,
+                              ...(errors.grosirMinQty ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                            }}
                             value={grosirMinQty} 
                             onFocus={(e) => {
                               if (e.target.value === '0') setGrosirMinQty('');
@@ -431,18 +807,29 @@ const ProductForm = () => {
                               let val = e.target.value.replace(/[^0-9]/g, '');
                               if (val.length > 1 && val.startsWith('0')) val = val.replace(/^0+/, '');
                               setGrosirMinQty(val);
+                              if (errors.grosirMinQty) setErrors(prev => ({ ...prev, grosirMinQty: null }));
                             }} 
-                            required
                           />
+                          {errors.grosirMinQty && (
+                            <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <AlertCircle size={12} color="#ef4444" />
+                              <span>{errors.grosirMinQty}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="col-md-4">
-                          <label style={labelStyle}>Harga Grosir per Unit (Rp)</label>
+                          <label style={labelStyle}>
+                            Harga Grosir per Unit (Rp) <span style={{ color: '#ef4444' }}>*</span>
+                          </label>
                           <input 
                             type="text" 
                             inputMode="numeric"
                             pattern="[0-9]*"
                             placeholder="0"
-                            style={inputStyle}
+                            style={{
+                              ...inputStyle,
+                              ...(errors.grosirPricePerUnit ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                            }}
                             value={grosirPricePerUnit} 
                             onFocus={(e) => {
                               if (e.target.value === '0') setGrosirPricePerUnit('');
@@ -452,9 +839,16 @@ const ProductForm = () => {
                               let val = e.target.value.replace(/[^0-9]/g, '');
                               if (val.length > 1 && val.startsWith('0')) val = val.replace(/^0+/, '');
                               setGrosirPricePerUnit(val);
+                              if (errors.grosirPricePerUnit) setErrors(prev => ({ ...prev, grosirPricePerUnit: null }));
                             }} 
-                            required
+                            maxLength={16}
                           />
+                          {errors.grosirPricePerUnit && (
+                            <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <AlertCircle size={12} color="#ef4444" />
+                              <span>{errors.grosirPricePerUnit}</span>
+                            </div>
+                          )}
                         </div>
                       </>
                     )}
@@ -494,7 +888,10 @@ const ProductForm = () => {
                     <div className="row g-2 align-items-center">
                       <div className="col-md-6">
                         <select 
-                          style={inputStyle}
+                          style={{
+                            ...inputStyle,
+                            ...(errors[`recipe_inv_${index}`] ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                          }}
                           value={recipe.inventory_id}
                           onChange={e => handleRecipeChange(index, 'inventory_id', e.target.value)}
                         >
@@ -531,7 +928,8 @@ const ProductForm = () => {
                               width: 'auto',
                               flex: 1,
                               borderTopRightRadius: 0,
-                              borderBottomRightRadius: 0
+                              borderBottomRightRadius: 0,
+                              ...(errors[`recipe_qty_${index}`] ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
                             }}
                           />
                           <span 
@@ -582,6 +980,12 @@ const ProductForm = () => {
                         </button>
                       </div>
                     </div>
+                    {(errors[`recipe_inv_${index}`] || errors[`recipe_qty_${index}`]) && (
+                      <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <AlertCircle size={12} color="#ef4444" />
+                        <span>{errors[`recipe_inv_${index}`] || errors[`recipe_qty_${index}`]}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -643,8 +1047,12 @@ const ProductForm = () => {
                         type="text" 
                         placeholder="Nama Varian (misal: Extra Keju)" 
                         value={variant.name}
-                        onChange={e => handleVariantChange(index, 'name', e.target.value)} 
-                        style={inputStyle}
+                        maxLength={15}
+                        onChange={e => handleVariantChange(index, 'name', e.target.value.slice(0, 15))} 
+                        style={{
+                          ...inputStyle,
+                          ...(errors[`variant_name_${index}`] ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
+                        }}
                       />
                     </div>
                     <div className="col-md-4">
@@ -687,7 +1095,8 @@ const ProductForm = () => {
                             width: 'auto',
                             flex: 1,
                             borderTopLeftRadius: 0,
-                            borderBottomLeftRadius: 0
+                            borderBottomLeftRadius: 0,
+                            ...(errors[`variant_price_${index}`] ? { border: '1px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.06)' } : {})
                           }}
                         />
                       </div>
@@ -720,6 +1129,12 @@ const ProductForm = () => {
                       </button>
                     </div>
                   </div>
+                  {(errors[`variant_name_${index}`] || errors[`variant_price_${index}`]) && (
+                    <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <AlertCircle size={12} color="#ef4444" />
+                      <span>{errors[`variant_name_${index}`] || errors[`variant_price_${index}`]}</span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -777,6 +1192,130 @@ const ProductForm = () => {
         </div>
 
       </div>
+
+      {/* Lightbox / Modal Pratinjau Foto Penuh */}
+      {previewModalOpen && previewUrl && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.88)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px'
+          }}
+          onClick={() => setPreviewModalOpen(false)}
+        >
+          <div
+            style={{
+              backgroundColor: '#161822',
+              border: '1px solid rgba(216, 167, 68, 0.35)',
+              borderRadius: '16px',
+              maxWidth: '620px',
+              width: '100%',
+              overflow: 'hidden',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8)',
+              position: 'relative'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header Modal */}
+            <div
+              className="d-flex justify-content-between align-items-center"
+              style={{
+                padding: '16px 22px',
+                borderBottom: '1px solid #232530',
+                backgroundColor: '#12131b'
+              }}
+            >
+              <div className="d-flex align-items-center gap-2">
+                <Eye size={17} color="#d8a744" />
+                <span style={{ fontSize: '14px', fontWeight: '700', color: '#f1f5f9' }}>
+                  Pratinjau Foto Menu
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewModalOpen(false)}
+                style={{
+                  background: '#202230',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#94a3b8',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.backgroundColor = '#2a2d3f'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.backgroundColor = '#202230'; }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Container Foto */}
+            <div
+              style={{
+                padding: '24px',
+                backgroundColor: '#0a0a0e',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                maxHeight: '65vh'
+              }}
+            >
+              <img
+                src={previewUrl}
+                alt="Pratinjau Foto Menu Penuh"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '55vh',
+                  objectFit: 'contain',
+                  borderRadius: '10px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.6)'
+                }}
+              />
+            </div>
+
+            {/* Footer Modal */}
+            <div
+              className="d-flex justify-content-between align-items-center"
+              style={{
+                padding: '14px 22px',
+                borderTop: '1px solid #232530',
+                backgroundColor: '#14151e'
+              }}
+            >
+              <div style={{ fontSize: '12.5px', color: '#94a3b8', maxWidth: '380px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                📷 {image ? image.name : currentImage} {imageMeta?.size && `(${imageMeta.size})`}
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewModalOpen(false)}
+                style={{
+                  backgroundColor: '#d8a744',
+                  border: 'none',
+                  color: '#101116',
+                  borderRadius: '8px',
+                  padding: '7px 18px',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

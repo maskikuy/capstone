@@ -17,7 +17,8 @@ import {
   Package,
   CheckCircle2,
   XCircle,
-  Layers
+  Layers,
+  AlertTriangle
 } from 'lucide-react';
 
 const Inventory = () => {
@@ -98,6 +99,12 @@ const Inventory = () => {
     setEditing(null);
   };
 
+  const lowStockItems = items.filter(it => {
+    const stock = Number(it.stock_available || 0);
+    const threshold = Number(it.low_stock_threshold || 0);
+    return stock <= threshold;
+  });
+
   const tabs = [
     {
       id: 'all',
@@ -105,6 +112,13 @@ const Inventory = () => {
       count: items.length,
       icon: LayoutGrid,
       color: '#d8a744'
+    },
+    {
+      id: 'low_stock',
+      label: 'Stok Menipis',
+      count: lowStockItems.length,
+      icon: AlertTriangle,
+      color: '#f87171'
     },
     {
       id: 'bahan_baku',
@@ -131,7 +145,15 @@ const Inventory = () => {
 
   const filteredItems = items.filter(it => {
     const itemType = it.price_type || 'bahan_baku';
-    const matchTab = activeTab === 'all' || itemType === activeTab;
+    const isLow = Number(it.stock_available || 0) <= Number(it.low_stock_threshold || 0);
+
+    let matchTab = true;
+    if (activeTab === 'low_stock') {
+      matchTab = isLow;
+    } else if (activeTab !== 'all') {
+      matchTab = itemType === activeTab;
+    }
+
     const matchSearch = String(it.name || '')
       .toLowerCase()
       .includes(searchQuery.trim().toLowerCase());
@@ -197,6 +219,70 @@ const Inventory = () => {
 
       {!showForm && (
         <>
+          {/* Warning Banner Stok Rendah */}
+          {lowStockItems.length > 0 && (
+            <div
+              className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4"
+              style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '12px',
+                padding: '14px 18px',
+                color: '#fca5a5'
+              }}
+            >
+              <div className="d-flex align-items-center gap-3">
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}
+                >
+                  <AlertTriangle size={20} color="#ef4444" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: '700', fontSize: '13.5px', color: '#fecaca', marginBottom: '2px' }}>
+                    Peringatan Stok Rendah ({lowStockItems.length} Item Membutuhkan Perhatian)
+                  </div>
+                  <div style={{ fontSize: '12.5px', color: '#f87171' }}>
+                    Stok item berikut berada pada atau di bawah ambang batas minimum:{' '}
+                    <strong style={{ color: '#fff' }}>
+                      {lowStockItems.slice(0, 3).map(i => i.name).join(', ')}
+                      {lowStockItems.length > 3 ? `, dan ${lowStockItems.length - 3} item lainnya` : ''}
+                    </strong>. Harap segera lakukan restock!
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('low_stock')}
+                style={{
+                  backgroundColor: '#ef4444',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px 14px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dc2626'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ef4444'; }}
+              >
+                Lihat Item Menipis
+              </button>
+            </div>
+          )}
+
           {/* Filter Tabs */}
           <div
             className="d-flex align-items-center gap-3 mb-4"
@@ -384,8 +470,8 @@ const Inventory = () => {
                       Harga Grosir
                     </th>
 
-                    <th style={thStyle({ width: '110px' })}>
-                      Stok
+                    <th style={thStyle({ minWidth: '150px' })}>
+                      Stok & Ambang
                     </th>
 
                     <th style={thStyle({ width: '110px', textAlign: 'center' })}>
@@ -416,9 +502,10 @@ const Inventory = () => {
                   ) : filteredItems.length > 0 ? (
                     filteredItems.map((it, idx) => {
                       const itemType = it.price_type || 'bahan_baku';
-                      const isAvailable =
-                        Boolean(it.is_available) &&
-                        Number(it.stock_available) > 0;
+                      const stock = Number(it.stock_available || 0);
+                      const threshold = Number(it.low_stock_threshold || 0);
+                      const isLowStock = stock <= threshold;
+                      const isOutOfStock = stock <= 0 || !Boolean(it.is_available);
 
                       const categoryName =
                         categories.find(c => String(c.id) === String(it.category_id))?.name ||
@@ -455,7 +542,12 @@ const Inventory = () => {
                         <tr
                           key={it.id}
                           style={{
-                            borderBottom: '1px solid #1e2030'
+                            borderBottom: '1px solid #1e2030',
+                            borderLeft: isOutOfStock
+                              ? '3px solid #ef4444'
+                              : isLowStock
+                              ? '3px solid #f59e0b'
+                              : '3px solid transparent'
                           }}
                           onMouseEnter={(e) => {
                             [...e.currentTarget.cells].forEach(cell => {
@@ -483,17 +575,21 @@ const Inventory = () => {
                             style={tdStyle({
                               color: '#f1f5f9',
                               fontWeight: '600',
-                              fontSize: '14px'
+                              fontSize: '14px',
+                              maxWidth: '240px',
+                              wordBreak: 'break-word',
+                              overflowWrap: 'anywhere',
+                              whiteSpace: 'normal'
                             })}
                           >
-                            <div className="d-flex align-items-center gap-2">
+                            <div className="d-flex align-items-center gap-2" style={{ flexWrap: 'wrap' }}>
                               <Package
                                 size={15}
                                 color="#d8a744"
                                 style={{ flexShrink: 0 }}
                               />
 
-                              <span>{it.name}</span>
+                              <span style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{it.name}</span>
 
                               {(itemType === 'retail' || itemType === 'grosir') && (
                                 <span
@@ -582,17 +678,50 @@ const Inventory = () => {
                               color: '#cbd5e1'
                             })}
                           >
-                            <div className="d-flex align-items-center gap-2">
-                              <Layers
-                                size={14}
-                                color="#64748b"
-                                style={{ flexShrink: 0 }}
-                              />
-
-                              {it.stock_unit === 'gram'
-                                ? `${Math.round(Number(it.stock_available || 0))} gram`
-                                : `${parseInt(Number(it.stock_available || 0), 10)} pcs`
-                              }
+                            <div className="d-flex flex-column gap-1">
+                              <div className="d-flex align-items-center gap-2">
+                                <Layers
+                                  size={14}
+                                  color={isLowStock ? (isOutOfStock ? '#ef4444' : '#f59e0b') : '#64748b'}
+                                  style={{ flexShrink: 0 }}
+                                />
+                                <span
+                                  style={{
+                                    fontWeight: isLowStock ? '700' : '500',
+                                    color: isOutOfStock ? '#f87171' : isLowStock ? '#fbbf24' : '#f1f5f9'
+                                  }}
+                                >
+                                  {it.stock_unit === 'gram'
+                                    ? `${Math.round(stock)} gram`
+                                    : `${parseInt(stock, 10)} pcs`
+                                  }
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#64748b', paddingLeft: '22px' }}>
+                                Ambang: {it.stock_unit === 'gram' ? `${Math.round(threshold)} gram` : `${parseInt(threshold, 10)} pcs`}
+                              </div>
+                              {isLowStock && (
+                                <div style={{ paddingLeft: '22px' }}>
+                                  <span
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '4px',
+                                      fontSize: '10.5px',
+                                      fontWeight: '600',
+                                      color: isOutOfStock ? '#f87171' : '#fbbf24',
+                                      backgroundColor: isOutOfStock ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                                      border: `1px solid ${isOutOfStock ? 'rgba(239, 68, 68, 0.3)' : 'rgba(245, 158, 11, 0.35)'}`,
+                                      borderRadius: '4px',
+                                      padding: '2px 6px',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    <AlertTriangle size={10} />
+                                    {isOutOfStock ? 'Stok Habis!' : 'Stok Rendah!'}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </td>
 
@@ -602,33 +731,64 @@ const Inventory = () => {
                               textAlign: 'center'
                             })}
                           >
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '5px',
-                                padding: '5px 10px',
-                                borderRadius: '9999px',
-                                fontSize: '11px',
-                                fontWeight: '600',
-                                backgroundColor: isAvailable
-                                  ? 'rgba(34,197,94,0.12)'
-                                  : 'rgba(239,68,68,0.12)',
-                                color: isAvailable ? '#4ade80' : '#f87171',
-                                border: `1px solid ${isAvailable
-                                  ? 'rgba(34,197,94,0.3)'
-                                  : 'rgba(239,68,68,0.3)'}`
-                              }}
-                            >
-                              {isAvailable ? (
-                                <CheckCircle2 size={12} />
-                              ) : (
+                            {isOutOfStock ? (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '5px',
+                                  padding: '5px 10px',
+                                  borderRadius: '9999px',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  backgroundColor: 'rgba(239,68,68,0.12)',
+                                  color: '#f87171',
+                                  border: '1px solid rgba(239,68,68,0.3)'
+                                }}
+                              >
                                 <XCircle size={12} />
-                              )}
-
-                              {isAvailable ? 'Tersedia' : 'Habis'}
-                            </span>
+                                Habis
+                              </span>
+                            ) : isLowStock ? (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '5px',
+                                  padding: '5px 10px',
+                                  borderRadius: '9999px',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  backgroundColor: 'rgba(245,158,11,0.15)',
+                                  color: '#fbbf24',
+                                  border: '1px solid rgba(245,158,11,0.35)'
+                                }}
+                              >
+                                <AlertTriangle size={12} />
+                                Menipis
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '5px',
+                                  padding: '5px 10px',
+                                  borderRadius: '9999px',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  backgroundColor: 'rgba(34,197,94,0.12)',
+                                  color: '#4ade80',
+                                  border: '1px solid rgba(34,197,94,0.3)'
+                                }}
+                              >
+                                <CheckCircle2 size={12} />
+                                Tersedia
+                              </span>
+                            )}
                           </td>
 
                           {/* Actions */}

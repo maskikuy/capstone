@@ -4,7 +4,12 @@ const logger = baseLogger.child({ context: 'ProductModel' });
 
 export const getAllProducts = async (conn) => {
     logger.debug('Fetching all products from the database');
-    const sql = 'SELECT * FROM products';
+    const sql = `
+        SELECT p.*, c.name AS category_name, c.type AS category_type
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        ORDER BY p.id DESC
+    `;
     const [result] = await conn.execute(sql);
     logger.info(`Fetched ${result.length} products`);
     return result;
@@ -12,7 +17,12 @@ export const getAllProducts = async (conn) => {
 
 export const getProductById = async (conn, productId) => {
     logger.debug(`Fetching product with ID: ${productId}`);
-    const sql = 'SELECT * FROM products WHERE id = ?';
+    const sql = `
+        SELECT p.*, c.name AS category_name, c.type AS category_type
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.id = ?
+    `;
     const [result] = await conn.execute(sql, [productId]);
     if (result.length === 0) {
         logger.warn(`No product found with ID: ${productId}`);

@@ -15,7 +15,8 @@ import {
   XCircle,
   ChevronLeft,
   ChevronRight,
-  Package
+  Package,
+  Tag
 } from 'lucide-react';
 
 const ProductList = () => {
@@ -23,6 +24,8 @@ const ProductList = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchProducts();
@@ -92,6 +95,7 @@ const ProductList = () => {
   };
 
   useEffect(() => {
+    setCurrentPage(1);
     if (!searchQuery.trim()) {
       setFilteredProducts(products);
     } else {
@@ -109,6 +113,11 @@ const ProductList = () => {
       );
     }
   }, [searchQuery, products]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (validCurrentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <div
@@ -199,7 +208,7 @@ const ProductList = () => {
           <table
             style={{
               width: '100%',
-              minWidth: '850px',
+              minWidth: '950px',
               borderCollapse: 'collapse',
               backgroundColor: '#161720',
               color: '#cbd5e1'
@@ -217,19 +226,23 @@ const ProductList = () => {
                   Foto
                 </th>
 
-                <th style={thStyle({ minWidth: '200px' })}>
+                <th style={thStyle({ minWidth: '180px' })}>
                   Nama
                 </th>
 
-                <th style={thStyle({ width: '155px' })}>
+                <th style={thStyle({ width: '150px' })}>
+                  Kategori
+                </th>
+
+                <th style={thStyle({ width: '145px' })}>
                   Harga Dasar
                 </th>
 
-                <th style={thStyle({ width: '155px', textAlign: 'center' })}>
+                <th style={thStyle({ width: '145px', textAlign: 'center' })}>
                   Status
                 </th>
 
-                <th style={thStyle({ width: '190px', textAlign: 'center' })}>
+                <th style={thStyle({ width: '180px', textAlign: 'center' })}>
                   Aksi
                 </th>
 
@@ -241,7 +254,7 @@ const ProductList = () => {
               {loading ? (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     style={emptyStyle}
                   >
                     <div
@@ -252,9 +265,9 @@ const ProductList = () => {
                     Memuat daftar menu...
                   </td>
                 </tr>
-              ) : filteredProducts.length > 0 ? (
+              ) : paginatedProducts.length > 0 ? (
 
-                filteredProducts.map((product, index) => {
+                paginatedProducts.map((product, index) => {
                   const isAvailable =
                     product.is_available === true ||
                     Number(product.is_available) === 1;
@@ -283,7 +296,7 @@ const ProductList = () => {
                           color: '#94a3b8'
                         })}
                       >
-                        {index + 1}
+                        {startIndex + index + 1}
                       </td>
 
                       <td style={tdStyle({})}>
@@ -341,10 +354,14 @@ const ProductList = () => {
                         style={tdStyle({
                           color: '#f1f5f9',
                           fontWeight: '600',
-                          fontSize: '14px'
+                          fontSize: '14px',
+                          maxWidth: '240px',
+                          wordBreak: 'break-word',
+                          overflowWrap: 'anywhere',
+                          whiteSpace: 'normal'
                         })}
                       >
-                        <div className="d-flex align-items-center gap-2">
+                        <div className="d-flex align-items-center gap-2" style={{ flexWrap: 'wrap' }}>
 
                           <Coffee
                             size={15}
@@ -352,7 +369,7 @@ const ProductList = () => {
                             style={{ flexShrink: 0 }}
                           />
 
-                          <span>{product.name || product.product_name}</span>
+                          <span style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{product.name || product.product_name}</span>
 
                           {product.inventory_id && (
                             <span
@@ -377,6 +394,43 @@ const ProductList = () => {
                           )}
 
                         </div>
+                      </td>
+
+                      <td style={tdStyle({})}>
+                        {product.category_name ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '5px 11px',
+                              borderRadius: '8px',
+                              fontSize: '12.5px',
+                              fontWeight: '600',
+                              backgroundColor: 'rgba(216, 167, 68, 0.12)',
+                              color: '#e5c165',
+                              border: '1px solid rgba(216, 167, 68, 0.28)',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            <Tag size={12} color="#e5c165" />
+                            {product.category_name}
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              color: '#64748b',
+                              fontStyle: 'italic'
+                            }}
+                          >
+                            Tanpa Kategori
+                          </span>
+                        )}
                       </td>
 
                       <td
@@ -485,7 +539,7 @@ const ProductList = () => {
               ) : (
 
                 <tr>
-                  <td colSpan="6" style={emptyStyle}>
+                  <td colSpan="7" style={emptyStyle}>
 
                     <div className="d-flex flex-column align-items-center gap-2">
 
@@ -516,33 +570,43 @@ const ProductList = () => {
       </div>
 
       {!loading && filteredProducts.length > 0 && (
-        <div className="d-flex justify-content-center align-items-center gap-2 mt-4">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
+          <div style={{ color: '#64748b', fontSize: '13px' }}>
+            Menampilkan <strong style={{ color: '#cbd5e1' }}>{startIndex + 1}</strong> - <strong style={{ color: '#cbd5e1' }}>{Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)}</strong> dari <strong style={{ color: '#cbd5e1' }}>{filteredProducts.length}</strong> menu
+          </div>
 
-          <button
-            type="button"
-            style={pageBtnStyle(false)}
-            disabled
-            aria-label="Halaman sebelumnya"
-          >
-            <ChevronLeft size={15} />
-          </button>
+          <div className="d-flex align-items-center gap-2">
+            <button
+              type="button"
+              style={pageBtnStyle(false, validCurrentPage <= 1)}
+              disabled={validCurrentPage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              aria-label="Halaman sebelumnya"
+            >
+              <ChevronLeft size={15} />
+            </button>
 
-          <button
-            type="button"
-            style={pageBtnStyle(true)}
-          >
-            1
-          </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+              <button
+                key={pageNum}
+                type="button"
+                style={pageBtnStyle(pageNum === validCurrentPage)}
+                onClick={() => setCurrentPage(pageNum)}
+              >
+                {pageNum}
+              </button>
+            ))}
 
-          <button
-            type="button"
-            style={pageBtnStyle(false)}
-            disabled
-            aria-label="Halaman berikutnya"
-          >
-            <ChevronRight size={15} />
-          </button>
-
+            <button
+              type="button"
+              style={pageBtnStyle(false, validCurrentPage >= totalPages)}
+              disabled={validCurrentPage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              aria-label="Halaman berikutnya"
+            >
+              <ChevronRight size={15} />
+            </button>
+          </div>
         </div>
       )}
 
@@ -670,18 +734,22 @@ const emptyStyle = {
   backgroundColor: '#161720'
 };
 
-const pageBtnStyle = (active) => ({
+const pageBtnStyle = (active, disabled = false) => ({
   backgroundColor: active ? '#c9973b' : '#161720',
   border: active ? 'none' : '1px solid #282a36',
-  color: active ? '#fff' : '#64748b',
-  fontWeight: active ? '700' : '400',
-  borderRadius: '6px',
-  padding: '6px 11px',
+  color: active ? '#fff' : disabled ? '#475569' : '#94a3b8',
+  fontWeight: active ? '700' : '500',
+  borderRadius: '8px',
+  minWidth: '34px',
+  height: '34px',
+  padding: '0 10px',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: '12px',
-  cursor: active ? 'pointer' : 'default'
+  fontSize: '13px',
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  opacity: disabled ? 0.45 : 1,
+  transition: 'all 0.15s ease'
 });
 
 export default ProductList;

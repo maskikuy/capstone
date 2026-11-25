@@ -80,23 +80,40 @@ export const ensureInventoryTable = async () => {
         logger.info('Ensured feedbacks table exists');
 
         // Ensure columns in products table
+        await safeQuery(conn, "ALTER TABLE products MODIFY COLUMN base_price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
         await safeQuery(conn, "ALTER TABLE products ADD COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'retail'");
-        await safeQuery(conn, "ALTER TABLE products ADD COLUMN grosir_price_per_unit DECIMAL(10,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE products ADD COLUMN grosir_price_per_unit DECIMAL(15,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE products MODIFY COLUMN grosir_price_per_unit DECIMAL(15,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE product_variants MODIFY COLUMN extra_price DECIMAL(15,2) DEFAULT 0.00");
         await safeQuery(conn, "ALTER TABLE products ADD COLUMN grosir_min_qty INT DEFAULT 0");
         await safeQuery(conn, "ALTER TABLE products MODIFY COLUMN price_type ENUM('retail','grosir','bahan_baku') DEFAULT 'retail'");
         await safeQuery(conn, "ALTER TABLE products ADD COLUMN inventory_id INT NULL");
         await safeQuery(conn, "ALTER TABLE products ADD CONSTRAINT fk_products_inventory FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE");
 
         // Ensure columns in orders table for Payment Gateway (Midtrans & SumoPod QRIS) & Discounts
+        await safeQuery(conn, "ALTER TABLE orders MODIFY COLUMN total_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00");
         await safeQuery(conn, "ALTER TABLE orders ADD COLUMN midtrans_order_id VARCHAR(100) NULL");
         await safeQuery(conn, "ALTER TABLE orders ADD COLUMN midtrans_transaction_id VARCHAR(100) NULL");
         await safeQuery(conn, "ALTER TABLE orders ADD COLUMN qris_image LONGTEXT NULL");
         await safeQuery(conn, "ALTER TABLE orders ADD COLUMN sumopod_payment_id VARCHAR(100) NULL");
         await safeQuery(conn, "ALTER TABLE orders ADD COLUMN payment_link_url TEXT NULL");
+        await safeQuery(conn, "ALTER TABLE products MODIFY COLUMN base_price DECIMAL(18,2) NOT NULL DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE products MODIFY COLUMN grosir_price_per_unit DECIMAL(18,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE product_variants MODIFY COLUMN extra_price DECIMAL(18,2) NOT NULL DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE inventories MODIFY COLUMN selling_price DECIMAL(18,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE inventories MODIFY COLUMN initial_cost DECIMAL(18,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE inventories MODIFY COLUMN retail_price_per_unit DECIMAL(18,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE inventories MODIFY COLUMN grosir_price_per_unit DECIMAL(18,2) DEFAULT 0.00");
+
         await safeQuery(conn, "ALTER TABLE orders ADD COLUMN discount_id INT NULL");
         await safeQuery(conn, "ALTER TABLE orders ADD COLUMN discount_name VARCHAR(100) NULL");
-        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN discount_amount DECIMAL(10,2) DEFAULT 0.00");
-        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN subtotal DECIMAL(10,2) NULL");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN discount_amount DECIMAL(18,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE orders MODIFY COLUMN discount_amount DECIMAL(18,2) DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE orders ADD COLUMN subtotal DECIMAL(18,2) NULL");
+        await safeQuery(conn, "ALTER TABLE orders MODIFY COLUMN subtotal DECIMAL(18,2) NULL");
+        await safeQuery(conn, "ALTER TABLE orders MODIFY COLUMN total_amount DECIMAL(18,2) NOT NULL DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE order_items MODIFY COLUMN price_at_order DECIMAL(18,2) NOT NULL DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE order_item_variants MODIFY COLUMN variant_price DECIMAL(18,2) DEFAULT 0.00");
         logger.info('Ensured orders columns exist');
 
         // Create discounts table
@@ -104,13 +121,16 @@ export const ensureInventoryTable = async () => {
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
             type ENUM('percentage', 'fixed') NOT NULL DEFAULT 'percentage',
-            value DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-            min_order DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-            max_discount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+            value DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+            min_order DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+            max_discount DECIMAL(18,2) NOT NULL DEFAULT 0.00,
             is_active TINYINT(1) NOT NULL DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB;`);
+        await safeQuery(conn, "ALTER TABLE discounts MODIFY COLUMN value DECIMAL(18,2) NOT NULL DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE discounts MODIFY COLUMN min_order DECIMAL(18,2) NOT NULL DEFAULT 0.00");
+        await safeQuery(conn, "ALTER TABLE discounts MODIFY COLUMN max_discount DECIMAL(18,2) NOT NULL DEFAULT 0.00");
         logger.info('Ensured discounts table exists');
 
         // Create product_recipes table

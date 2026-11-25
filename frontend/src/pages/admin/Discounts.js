@@ -24,6 +24,7 @@ const Discounts = () => {
     value: '',
     is_active: true
   });
+  const [errors, setErrors] = useState({});
 
   // Ambil daftar diskon
   const fetchDiscounts = useCallback(async () => {
@@ -57,6 +58,7 @@ const Discounts = () => {
   // Buka Modal Tambah Baru
   const handleOpenCreateModal = () => {
     resetForm();
+    setErrors({});
     setIsModalOpen(true);
   };
 
@@ -69,12 +71,14 @@ const Discounts = () => {
       value: parseFloat(discount.value).toString(),
       is_active: Boolean(discount.is_active)
     });
+    setErrors({});
     setIsModalOpen(true);
   };
 
   // Tutup Modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setErrors({});
     resetForm();
   };
 
@@ -82,23 +86,27 @@ const Discounts = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
+    const newErrors = {};
     const name = formData.name.trim();
     if (!name) {
-      notifyError('Nama diskon wajib diisi');
-      return;
+      newErrors.name = 'Nama diskon wajib diisi';
     }
 
     const numValue = parseFloat(formData.value);
     if (isNaN(numValue) || numValue <= 0) {
-      notifyError('Nilai diskon harus lebih besar dari 0');
+      newErrors.value = 'Nilai diskon harus lebih besar dari 0';
+    } else if (formData.type === 'percentage' && numValue > 100) {
+      newErrors.value = 'Persentase diskon tidak boleh melebihi 100%';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      const firstError = Object.values(newErrors)[0];
+      notifyError(firstError || 'Mohon lengkapi data diskon dengan benar');
       return;
     }
 
-    if (formData.type === 'percentage' && numValue > 100) {
-      notifyError('Persentase diskon tidak boleh melebihi 100%');
-      return;
-    }
-
+    setErrors({});
     setSaving(true);
     try {
       const payload = {
@@ -602,7 +610,7 @@ const Discounts = () => {
             </div>
 
             {/* Form Card */}
-            <form onSubmit={handleFormSubmit}>
+            <form onSubmit={handleFormSubmit} noValidate>
               <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 
                 {/* 1. Nama Diskon */}
@@ -612,14 +620,16 @@ const Discounts = () => {
                   </label>
                   <input
                     type="text"
-                    required
                     placeholder="Contoh: Diskon Pelajar 10%, Promo Gajian"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      if (errors.name) setErrors(prev => ({ ...prev, name: null }));
+                    }}
                     style={{
                       width: '100%',
                       backgroundColor: '#1c1d27',
-                      border: '1px solid #282a36',
+                      border: errors.name ? '1px solid #ef4444' : '1px solid #282a36',
                       borderRadius: '8px',
                       color: '#f1f5f9',
                       padding: '9px 12px',
@@ -627,6 +637,12 @@ const Discounts = () => {
                       outline: 'none'
                     }}
                   />
+                  {errors.name && (
+                    <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <AlertCircle size={12} color="#ef4444" />
+                      <span>{errors.name}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* 2. Tipe Diskon (Selector Card) */}
@@ -690,14 +706,16 @@ const Discounts = () => {
                   <input
                     type="number"
                     step="any"
-                    required
                     placeholder={formData.type === 'percentage' ? 'Contoh: 10' : 'Contoh: 5000'}
                     value={formData.value}
-                    onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, value: e.target.value });
+                      if (errors.value) setErrors(prev => ({ ...prev, value: null }));
+                    }}
                     style={{
                       width: '100%',
                       backgroundColor: '#1c1d27',
-                      border: '1px solid #282a36',
+                      border: errors.value ? '1px solid #ef4444' : '1px solid #282a36',
                       borderRadius: '8px',
                       color: '#f1f5f9',
                       padding: '9px 12px',
@@ -705,7 +723,13 @@ const Discounts = () => {
                       outline: 'none'
                     }}
                   />
-                  {formData.type === 'percentage' && (
+                  {errors.value && (
+                    <div style={{ color: '#ef4444', fontSize: '11.5px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <AlertCircle size={12} color="#ef4444" />
+                      <span>{errors.value}</span>
+                    </div>
+                  )}
+                  {formData.type === 'percentage' && !errors.value && (
                     <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginTop: '4px' }}>
                       Masukkan angka 1 - 100
                     </small>
