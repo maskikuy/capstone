@@ -14,7 +14,8 @@ import {
   Receipt,
   CheckCircle2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Calendar
 } from 'lucide-react';
 import {
   LineChart,
@@ -205,17 +206,25 @@ const Dashboard = () => {
 
     if (modalSearch.trim()) {
       const q = modalSearch.toLowerCase().trim();
+      const cleanTableQuery = q.replace(/^meja\s*/i, '').trim();
 
       result = result.filter((o) => {
-        const idMatch = String(o.id).includes(q);
+        const idMatch = String(o.id || '').includes(q);
         const nameMatch = (o.customer_name || '').toLowerCase().includes(q);
-        const tableMatch = String(o.table_number || '').includes(q);
+        
+        const tableStr = String(o.table_number ?? '').toLowerCase().trim();
+        const tableMatch = 
+          (tableStr && tableStr.includes(q)) ||
+          (cleanTableQuery && tableStr.includes(cleanTableQuery)) ||
+          `meja ${tableStr}`.includes(q);
+
+        const locationMatch = (o.location || '').toLowerCase().includes(q);
 
         const itemMatch = (o.items || []).some((it) =>
           (it.product_name || '').toLowerCase().includes(q)
         );
 
-        return idMatch || nameMatch || tableMatch || itemMatch;
+        return idMatch || nameMatch || tableMatch || locationMatch || itemMatch;
       });
     }
 
@@ -419,22 +428,35 @@ const Dashboard = () => {
           </div>
 
           {period === 'custom_month' && (
-            <input
-              type="month"
-              value={customMonth}
-              onChange={(e) => setCustomMonth(e.target.value)}
-              className="form-control form-control-sm"
+            <div
+              className="d-flex align-items-center gap-1.5 px-2 py-1"
               style={{
-                width: 'auto',
                 backgroundColor: '#171821',
-                border: '1px solid #c9973b',
-                color: '#f1f5f9',
+                border: '1px solid #d8a744',
                 borderRadius: '10px',
-                padding: '6px 12px',
-                fontSize: '12.5px',
-                outline: 'none'
+                boxShadow: '0 2px 8px rgba(216,167,68,0.15)'
               }}
-            />
+            >
+              <Calendar size={14} style={{ color: '#d8a744', marginLeft: '2px' }} />
+              <input
+                type="month"
+                value={customMonth}
+                onChange={(e) => setCustomMonth(e.target.value)}
+                className="form-control form-control-sm border-0"
+                style={{
+                  width: 'auto',
+                  backgroundColor: 'transparent',
+                  color: '#f1f5f9',
+                  padding: '4px 6px',
+                  fontSize: '12.5px',
+                  fontWeight: '600',
+                  outline: 'none',
+                  boxShadow: 'none',
+                  cursor: 'pointer',
+                  colorScheme: 'dark'
+                }}
+              />
+            </div>
           )}
         </div>
       </div>
