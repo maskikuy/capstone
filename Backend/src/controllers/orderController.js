@@ -405,6 +405,12 @@ export const handleSumopodWebhook = async (req, res) => {
 
         logger.info(`SumoPod webhook event: ${eventType}, order: ${orderIdRaw}, payment_id: ${paymentIdRaw}, status: ${status}`);
 
+        // Jika SumoPod mengirim test ping / verifikasi webhook dari tombol "Save & Test"
+        if (eventType === 'test' || eventType === 'ping' || (!orderIdRaw && !paymentIdRaw)) {
+            logger.info('SumoPod test webhook ping acknowledged successfully');
+            return res.status(200).json({ received: true, message: 'Test webhook acknowledged' });
+        }
+
         const isSuccess = 
             eventType === 'payment.completed' ||
             eventType === 'payment_completed' ||
