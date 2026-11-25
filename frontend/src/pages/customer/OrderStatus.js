@@ -196,7 +196,7 @@ const OrderStatus = () => {
         return {
           icon: <Check size={46} strokeWidth={1.8} />,
           title: 'Siap Disajikan',
-          desc: 'Pesananmu sudah siap! Silakan nikmati.',
+          desc: 'Pesananmu sudah siap, Selamat Menikmati!',
           accentColor: '#e3bd69'
         };
       case 'cancelled':
@@ -380,7 +380,7 @@ const OrderStatus = () => {
                   </svg>
                 </div>
 
-                <h4 className="rating-card-heading">Lanjut rating kita yuk :)</h4>
+                <h4 className="rating-card-heading">Lanjut rating kita yuk!</h4>
 
                 <p className="status-card-desc mb-4">
                   Ulasan Anda sangat berharga untuk membantu Billion Coffee tumbuh lebih baik!

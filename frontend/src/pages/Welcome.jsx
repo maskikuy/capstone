@@ -55,9 +55,54 @@ const features = [
   }
 ];
 
+
+const teamMembers = [
+  {
+    id: 'mesi',
+    number: '01',
+    name: 'MESI ANANDA PUTRI',
+    role: 'Tim Pengembang',
+    photoSpot: 4,
+    avatarPosition: '73% 38%',
+    portfolioUrl: 'https://www.linkedin.com/in/mesi-ananda-putri-2023-teknologiinformasi/'
+  },
+  {
+    id: 'rizky',
+    number: '02',
+    name: 'RIZKY GUSTI AFIQ MAULANA',
+    role: 'Tim Pengembang',
+    photoSpot: 2,
+    avatarPosition: '33% 27%',
+    portfolioUrl: 'https://www.linkedin.com/in/rizky-gusti-afiq-maulana-1772aa259/'
+  },
+  {
+    id: 'regina',
+    number: '03',
+    name: 'REGINA RANA NABILA',
+    role: 'Tim Pengembang',
+    photoSpot: 5,
+    avatarPosition: '90% 30%',
+    portfolioUrl: 'https://www.linkedin.com/in/regina-rana-nabila-76b114289/'
+  },
+  {
+    id: 'irsyad',
+    number: '04',
+    name: 'MUHAMMAD IRSYAD RAHMAD MAULANA',
+    role: 'Tim Pengembang',
+    photoSpot: 1,
+    avatarPosition: '16% 30%',
+    portfolioUrl: 'https://github.com/icad08'
+  }
+];
+
 const Welcome = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const [activeMemberId, setActiveMemberId] = React.useState(null);
+
+  const handleMemberSelect = (member) => {
+    setActiveMemberId(member.id);
+  };
 
   const goToLogin = () => {
     setMenuOpen(false);
@@ -586,43 +631,144 @@ const Welcome = () => {
 
         {/* DEVELOPMENT TEAM */}
         <section className="welcome-team" id="team">
-          <div className="welcome-container welcome-team-grid">
+          <div className="welcome-container">
+            <div className="welcome-team-grid">
 
-            <div className="welcome-team-copy">
-              <div className="welcome-section-label">MEET OUR TEAM</div>
+              <div className="welcome-team-copy">
+                <div className="welcome-section-label">MEET OUR TEAM</div>
 
-              <h2>
-                Built together.
-                <br />
-                <span>Made with purpose.</span>
-              </h2>
+                <h2>
+                  Built together.
+                  <br />
+                  <span>Made with purpose.</span>
+                </h2>
 
-              <p>
-                Di balik Billion Cafe terdapat tim pengembang yang
-                bekerja melalui kolaborasi, kreativitas, dan penerapan
-                teknologi untuk menghadirkan solusi digital yang bermanfaat.
-              </p>
+                <p>
+                  Di balik Billion Cafe terdapat empat anggota tim pengembang
+                  yang bekerja melalui kolaborasi, kreativitas, dan penerapan
+                  teknologi untuk menghadirkan solusi digital yang bermanfaat.
+                </p>
 
-              <div className="welcome-team-caption">
-                <Users size={18} />
-                Tim Pengembang Billion Cafe
+                <div className="welcome-team-caption">
+                  <Users size={18} />
+                  4 Members · Development Team
+                </div>
+
+                <div className="welcome-team-detail">
+                  <span className="welcome-team-detail-line" />
+                  <span>
+                    TEKNOLOGI INFORMASI
+                    <br />
+                    UNIVERSITAS MUHAMMADIYAH YOGYAKARTA
+                  </span>
+                </div>
+              </div>
+
+              <div className="welcome-team-photo-wrap">
+                <div className="welcome-team-photo">
+                  <img
+                    src="/images/team-kami.jpg"
+                    alt="Foto bersama Tim Pengembang Billion Cafe"
+                  />
+                </div>
+
+                <div className="welcome-team-photo-label">
+                  <small>CAPSTONE PROJECT 2026</small>
+                  <strong>Technology · Collaboration · Innovation</strong>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="welcome-roster-heading">
+              <div>
+                <div className="welcome-section-label">
+                  THE PEOPLE BEHIND THE PROJECT
+                </div>
+                <h3>
+                  Meet the <span>Developers.</span>
+                </h3>
+                <p>
+                  Pilih kartu anggota untuk mengenal tim pengembang dan membuka
+                  portfolio masing-masing.
+                </p>
+              </div>
+
+              <div className="welcome-roster-count">
+                <strong>04</strong>
+                <span>TEAM MEMBERS</span>
               </div>
             </div>
 
-            <div className="welcome-team-photo-wrap">
-              <div className="welcome-team-photo">
-                <img
-                  src="/images/team-kami.jpg"
-                  alt="Foto bersama Tim Pengembang Billion Cafe"
-                />
-              </div>
+            <div className="welcome-team-roster">
+              {teamMembers.map((member) => (
+                <article
+                  key={member.id}
+                  className={`welcome-member-card ${
+                    activeMemberId === member.id ? 'is-active' : ''
+                  }`}
+                  onClick={() => handleMemberSelect(member)}
+                >
+                  <div className="welcome-member-card-top">
+                    <span className="welcome-member-number">
+                      {member.number}
+                    </span>
+                    <span className="welcome-member-status">
+                      DEVELOPMENT TEAM
+                    </span>
+                  </div>
 
-              <div className="welcome-team-photo-label">
-                <small>CAPSTONE PROJECT 2026</small>
-                <strong>Technology · Collaboration · Innovation</strong>
-              </div>
+                  <div className="welcome-member-profile">
+                    <button
+                      type="button"
+                      className="welcome-member-avatar-button"
+                      onClick={() => handleMemberSelect(member)}
+                      aria-label={`Pilih foto ${member.name}`}
+                    >
+                      <span
+                        className="welcome-member-avatar"
+                        style={{
+                          backgroundImage: "url('/images/team-kami.jpg')",
+                          backgroundSize: '500% auto',
+                          backgroundPosition: member.avatarPosition
+                        }}
+                      />
+                    </button>
+
+                    <div className="welcome-member-info">
+                      <span>{member.role}</span>
+                      <a
+                        className="welcome-member-name"
+                        href={member.portfolioUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => handleMemberSelect(member)}
+                      >
+                        {member.name}
+                        <ArrowUpRight size={14} />
+                      </a>
+                    </div>
+                  </div>
+
+                  <a
+                    href={member.portfolioUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="welcome-member-portfolio"
+                    onClick={() => handleMemberSelect(member)}
+                  >
+                    <span>Lihat Portfolio</span>
+                    <ArrowUpRight size={15} />
+                  </a>
+                </article>
+              ))}
             </div>
 
+            <div className="welcome-team-footer">
+              <span className="welcome-team-footer-line" />
+              <span>ONE TEAM · ONE VISION · ONE CREATION</span>
+              <span className="welcome-team-footer-line" />
+            </div>
           </div>
         </section>
 
