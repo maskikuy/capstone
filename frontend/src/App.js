@@ -11,7 +11,7 @@ import Discounts from './pages/admin/Discounts';
 import Users from './pages/admin/Users';
 import OrderHistory from './pages/admin/OrderHistory';
 import Dashboard from './pages/admin/Dashboard';
-import QrisSettings from './pages/admin/QrisSettings';
+import GoogleReview from './pages/admin/GoogleReview';
 import KitchenDashboard from './pages/kitchen/Dashboard';
 import CustomerMenu from './pages/customer/Menu';
 import Checkout from './pages/customer/Checkout';
@@ -77,7 +77,8 @@ function App() {
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/qr-codes" element={<QRCodeGenerator />} />
           <Route path="/admin/inventory" element={<Inventory />} />
-          <Route path="/admin/qris-settings" element={<QrisSettings />} />
+          <Route path="/admin/google-review" element={<GoogleReview />} />
+          <Route path="/admin/qris-settings" element={<Navigate to="/admin/google-review" replace />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="kasir"><DashboardLayout /></ProtectedRoute>}>

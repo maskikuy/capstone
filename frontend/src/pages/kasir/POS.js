@@ -280,7 +280,7 @@ const KasirPOS = () => {
         }))
       }));
 
-      // Di Kasir POS (baik Tunai maupun Mesin EDC/QRIS Statis), transaksi selalu langsung lunas!
+      // Di Kasir POS (baik Tunai maupun Mesin EDC/QRIS Kasir), transaksi langsung lunas!
       const payload = {
         table_number: parseInt(tableNumber) || 0,
         customer_name: customerName.trim() || 'Pelanggan Kasir',
@@ -846,7 +846,7 @@ const KasirPOS = () => {
                 )}
               </div>
 
-              {/* Payment Method Selector (Di kasir: Tunai & QRIS Mesin EDC / Statis) */}
+              {/* Payment Method Selector (Di kasir: Tunai & QRIS / Mesin EDC) */}
               <div className="mb-2">
                 <div className="d-flex align-items-center gap-1 mb-1">
                   <CreditCard size={12} style={{ color: '#94a3b8' }} />

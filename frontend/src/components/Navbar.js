@@ -117,7 +117,7 @@ const Navbar = () => {
                 </li>
 
                 <li className="nav-item">
-                  <NavLink to="/admin/qris-settings" style={navLinkStyle}>
+                  <NavLink to="/admin/google-review" style={navLinkStyle}>
                     Google Review
                   </NavLink>
                 </li>

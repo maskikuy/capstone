@@ -938,7 +938,7 @@ const Dashboard = () => {
               {[
                 { label: 'Tambah Menu Baru', to: '/admin/product/new' },
                 { label: 'Cetak QR Code Meja', to: '/admin/qr-codes' },
-                { label: 'Pengaturan QRIS Statis', to: '/admin/qris-settings' },
+                { label: 'Pengaturan Google Review', to: '/admin/google-review' },
                 { label: 'Buat Akun Dapur', to: '/admin/users' }
               ].map((action, idx, arr) => (
                 <Link
