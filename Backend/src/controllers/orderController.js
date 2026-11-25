@@ -268,13 +268,28 @@ export const completeTransaction = async (req, res) => {
     const conn = await db.getConnection();
     logger.debug('Database connection established for completeTransaction');
     try {
-        const [orders] = await conn.execute('SELECT id, payment_status, order_status FROM orders WHERE id = ?', [orderId]);
+        const [orders] = await conn.execute(
+            'SELECT id, payment_method, payment_status, order_status FROM orders WHERE id = ?', 
+            [orderId]
+        );
         if (!orders.length) {
             return res.status(404).json({ error: 'Order Not Found' });
         }
 
+        const order = orders[0];
+
+        // Proteksi ketat: jika pesanan adalah QRIS dan belum paid oleh payment gateway / webhook,
+        // tolak penyelesaian sepihak agar pesanan belum lunas tidak masuk ke kasir/dapur
+        if (order.payment_method === 'qris' && order.payment_status !== 'paid') {
+            logger.warn(`Rejected manual complete transaction for unpaid QRIS order ID: ${orderId}`);
+            return res.status(400).json({ 
+                error: 'Pembayaran QRIS belum terkonfirmasi oleh payment gateway. Silakan selesaikan pembayaran terlebih dahulu.',
+                payment_status: 'pending' 
+            });
+        }
+
         await conn.execute("UPDATE orders SET payment_status = 'paid' WHERE id = ?", [orderId]);
-        logger.info(`Customer completed transaction for order ID: ${orderId}`);
+        logger.info(`Transaction confirmed as paid for order ID: ${orderId}`);
         res.status(200).json({ message: 'Transaction completed successfully', payment_status: 'paid' });
     } catch (error) {
         logger.error(`Error completing transaction for ID ${orderId}: ${error.message}`);

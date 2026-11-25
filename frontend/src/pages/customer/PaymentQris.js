@@ -69,27 +69,26 @@ const PaymentQris = () => {
     return `${min}:${sec < 10 ? '0' : ''}${sec}`;
   };
 
-  // Fungsi saat tombol "Selesaikan Transaksi" diklik oleh customer
+  // Fungsi saat tombol "Saya Sudah Bayar / Cek Status" diklik oleh customer
   const handleConfirmPayment = async () => {
     if (isCompleting) return;
     setIsCompleting(true);
     try {
-      if (pollingRef.current) clearInterval(pollingRef.current);
+      // Verifikasi status pembayaran secara realtime ke backend & payment gateway
+      const res = await api.get(`/order/${orderId}/payment-status`);
       
-      // Selesaikan transaksi di server agar pesanan resmi masuk ke kasir & dapur
-      await api.post(`/order/${orderId}/complete-transaction`);
-      
-      showAlert("Transaksi Selesai! Pesanan Anda telah masuk ke sistem kasir dan siap disiapkan.");
-      navigate('/customer/status', { 
-          state: { orderId, customerName, tableNumber } 
-      });
+      if (res.data && res.data.payment_status === 'paid') {
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        showAlert("Pembayaran berhasil! Pesanan Anda telah diteruskan ke kasir & dapur.");
+        navigate('/customer/status', { 
+            state: { orderId, customerName, tableNumber } 
+        });
+      } else {
+        showAlert("Pembayaran QRIS belum terdeteksi. Silakan scan kode QRIS dan selesaikan pembayaran di aplikasi m-banking / e-wallet Anda terlebih dahulu.");
+      }
     } catch (err) {
-      console.error('Gagal menyelesaikan transaksi:', err);
-      // Fallback tetap arahkan ke status
-      showAlert("Transaksi dikonfirmasi. Mohon tunggu pesanan Anda.");
-      navigate('/customer/status', { 
-          state: { orderId, customerName, tableNumber } 
-      });
+      console.error('Gagal memverifikasi transaksi:', err);
+      showAlert("Belum dapat memverifikasi status pembayaran. Pastikan koneksi internet stabil lalu coba beberapa saat lagi.");
     } finally {
       setIsCompleting(false);
     }
@@ -203,7 +202,7 @@ const PaymentQris = () => {
             <small style={{ color: '#cbd5e1', fontSize: '0.75rem', lineHeight: '1.5', display: 'block' }}>
               1. Buka aplikasi e-wallet / mobile banking Anda (GoPay, DANA, OVO, BCA, dll).<br />
               2. Scan kode QRIS di atas.<br />
-              3. Setelah berhasil membayar, klik tombol <strong>Selesaikan Transaksi</strong> di bawah agar pesanan langsung masuk ke kasir & dapur!
+              3. Setelah berhasil membayar, sistem akan mendeteksi otomatis atau Anda dapat mengklik tombol <strong>Saya Sudah Bayar</strong> di bawah.
             </small>
           </div>
         </div>
@@ -221,7 +220,7 @@ const PaymentQris = () => {
             </button>
           )}
 
-          {/* Tombol Selesaikan Transaksi */}
+          {/* Tombol Verifikasi Pembayaran */}
           <button
             type="button"
             className="btn-billion-gold"
@@ -229,8 +228,8 @@ const PaymentQris = () => {
             onClick={handleConfirmPayment}
             style={{ opacity: isCompleting ? 0.7 : 1, cursor: isCompleting ? 'not-allowed' : 'pointer' }}
           >
-            <i className="bi bi-check-circle-fill me-2"></i>
-            {isCompleting ? 'Memproses Transaksi...' : 'Selesaikan Transaksi'}
+            <i className="bi bi-shield-check me-2"></i>
+            {isCompleting ? 'Memverifikasi Pembayaran...' : 'Saya Sudah Bayar (Cek Status)'}
           </button>
 
           <button

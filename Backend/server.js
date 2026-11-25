@@ -35,6 +35,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(httpLogger);
 app.use('/api', orderRoute);
+app.use(orderRoute);
 app.use('/api/auth', authRoute, limiter.authLimiter);
 app.use('/uploads', express.static('./src/uploads'));
 app.use('/api', productRoute);
